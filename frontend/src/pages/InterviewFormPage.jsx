@@ -109,25 +109,48 @@ export default function InterviewFormPage() {
     }
   }
 
-  if (loading) return <Loading />
+  if (loading) return <Loading message="Đang tải dữ liệu lịch phỏng vấn..." />
 
   return (
-    <div className="container-fluid px-0">
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h1 className="h3 mb-0">{isEdit ? `Sửa lịch phỏng vấn #${id}` : 'Lên lịch phỏng vấn mới'}</h1>
-        <Link className="btn btn-outline-secondary" to={isEdit ? `/interviews/${id}` : '/interviews'}>
-          Hủy
+    <div className="form-page mx-auto" style={{ maxWidth: '850px' }}>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 className="h3 fw-bold mb-1 text-dark">
+            {isEdit ? `Chỉnh sửa Lịch phỏng vấn #${id}` : 'Lên lịch Phỏng vấn Mới'}
+          </h1>
+          <p className="text-muted mb-0 small">
+            Chọn thời gian, phân công người phỏng vấn và địa điểm / link họp cho ứng viên.
+          </p>
+        </div>
+        <Link
+          to={isEdit ? `/interviews/${id}` : '/interviews'}
+          className="btn btn-secondary-modern btn-sm text-decoration-none"
+        >
+          <i className="bi bi-arrow-left"></i>
+          <span>Quay lại</span>
         </Link>
       </div>
 
-      {error && <div className="alert alert-danger mb-3">{error}</div>}
+      {error && (
+        <div className="alert alert-danger d-flex align-items-center gap-2 rounded-3 mb-3">
+          <i className="bi bi-exclamation-circle-fill"></i>
+          <div>{error}</div>
+        </div>
+      )}
 
-      <div className="card shadow-sm border-0">
-        <div className="card-body">
+      <div className="card-modern">
+        <div className="card-modern-header">
+          <div className="d-flex align-items-center gap-2">
+            <i className="bi bi-calendar2-check-fill text-primary"></i>
+            <span>Thông tin buổi phỏng vấn</span>
+          </div>
+          <span className="text-muted small">* Trường bắt buộc</span>
+        </div>
+        <div className="card-modern-body">
           <form onSubmit={handleSubmit}>
             <div className="row g-3">
               <div className="col-md-6">
-                <label className="form-label fw-semibold">
+                <label className="form-label small fw-semibold text-secondary">
                   Hồ sơ ứng tuyển <span className="text-danger">*</span>
                 </label>
                 <select
@@ -140,17 +163,18 @@ export default function InterviewFormPage() {
                   <option value="">-- Chọn hồ sơ ứng tuyển --</option>
                   {applications.map((app) => (
                     <option key={app.id} value={app.id}>
-                      #{app.id} - {app.candidate_name || `Ứng viên #${app.candidate_id}`} | {app.job_title || `Vị trí #${app.job_id}`} ({app.status})
+                      #{app.id} - {app.candidate_name || `Ứng viên #${app.candidate_id}`} |{' '}
+                      {app.job_title || `Vị trí #${app.job_id}`} ({app.status})
                     </option>
                   ))}
                 </select>
-                <div className="form-text">
+                <small className="text-muted d-block mt-1">
                   Chỉ nên lên lịch phỏng vấn cho hồ sơ đang trong giai đoạn phỏng vấn.
-                </div>
+                </small>
               </div>
 
               <div className="col-md-6">
-                <label className="form-label fw-semibold">
+                <label className="form-label small fw-semibold text-secondary">
                   Người phỏng vấn <span className="text-danger">*</span>
                 </label>
                 <select
@@ -169,7 +193,7 @@ export default function InterviewFormPage() {
               </div>
 
               <div className="col-md-6">
-                <label className="form-label fw-semibold">
+                <label className="form-label small fw-semibold text-secondary">
                   Thời gian phỏng vấn <span className="text-danger">*</span>
                 </label>
                 <input
@@ -182,7 +206,9 @@ export default function InterviewFormPage() {
               </div>
 
               <div className="col-md-6">
-                <label className="form-label fw-semibold">Địa điểm / Hình thức</label>
+                <label className="form-label small fw-semibold text-secondary">
+                  Địa điểm / Hình thức họp
+                </label>
                 <input
                   type="text"
                   className="form-control"
@@ -193,24 +219,38 @@ export default function InterviewFormPage() {
               </div>
 
               <div className="col-12">
-                <label className="form-label fw-semibold">Ghi chú</label>
+                <label className="form-label small fw-semibold text-secondary">Ghi chú trao đổi</label>
                 <textarea
                   className="form-control"
                   rows={3}
-                  placeholder="Nội dung cần tập trung trao đổi, chuẩn bị kỹ thuật..."
+                  placeholder="Nội dung cần tập trung trao đổi, chuẩn bị câu hỏi kỹ thuật..."
                   value={form.note}
                   onChange={(e) => setForm({ ...form, note: e.target.value })}
                 />
               </div>
+            </div>
 
-              <div className="col-12 d-flex justify-content-end gap-2 pt-2">
-                <Link className="btn btn-secondary" to={isEdit ? `/interviews/${id}` : '/interviews'}>
-                  Hủy bỏ
-                </Link>
-                <button type="submit" className="btn btn-primary" disabled={submitting}>
-                  {submitting ? 'Đang lưu...' : isEdit ? 'Lưu cập nhật' : 'Xác nhận lên lịch'}
-                </button>
-              </div>
+            <div className="d-flex justify-content-end gap-2 border-top pt-3 mt-4">
+              <Link to={isEdit ? `/interviews/${id}` : '/interviews'} className="btn btn-secondary-modern">
+                Hủy bỏ
+              </Link>
+              <button
+                type="submit"
+                className="btn btn-primary-modern"
+                disabled={submitting}
+              >
+                {submitting ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-1" role="status"></span>
+                    Đang lưu...
+                  </>
+                ) : (
+                  <>
+                    <i className="bi bi-check-lg"></i>
+                    <span>{isEdit ? 'Lưu cập nhật' : 'Xác nhận lên lịch'}</span>
+                  </>
+                )}
+              </button>
             </div>
           </form>
         </div>

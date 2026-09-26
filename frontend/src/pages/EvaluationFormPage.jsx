@@ -1,16 +1,44 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import Loading from '../components/Loading'
 import { applicationApi, evaluationApi } from '../services/api'
 
+const SCORE_LABELS = {
+  technical: {
+    1: '1 - Kém (Chưa đáp ứng yêu cầu)',
+    2: '2 - Yếu (Cần đào tạo nhiều)',
+    3: '3 - Trung bình (Đáp ứng cơ bản)',
+    4: '4 - Khá (Nắm vững chuyên môn)',
+    5: '5 - Xuất sắc (Vượt mong đợi)',
+  },
+  communication: {
+    1: '1 - Kém (Khó diễn đạt)',
+    2: '2 - Yếu (Thiếu tự tin, lan man)',
+    3: '3 - Trung bình (Giao tiếp ổn)',
+    4: '4 - Khá (Trình bày rõ ràng, mạch lạc)',
+    5: '5 - Xuất sắc (Thuyết phục, tương tác tốt)',
+  },
+  experience: {
+    1: '1 - Rất ít / Chưa liên quan',
+    2: '2 - Hạn chế trong lĩnh vực tương đương',
+    3: '3 - Đủ kinh nghiệm theo yêu cầu',
+    4: '4 - Kinh nghiệm thực tế phong phú',
+    5: '5 - Chuyên gia / Dày dạn kinh nghiệm',
+  },
+}
+
 export default function EvaluationFormPage() {
   const { id } = useParams()
+  const [searchParams] = useSearchParams()
   const navigate = useNavigate()
 
-  // Detect mode: if current pathname has '/evaluations/:id/edit', isEdit = true
-  const isEdit = window.location.pathname.includes('/evaluations/') && window.location.pathname.endsWith('/edit')
+  // Detect mode
+  const isEdit =
+    window.location.pathname.includes('/evaluations/') &&
+    window.location.pathname.endsWith('/edit')
 
-  const [applicationId, setApplicationId] = useState(isEdit ? null : id)
+  const queryAppId = searchParams.get('application_id')
+  const [applicationId, setApplicationId] = useState(isEdit ? null : queryAppId || id)
   const [appInfo, setAppInfo] = useState(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -25,7 +53,8 @@ export default function EvaluationFormPage() {
 
   useEffect(() => {
     if (isEdit) {
-      evaluationApi.get(id)
+      evaluationApi
+        .get(id)
         .then((evalRes) => {
           const ev = evalRes.data
           setApplicationId(ev.application_id)
@@ -49,27 +78,56 @@ export default function EvaluationFormPage() {
           setLoading(false)
         })
     } else {
-      applicationApi.get(id)
-        .then((aRes) => {
-          setAppInfo(aRes.data)
-          setLoading(false)
-        })
-        .catch((err) => {
-          setError(err.message || 'Lỗi khi tải dữ liệu.')
-          setLoading(false)
-        })
+      const targetId = queryAppId || id
+      if (targetId) {
+        applicationApi
+          .get(targetId)
+          .then((aRes) => {
+            setAppInfo(aRes.data)
+            setLoading(false)
+          })
+          .catch((err) => {
+            setError(err.message || 'Lỗi khi tải dữ liệu.')
+            setLoading(false)
+          })
+      } else {
+        setLoading(false)
+      }
     }
-  }, [id, isEdit])
+  }, [id, isEdit, queryAppId])
 
   const tech = Number(form.technical_score) || 0
   const comm = Number(form.communication_score) || 0
   const exp = Number(form.experience_score) || 0
   const averageScore = ((tech + comm + exp) / 3).toFixed(2)
 
+  let scoreFeedback = 'Khá tốt'
+  let scoreBadgeClass = 'soft-badge-success'
+  if (averageScore >= 4.5) {
+    scoreFeedback = 'Xuất sắc ⭐⭐⭐⭐⭐'
+    scoreBadgeClass = 'soft-badge-success'
+  } else if (averageScore >= 3.5) {
+    scoreFeedback = 'Khá / Đạt yêu cầu ⭐⭐⭐⭐'
+    scoreBadgeClass = 'soft-badge-primary'
+  } else if (averageScore >= 2.5) {
+    scoreFeedback = 'Trung bình / Cân nhắc ⭐⭐⭐'
+    scoreBadgeClass = 'soft-badge-warning'
+  } else {
+    scoreFeedback = 'Chưa đạt yêu cầu ⭐⭐'
+    scoreBadgeClass = 'soft-badge-danger'
+  }
+
   async function handleSubmit(e) {
     e.preventDefault()
     setSubmitting(true)
     setError('')
+
+    const targetAppId = applicationId || queryAppId || id
+    if (!targetAppId) {
+      setError('Thiếu mã hồ sơ ứng tuyển.')
+      setSubmitting(false)
+      return
+    }
 
     try {
       const payload = {
@@ -81,13 +139,13 @@ export default function EvaluationFormPage() {
 
       if (isEdit) {
         await evaluationApi.update(id, payload)
-        navigate(`/applications/${applicationId}`)
+        navigate(`/applications/${targetAppId}`)
       } else {
         await evaluationApi.create({
-          application_id: Number(applicationId),
+          application_id: Number(targetAppId),
           ...payload,
         })
-        navigate(`/applications/${applicationId}`)
+        navigate(`/applications/${targetAppId}`)
       }
     } catch (err) {
       setError(err.message || 'Lỗi khi lưu đánh giá.')
@@ -96,125 +154,182 @@ export default function EvaluationFormPage() {
     }
   }
 
-  if (loading) return <Loading />
+  if (loading) return <Loading message="Đang tải thông tin đánh giá..." />
 
-  const targetAppId = applicationId || id
+  const targetAppId = applicationId || queryAppId || id
 
   return (
-    <div className="container-fluid px-0">
-      <div className="d-flex justify-content-between align-items-center mb-3">
+    <div className="form-page mx-auto" style={{ maxWidth: '850px' }}>
+      <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
-          <h1 className="h3 mb-1">{isEdit ? `Sửa đánh giá #${id}` : 'Thêm đánh giá ứng viên'}</h1>
+          <h1 className="h3 fw-bold mb-1 text-dark">
+            {isEdit ? `Chỉnh sửa Đánh giá #${id}` : 'Thêm Đánh giá Ứng viên'}
+          </h1>
           {appInfo && (
-            <p className="text-muted mb-0">
-              Hồ sơ #{appInfo.id} &mdash; Ứng viên: <strong>{appInfo.candidate?.full_name}</strong> &mdash; Vị trí: <strong>{appInfo.job?.title}</strong>
+            <p className="text-muted mb-0 small">
+              Hồ sơ #{appInfo.id} &bull; Ứng viên:{' '}
+              <strong className="text-dark">{appInfo.candidate?.full_name}</strong> &bull; Vị trí:{' '}
+              <strong className="text-dark">{appInfo.job?.title}</strong>
             </p>
           )}
         </div>
-        <Link className="btn btn-outline-secondary" to={`/applications/${targetAppId}`}>
-          Quay lại hồ sơ
+        <Link
+          to={`/applications/${targetAppId}`}
+          className="btn btn-secondary-modern btn-sm text-decoration-none"
+        >
+          <i className="bi bi-arrow-left"></i>
+          <span>Quay lại hồ sơ</span>
         </Link>
       </div>
 
-      {error && <div className="alert alert-danger mb-3">{error}</div>}
+      {error && (
+        <div className="alert alert-danger d-flex align-items-center gap-2 rounded-3 mb-3">
+          <i className="bi bi-exclamation-circle-fill"></i>
+          <div>{error}</div>
+        </div>
+      )}
 
-      <div className="card shadow-sm border-0">
-        <div className="card-body">
+      <div className="card-modern mb-4">
+        <div className="card-modern-header">
+          <div className="d-flex align-items-center gap-2">
+            <i className="bi bi-award-fill text-warning"></i>
+            <span>Bảng chấm điểm ứng viên</span>
+          </div>
+          <span className="text-muted small">Thang điểm từ 1 đến 5 sao</span>
+        </div>
+
+        <div className="card-modern-body">
           <form onSubmit={handleSubmit}>
-            <div className="row g-4">
-              {/* Điểm chuyên môn */}
-              <div className="col-md-4">
-                <label className="form-label fw-semibold">
-                  Điểm chuyên môn (1 - 5) <span className="text-danger">*</span>
-                </label>
-                <select
-                  className="form-select"
-                  value={form.technical_score}
-                  onChange={(e) => setForm({ ...form, technical_score: Number(e.target.value) })}
-                  required
-                >
-                  <option value={1}>1 - Kém (Chưa đáp ứng)</option>
-                  <option value={2}>2 - Yếu (Cần đào tạo nhiều)</option>
-                  <option value={3}>3 - Trung bình (Đáp ứng cơ bản)</option>
-                  <option value={4}>4 - Khá (Nắm vững chuyên môn)</option>
-                  <option value={5}>5 - Xuất sắc (Vượt mong đợi)</option>
-                </select>
-                <div className="form-text">Đánh giá kiến thức nền tảng và kỹ năng kỹ thuật.</div>
+            {/* Live Average Score Banner */}
+            <div
+              className="p-3 rounded-3 mb-4 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3"
+              style={{
+                backgroundColor: '#f8fafc',
+                border: '1px solid #e2e8f0',
+              }}
+            >
+              <div>
+                <span className="fw-semibold text-secondary small d-block">
+                  Điểm trung bình tự động:
+                </span>
+                <span className="small text-muted">
+                  Công thức: (Chuyên môn + Giao tiếp + Kinh nghiệm) / 3
+                </span>
               </div>
-
-              {/* Điểm giao tiếp */}
-              <div className="col-md-4">
-                <label className="form-label fw-semibold">
-                  Điểm giao tiếp (1 - 5) <span className="text-danger">*</span>
-                </label>
-                <select
-                  className="form-select"
-                  value={form.communication_score}
-                  onChange={(e) => setForm({ ...form, communication_score: Number(e.target.value) })}
-                  required
-                >
-                  <option value={1}>1 - Kém (Khó diễn đạt)</option>
-                  <option value={2}>2 - Yếu (Thiếu tự tin, lan man)</option>
-                  <option value={3}>3 - Trung bình (Giao tiếp ổn)</option>
-                  <option value={4}>4 - Khá (Trình bày rõ ràng, mạch lạc)</option>
-                  <option value={5}>5 - Xuất sắc (Thuyết phục, tương tác xuất sắc)</option>
-                </select>
-                <div className="form-text">Đánh giá khả năng lắng nghe và truyền đạt.</div>
+              <div className="d-flex align-items-center gap-2">
+                <span className="display-6 fw-bold text-dark">{averageScore}</span>
+                <span className="text-muted fs-6">/ 5.0</span>
+                <span className={`soft-badge ${scoreBadgeClass} ms-2`}>{scoreFeedback}</span>
               </div>
+            </div>
 
-              {/* Điểm kinh nghiệm */}
-              <div className="col-md-4">
-                <label className="form-label fw-semibold">
-                  Điểm kinh nghiệm (1 - 5) <span className="text-danger">*</span>
+            {/* Score Dimensions Grid */}
+            <div className="row g-4 mb-4">
+              {/* Technical Score */}
+              <div className="col-12 col-md-4">
+                <label className="form-label small fw-semibold text-secondary d-block">
+                  1. Chuyên môn (1 - 5) <span className="text-danger">*</span>
                 </label>
-                <select
-                  className="form-select"
-                  value={form.experience_score}
-                  onChange={(e) => setForm({ ...form, experience_score: Number(e.target.value) })}
-                  required
-                >
-                  <option value={1}>1 - Rất ít / Chưa liên quan</option>
-                  <option value={2}>2 - Hạn chế trong lĩnh vực tương đương</option>
-                  <option value={3}>3 - Đủ kinh nghiệm theo yêu cầu vị trí</option>
-                  <option value={4}>4 - Kinh nghiệm thực tế phong phú</option>
-                  <option value={5}>5 - Chuyên gia / Dày dạn kinh nghiệm</option>
-                </select>
-                <div className="form-text">Đánh giá mức độ phù hợp của các dự án trước đây.</div>
-              </div>
-
-              {/* Tinh toan diem trung binh */}
-              <div className="col-12">
-                <div className="p-3 bg-light rounded border d-flex justify-content-between align-items-center">
-                  <div>
-                    <span className="fw-semibold">Điểm trung bình tạm tính:</span>
-                    <span className="text-muted ms-2">(Chuyên môn + Giao tiếp + Kinh nghiệm) / 3</span>
-                  </div>
-                  <div>
-                    <span className="badge bg-success fs-5 px-3 py-2">{averageScore} / 5.00</span>
-                  </div>
+                <div className="star-rating-box mb-2">
+                  {[1, 2, 3, 4, 5].map((val) => (
+                    <button
+                      key={val}
+                      type="button"
+                      className={`star-btn ${form.technical_score >= val ? 'selected' : ''}`}
+                      onClick={() => setForm({ ...form, technical_score: val })}
+                      title={`Chọn ${val} sao`}
+                    >
+                      <i className="bi bi-star-fill"></i>
+                    </button>
+                  ))}
+                </div>
+                <div className="small text-muted" style={{ fontSize: '0.785rem' }}>
+                  {SCORE_LABELS.technical[form.technical_score]}
                 </div>
               </div>
 
-              {/* Nhan xet chi tiet */}
-              <div className="col-12">
-                <label className="form-label fw-semibold">Nhận xét chi tiết</label>
-                <textarea
-                  className="form-control"
-                  rows={4}
-                  placeholder="Ghi nhận điểm mạnh, điểm cần cải thiện, mức độ phù hợp văn hóa công ty..."
-                  value={form.comment}
-                  onChange={(e) => setForm({ ...form, comment: e.target.value })}
-                />
+              {/* Communication Score */}
+              <div className="col-12 col-md-4">
+                <label className="form-label small fw-semibold text-secondary d-block">
+                  2. Giao tiếp (1 - 5) <span className="text-danger">*</span>
+                </label>
+                <div className="star-rating-box mb-2">
+                  {[1, 2, 3, 4, 5].map((val) => (
+                    <button
+                      key={val}
+                      type="button"
+                      className={`star-btn ${form.communication_score >= val ? 'selected' : ''}`}
+                      onClick={() => setForm({ ...form, communication_score: val })}
+                      title={`Chọn ${val} sao`}
+                    >
+                      <i className="bi bi-star-fill"></i>
+                    </button>
+                  ))}
+                </div>
+                <div className="small text-muted" style={{ fontSize: '0.785rem' }}>
+                  {SCORE_LABELS.communication[form.communication_score]}
+                </div>
               </div>
 
-              <div className="col-12 d-flex justify-content-end gap-2 pt-2">
-                <Link className="btn btn-secondary" to={`/applications/${targetAppId}`}>
-                  Hủy bỏ
-                </Link>
-                <button type="submit" className="btn btn-primary" disabled={submitting}>
-                  {submitting ? 'Đang lưu...' : isEdit ? 'Lưu cập nhật' : 'Gửi đánh giá'}
-                </button>
+              {/* Experience Score */}
+              <div className="col-12 col-md-4">
+                <label className="form-label small fw-semibold text-secondary d-block">
+                  3. Kinh nghiệm (1 - 5) <span className="text-danger">*</span>
+                </label>
+                <div className="star-rating-box mb-2">
+                  {[1, 2, 3, 4, 5].map((val) => (
+                    <button
+                      key={val}
+                      type="button"
+                      className={`star-btn ${form.experience_score >= val ? 'selected' : ''}`}
+                      onClick={() => setForm({ ...form, experience_score: val })}
+                      title={`Chọn ${val} sao`}
+                    >
+                      <i className="bi bi-star-fill"></i>
+                    </button>
+                  ))}
+                </div>
+                <div className="small text-muted" style={{ fontSize: '0.785rem' }}>
+                  {SCORE_LABELS.experience[form.experience_score]}
+                </div>
               </div>
+            </div>
+
+            {/* Detailed Comment Box */}
+            <div className="mb-4">
+              <label className="form-label small fw-semibold text-secondary">
+                Nhận xét chi tiết của người đánh giá
+              </label>
+              <textarea
+                className="form-control"
+                rows={4}
+                placeholder="Ghi nhận điểm mạnh chuyên môn, thái độ, mức độ phù hợp văn hóa hoặc những điểm cần đào tạo thêm..."
+                value={form.comment}
+                onChange={(e) => setForm({ ...form, comment: e.target.value })}
+              />
+            </div>
+
+            <div className="d-flex justify-content-end gap-2 border-top pt-3">
+              <Link to={`/applications/${targetAppId}`} className="btn btn-secondary-modern">
+                Hủy bỏ
+              </Link>
+              <button
+                type="submit"
+                className="btn btn-primary-modern"
+                disabled={submitting}
+              >
+                {submitting ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-1" role="status"></span>
+                    Đang lưu...
+                  </>
+                ) : (
+                  <>
+                    <i className="bi bi-check-lg"></i>
+                    <span>{isEdit ? 'Lưu thay đổi đánh giá' : 'Gửi đánh giá ứng viên'}</span>
+                  </>
+                )}
+              </button>
             </div>
           </form>
         </div>

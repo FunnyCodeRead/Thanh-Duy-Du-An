@@ -3,28 +3,17 @@ import { Link, useOutletContext } from 'react-router-dom'
 import Loading from '../components/Loading'
 import { applicationApi, jobApi } from '../services/api'
 
-const statuses = ['NEW', 'SCREENING', 'INTERVIEW', 'PASSED', 'REJECTED']
-
-function statusBadgeClass(status) {
-  switch (status) {
-    case 'NEW':
-      return 'badge bg-secondary'
-    case 'SCREENING':
-      return 'badge bg-warning text-dark'
-    case 'INTERVIEW':
-      return 'badge bg-primary'
-    case 'PASSED':
-      return 'badge bg-success'
-    case 'REJECTED':
-      return 'badge bg-danger'
-    default:
-      return 'badge bg-light text-dark'
-  }
+const STATUS_CONFIG = {
+  NEW: { label: 'Mới nhận (NEW)', badgeClass: 'soft-badge-secondary', icon: 'bi-inbox' },
+  SCREENING: { label: 'Sàng lọc (SCREENING)', badgeClass: 'soft-badge-info', icon: 'bi-search' },
+  INTERVIEW: { label: 'Phỏng vấn (INTERVIEW)', badgeClass: 'soft-badge-purple', icon: 'bi-calendar-event' },
+  PASSED: { label: 'Trúng tuyển (PASSED)', badgeClass: 'soft-badge-success', icon: 'bi-check-circle-fill' },
+  REJECTED: { label: 'Không đạt (REJECTED)', badgeClass: 'soft-badge-danger', icon: 'bi-x-circle-fill' },
 }
 
 export default function ApplicationsPage() {
   const { user } = useOutletContext()
-  const canCreate = ['ADMIN', 'HR'].includes(user.role)
+  const canCreate = ['ADMIN', 'HR'].includes(user?.role)
   const [filters, setFilters] = useState({ keyword: '', status: '', jobId: '' })
   const [jobs, setJobs] = useState([])
   const [state, setState] = useState({ loading: true, rows: [], error: '' })
@@ -38,7 +27,7 @@ export default function ApplicationsPage() {
 
     applicationApi
       .list(params.toString() ? `?${params}` : '')
-      .then((r) => setState({ loading: false, rows: r.data, error: '' }))
+      .then((r) => setState({ loading: false, rows: r.data || [], error: '' }))
       .catch((e) => setState({ loading: false, rows: [], error: e.message }))
   }
 
@@ -48,130 +37,229 @@ export default function ApplicationsPage() {
       .then((r) => setJobs(r.data || []))
       .catch(() => setJobs([]))
 
-    applicationApi
-      .list()
-      .then((r) => setState({ loading: false, rows: r.data, error: '' }))
-      .catch((e) => setState({ loading: false, rows: [], error: e.message }))
+    loadApplications()
   }, [])
+
+  function handleReset() {
+    const emptyFilters = { keyword: '', status: '', jobId: '' }
+    setFilters(emptyFilters)
+    loadApplications(emptyFilters)
+  }
 
   return (
     <>
-      <div className="d-flex justify-content-between align-items-center mb-3">
+      <div className="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4">
         <div>
-          <h1 className="h3 mb-1">Hồ sơ ứng tuyển</h1>
-          <p className="text-muted mb-0">Quản lý trạng thái và tiến trình ứng tuyển của ứng viên.</p>
+          <h1 className="h3 fw-bold mb-1 text-dark">Hồ sơ Ứng tuyển</h1>
+          <p className="text-muted mb-0 small">
+            Theo dõi ứng viên nộp hồ sơ, quy trình xét duyệt và kết quả tuyển dụng.
+          </p>
         </div>
         {canCreate && (
-          <Link className="btn btn-primary" to="/applications/create">
-            + Tạo hồ sơ ứng tuyển
+          <Link to="/applications/create" className="btn btn-primary-modern text-decoration-none">
+            <i className="bi bi-file-earmark-plus-fill"></i>
+            <span>Tạo hồ sơ ứng tuyển</span>
           </Link>
         )}
       </div>
 
-      <form
-        className="card card-body shadow-sm border-0 mb-3"
-        onSubmit={(e) => {
-          e.preventDefault()
-          loadApplications()
-        }}
-      >
-        <div className="row g-2">
-          <div className="col-md-5">
-            <input
-              className="form-control"
-              value={filters.keyword}
-              onChange={(e) => setFilters({ ...filters, keyword: e.target.value })}
-              placeholder="Tên ứng viên, email hoặc vị trí..."
-            />
+      {state.error && (
+        <div className="alert alert-danger d-flex align-items-center gap-2 rounded-3 mb-3">
+          <i className="bi bi-exclamation-circle-fill"></i>
+          <div>{state.error}</div>
+        </div>
+      )}
+
+      {/* Filter Bar */}
+      <div className="filter-bar-card">
+        <form
+          className="row g-2 align-items-center"
+          onSubmit={(e) => {
+            e.preventDefault()
+            loadApplications()
+          }}
+        >
+          <div className="col-12 col-md-5">
+            <div className="input-icon-group">
+              <i className="bi bi-search"></i>
+              <input
+                className="form-control"
+                value={filters.keyword}
+                onChange={(e) => setFilters({ ...filters, keyword: e.target.value })}
+                placeholder="Tìm tên ứng viên, email hoặc vị trí..."
+              />
+            </div>
           </div>
-          <div className="col-md-3">
+
+          <div className="col-12 col-sm-6 col-md-3">
             <select
               className="form-select"
               value={filters.jobId}
               onChange={(e) => setFilters({ ...filters, jobId: e.target.value })}
+              style={{ borderRadius: 'var(--radius-md)' }}
             >
               <option value="">Tất cả vị trí tuyển dụng</option>
               {jobs.map((job) => (
                 <option key={job.id} value={job.id}>
-                  {job.title} ({job.department})
+                  {job.title} ({job.department || 'Chung'})
                 </option>
               ))}
             </select>
           </div>
-          <div className="col-md-2">
+
+          <div className="col-12 col-sm-6 col-md-2">
             <select
               className="form-select"
               value={filters.status}
               onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+              style={{ borderRadius: 'var(--radius-md)' }}
             >
               <option value="">Tất cả trạng thái</option>
-              {statuses.map((st) => (
-                <option key={st} value={st}>
-                  {st}
+              {Object.entries(STATUS_CONFIG).map(([stKey, conf]) => (
+                <option key={stKey} value={stKey}>
+                  {conf.label}
                 </option>
               ))}
             </select>
           </div>
-          <div className="col-md-2 d-grid">
-            <button type="submit" className="btn btn-outline-primary">
-              Tìm kiếm
+
+          <div className="col-12 col-md-2 d-flex gap-2">
+            <button type="submit" className="btn btn-primary-modern flex-grow-1 justify-content-center">
+              <span>Lọc</span>
             </button>
+            {(filters.keyword || filters.status || filters.jobId) && (
+              <button
+                type="button"
+                className="btn btn-secondary-modern px-2.5"
+                onClick={handleReset}
+                title="Đặt lại bộ lọc"
+              >
+                <i className="bi bi-arrow-counterclockwise"></i>
+              </button>
+            )}
           </div>
-        </div>
-      </form>
+        </form>
+      </div>
 
-      {state.error && <div className="alert alert-danger">{state.error}</div>}
-
+      {/* Results Table */}
       {state.loading ? (
-        <Loading />
+        <Loading message="Đang tải danh sách hồ sơ ứng tuyển..." />
       ) : (
-        <div className="table-responsive shadow-sm">
-          <table className="table table-hover mb-0">
-            <thead className="table-light">
-              <tr>
-                <th>ID</th>
-                <th>Ứng viên</th>
-                <th>Vị trí ứng tuyển</th>
-                <th>Trạng thái</th>
-                <th>Ngày ứng tuyển</th>
-                <th>Ghi chú</th>
-                <th>Thao tác</th>
-              </tr>
-            </thead>
-            <tbody>
-              {state.rows.length === 0 ? (
-                <tr>
-                  <td colSpan="7" className="text-center text-muted py-4">
-                    Chưa có hồ sơ ứng tuyển nào.
-                  </td>
-                </tr>
-              ) : (
-                state.rows.map((app) => (
-                  <tr key={app.id}>
-                    <td>{app.id}</td>
-                    <td>
-                      <div className="fw-semibold">{app.candidate_name}</div>
-                      <small className="text-muted">{app.candidate_email || '-'}</small>
-                    </td>
-                    <td>
-                      <div>{app.job_title}</div>
-                      <small className="text-muted">{app.job_department || '-'}</small>
-                    </td>
-                    <td>
-                      <span className={statusBadgeClass(app.status)}>{app.status}</span>
-                    </td>
-                    <td>{app.applied_at ? new Date(app.applied_at).toLocaleDateString('vi-VN') : '-'}</td>
-                    <td>{app.note || '-'}</td>
-                    <td className="text-nowrap">
-                      <Link className="btn btn-sm btn-outline-primary" to={`/applications/${app.id}`}>
-                        Chi tiết
-                      </Link>
-                    </td>
-                  </tr>
-                ))
+        <div className="card-modern">
+          <div className="card-modern-header">
+            <span className="text-secondary small">
+              Hiển thị <strong>{state.rows.length}</strong> hồ sơ ứng tuyển
+            </span>
+          </div>
+
+          {state.rows.length === 0 ? (
+            <div className="empty-state-box border-0">
+              <div className="empty-state-icon">
+                <i className="bi bi-folder2-open"></i>
+              </div>
+              <h6 className="fw-semibold text-dark">Không tìm thấy hồ sơ ứng tuyển nào</h6>
+              <p className="text-muted small mb-3">
+                Thử thay đổi điều kiện lọc hoặc liên kết ứng viên với vị trí tuyển dụng mới.
+              </p>
+              {canCreate && (
+                <Link to="/applications/create" className="btn btn-primary-modern btn-sm text-decoration-none">
+                  <i className="bi bi-plus-lg"></i>
+                  <span>Tạo hồ sơ mới ngay</span>
+                </Link>
               )}
-            </tbody>
-          </table>
+            </div>
+          ) : (
+            <div className="table-responsive">
+              <table className="table-modern">
+                <thead>
+                  <tr>
+                    <th style={{ width: '70px' }}>#ID</th>
+                    <th>Ứng viên</th>
+                    <th>Vị trí ứng tuyển</th>
+                    <th>Trạng thái hiện tại</th>
+                    <th>Ngày nộp</th>
+                    <th>Ghi chú</th>
+                    <th style={{ width: '110px' }} className="text-end">
+                      Thao tác
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {state.rows.map((app) => {
+                    const initials = (app.candidate_name || 'U')
+                      .split(' ')
+                      .filter(Boolean)
+                      .map((w) => w[0])
+                      .slice(0, 2)
+                      .join('')
+                      .toUpperCase()
+
+                    const conf = STATUS_CONFIG[app.status] || {
+                      label: app.status,
+                      badgeClass: 'soft-badge-secondary',
+                      icon: 'bi-tag',
+                    }
+
+                    return (
+                      <tr key={app.id}>
+                        <td className="text-muted small fw-semibold">#{app.id}</td>
+                        <td>
+                          <div className="d-flex align-items-center gap-2.5">
+                            <div className="table-avatar-initials">{initials}</div>
+                            <div>
+                              <Link
+                                to={`/applications/${app.id}`}
+                                className="fw-bold text-dark text-decoration-none hover-primary"
+                              >
+                                {app.candidate_name}
+                              </Link>
+                              <div className="text-muted small" style={{ fontSize: '0.75rem' }}>
+                                {app.candidate_email || '—'}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <div className="fw-semibold text-dark">{app.job_title}</div>
+                          <span className="text-muted small" style={{ fontSize: '0.75rem' }}>
+                            <i className="bi bi-building me-1"></i>
+                            {app.job_department || 'Chung'}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`soft-badge ${conf.badgeClass}`}>
+                            <i className={`bi ${conf.icon}`}></i>
+                            {app.status}
+                          </span>
+                        </td>
+                        <td>
+                          <span className="small text-secondary">
+                            {app.applied_at
+                              ? new Date(app.applied_at).toLocaleDateString('vi-VN')
+                              : '—'}
+                          </span>
+                        </td>
+                        <td>
+                          <span className="small text-muted text-truncate d-inline-block" style={{ maxWidth: '180px' }}>
+                            {app.note || '—'}
+                          </span>
+                        </td>
+                        <td className="text-end text-nowrap">
+                          <Link
+                            to={`/applications/${app.id}`}
+                            className="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 small d-inline-flex align-items-center gap-1"
+                          >
+                            <span>Chi tiết</span>
+                            <i className="bi bi-chevron-right"></i>
+                          </Link>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
     </>

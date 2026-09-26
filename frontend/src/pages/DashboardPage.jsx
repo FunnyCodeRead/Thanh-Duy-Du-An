@@ -4,33 +4,38 @@ import { apiRequest } from '../services/api'
 import Loading from '../components/Loading'
 
 const STATUS_CONFIG = {
-  NEW: { label: 'Mới nhận (NEW)', color: 'secondary' },
-  SCREENING: { label: 'Sàng lọc (SCREENING)', color: 'info' },
-  INTERVIEW: { label: 'Phỏng vấn (INTERVIEW)', color: 'primary' },
-  PASSED: { label: 'Trúng tuyển (PASSED)', color: 'success' },
-  REJECTED: { label: 'Không đạt (REJECTED)', color: 'danger' },
+  NEW: { label: 'Mới nhận', en: 'NEW', colorClass: 'soft-badge-secondary', dotColor: '#94a3b8' },
+  SCREENING: { label: 'Sàng lọc CV', en: 'SCREENING', colorClass: 'soft-badge-info', dotColor: '#0284c7' },
+  INTERVIEW: { label: 'Phỏng vấn', en: 'INTERVIEW', colorClass: 'soft-badge-purple', dotColor: '#7c3aed' },
+  PASSED: { label: 'Trúng tuyển', en: 'PASSED', colorClass: 'soft-badge-success', dotColor: '#059669' },
+  REJECTED: { label: 'Không đạt', en: 'REJECTED', colorClass: 'soft-badge-danger', dotColor: '#dc2626' },
 }
 
-const SOURCE_LABELS = {
-  LINKEDIN: 'LinkedIn',
-  FACEBOOK: 'Facebook',
-  WEBSITE: 'Website công ty',
-  JOB_SITE: 'Trang tuyển dụng',
-  REFERRAL: 'Giới thiệu nội bộ',
-  OTHER: 'Khác',
+const SOURCE_CONFIG = {
+  LINKEDIN: { label: 'LinkedIn', icon: 'bi-linkedin', color: '#0a66c2' },
+  FACEBOOK: { label: 'Facebook', icon: 'bi-facebook', color: '#1877f2' },
+  WEBSITE: { label: 'Website công ty', icon: 'bi-globe2', color: '#059669' },
+  JOB_SITE: { label: 'Trang tuyển dụng', icon: 'bi-briefcase', color: '#f59e0b' },
+  REFERRAL: { label: 'Giới thiệu nội bộ', icon: 'bi-people', color: '#8b5cf6' },
+  OTHER: { label: 'Nguồn khác', icon: 'bi-three-dots', color: '#64748b' },
 }
 
 export default function DashboardPage() {
   const { user } = useOutletContext()
   const [state, setState] = useState({ loading: true, data: null, error: '' })
 
-  useEffect(() => {
+  const fetchDashboard = () => {
+    setState((prev) => ({ ...prev, loading: true }))
     apiRequest('/api/dashboard')
       .then((result) => setState({ loading: false, data: result.data, error: '' }))
       .catch((error) => setState({ loading: false, data: null, error: error.message }))
+  }
+
+  useEffect(() => {
+    fetchDashboard()
   }, [])
 
-  if (state.loading) return <Loading />
+  if (state.loading && !state.data) return <Loading message="Đang tải dữ liệu bảng điều khiển..." />
 
   const summary = state.data?.summary || {
     open_jobs: state.data?.jobs ?? 0,
@@ -66,90 +71,173 @@ export default function DashboardPage() {
 
   const upcomingInterviews = state.data?.upcoming_interviews || []
 
-  const summaryCards = [
-    {
-      label: 'Vị trí đang tuyển',
-      value: summary.open_jobs,
-      subtext: `Tổng cộng ${summary.total_jobs} vị trí`,
-      link: '/jobs',
-      badgeColor: 'success',
-    },
-    {
-      label: 'Tổng ứng viên',
-      value: summary.total_candidates,
-      subtext: 'Hồ sơ ứng viên trong kho',
-      link: '/candidates',
-      badgeColor: 'primary',
-    },
-    {
-      label: 'Hồ sơ ứng tuyển',
-      value: summary.total_applications,
-      subtext: 'Đang tham gia quy trình',
-      link: '/applications',
-      badgeColor: 'info',
-    },
-    {
-      label: 'Phỏng vấn sắp tới',
-      value: summary.upcoming_interviews,
-      subtext: 'Lịch phỏng vấn sắp diễn ra',
-      link: '/interviews',
-      badgeColor: 'warning',
-    },
-  ]
-
   return (
     <>
-      <div className="d-flex justify-content-between align-items-center mb-3">
+      {/* Top Welcome Header */}
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
         <div>
-          <h1 className="h3 mb-1">Bảng điều khiển tuyển dụng</h1>
-          <p className="text-muted mb-0">
-            Xin chào, <strong>{user?.full_name}</strong> &bull; Vai trò: <span className="badge bg-secondary">{user?.role}</span>
+          <div className="d-flex align-items-center gap-2 mb-1">
+            <h1 className="h3 fw-bold mb-0 text-dark">Tổng quan Tuyển dụng</h1>
+            <span className="soft-badge soft-badge-primary">Smart ATS</span>
+          </div>
+          <p className="text-muted mb-0 small">
+            Chào mừng trở lại, <strong>{user?.full_name}</strong>! Theo dõi tiến độ tuyển dụng và chỉ số hôm nay.
           </p>
+        </div>
+
+        <div className="d-flex gap-2">
+          <button
+            className="btn btn-secondary-modern btn-sm"
+            onClick={fetchDashboard}
+            title="Làm mới số liệu"
+          >
+            <i className="bi bi-arrow-clockwise"></i>
+            <span>Làm mới</span>
+          </button>
+          {['ADMIN', 'HR'].includes(user?.role) && (
+            <Link to="/jobs/new" className="btn btn-primary-modern btn-sm text-decoration-none">
+              <i className="bi bi-plus-lg"></i>
+              <span>Đăng tuyển vị trí</span>
+            </Link>
+          )}
         </div>
       </div>
 
-      {state.error && <div className="alert alert-danger mb-4">{state.error}</div>}
+      {state.error && (
+        <div className="alert alert-danger d-flex align-items-center gap-2 rounded-3 mb-4">
+          <i className="bi bi-exclamation-circle-fill"></i>
+          <div>{state.error}</div>
+        </div>
+      )}
 
-      {/* 1. Summary Cards */}
+      {/* 1. Modern KPI Cards Grid */}
       <div className="row g-3 mb-4">
-        {summaryCards.map((card) => (
-          <div className="col-12 col-sm-6 col-xl-3" key={card.label}>
-            <Link to={card.link} className="text-decoration-none text-reset">
-              <div className="card h-100 shadow-sm border-0 summary-card">
-                <div className="card-body">
-                  <div className="text-muted small text-uppercase fw-semibold mb-1">{card.label}</div>
-                  <div className="display-6 fw-bold mb-1">{card.value}</div>
-                  <div className="text-muted small">{card.subtext}</div>
+        <div className="col-12 col-sm-6 col-xl-3">
+          <Link to="/jobs" className="text-decoration-none">
+            <div className="kpi-card h-100">
+              <div>
+                <div className="kpi-label">Vị trí đang mở</div>
+                <div className="kpi-value text-primary">{summary.open_jobs}</div>
+                <div className="text-muted small mt-1">
+                  Trên tổng số <strong>{summary.total_jobs}</strong> vị trí
                 </div>
               </div>
-            </Link>
-          </div>
-        ))}
+              <div className="kpi-icon-bubble kpi-indigo">
+                <i className="bi bi-briefcase-fill"></i>
+              </div>
+            </div>
+          </Link>
+        </div>
+
+        <div className="col-12 col-sm-6 col-xl-3">
+          <Link to="/candidates" className="text-decoration-none">
+            <div className="kpi-card h-100">
+              <div>
+                <div className="kpi-label">Tổng ứng viên</div>
+                <div className="kpi-value text-dark">{summary.total_candidates}</div>
+                <div className="text-muted small mt-1">Kho dữ liệu hồ sơ CV</div>
+              </div>
+              <div className="kpi-icon-bubble kpi-blue">
+                <i className="bi bi-people-fill"></i>
+              </div>
+            </div>
+          </Link>
+        </div>
+
+        <div className="col-12 col-sm-6 col-xl-3">
+          <Link to="/applications" className="text-decoration-none">
+            <div className="kpi-card h-100">
+              <div>
+                <div className="kpi-label">Hồ sơ ứng tuyển</div>
+                <div className="kpi-value text-dark">{summary.total_applications}</div>
+                <div className="text-muted small mt-1">Đang trong quy trình</div>
+              </div>
+              <div className="kpi-icon-bubble kpi-emerald">
+                <i className="bi bi-file-earmark-person-fill"></i>
+              </div>
+            </div>
+          </Link>
+        </div>
+
+        <div className="col-12 col-sm-6 col-xl-3">
+          <Link to="/interviews" className="text-decoration-none">
+            <div className="kpi-card h-100">
+              <div>
+                <div className="kpi-label">Phỏng vấn sắp tới</div>
+                <div className="kpi-value text-warning" style={{ color: '#d97706' }}>
+                  {summary.upcoming_interviews}
+                </div>
+                <div className="text-muted small mt-1">Lịch hẹn đã lên kế hoạch</div>
+              </div>
+              <div className="kpi-icon-bubble kpi-amber">
+                <i className="bi bi-calendar-event-fill"></i>
+              </div>
+            </div>
+          </Link>
+        </div>
       </div>
 
+      {/* 2. Middle Row: Application Status Pipeline & Candidate Sources */}
       <div className="row g-4 mb-4">
-        {/* 2. Application Status Distribution */}
-        <div className="col-lg-6">
-          <div className="card h-100 shadow-sm border-0">
-            <div className="card-header bg-white py-3 border-bottom">
-              <h2 className="h6 mb-0 fw-bold">Phân bố trạng thái hồ sơ ứng tuyển</h2>
+        {/* Pipeline Distribution */}
+        <div className="col-12 col-lg-7">
+          <div className="card-modern h-100">
+            <div className="card-modern-header">
+              <div className="d-flex align-items-center gap-2">
+                <i className="bi bi-funnel-fill text-primary"></i>
+                <span>Phân bố trạng thái hồ sơ ứng tuyển</span>
+              </div>
+              <span className="text-muted small fw-normal">
+                Tổng cộng {summary.total_applications} hồ sơ
+              </span>
             </div>
-            <div className="card-body">
-              <div className="list-group list-group-flush">
+            <div className="card-modern-body">
+              <div className="d-flex flex-column gap-3">
                 {Object.entries(STATUS_CONFIG).map(([stKey, conf]) => {
                   const count = appStatus[stKey] || 0
-                  const pct = summary.total_applications > 0
-                    ? Math.round((count / summary.total_applications) * 100)
-                    : 0
+                  const pct =
+                    summary.total_applications > 0
+                      ? Math.round((count / summary.total_applications) * 100)
+                      : 0
+
                   return (
-                    <div className="list-group-item d-flex justify-content-between align-items-center px-0 py-2" key={stKey}>
-                      <div className="d-flex align-items-center">
-                        <span className={`badge bg-${conf.color} me-2`}>&bull;</span>
-                        <span>{conf.label}</span>
+                    <div key={stKey}>
+                      <div className="d-flex justify-content-between align-items-center mb-1">
+                        <div className="d-flex align-items-center gap-2">
+                          <span
+                            style={{
+                              width: 10,
+                              height: 10,
+                              borderRadius: '50%',
+                              backgroundColor: conf.dotColor,
+                              display: 'inline-block',
+                            }}
+                          />
+                          <span className="fw-semibold small">{conf.label}</span>
+                          <span className="text-muted small" style={{ fontSize: '0.75rem' }}>
+                            ({conf.en})
+                          </span>
+                        </div>
+                        <div className="d-flex align-items-center gap-2">
+                          <span className="fw-bold small">{count} hồ sơ</span>
+                          <span className="text-muted small" style={{ minWidth: '40px', textAlign: 'right' }}>
+                            {pct}%
+                          </span>
+                        </div>
                       </div>
-                      <div className="d-flex align-items-center">
-                        <span className="fw-semibold me-2">{count}</span>
-                        <span className="text-muted small">({pct}%)</span>
+                      <div className="progress" style={{ height: '7px', backgroundColor: '#f1f5f9' }}>
+                        <div
+                          className="progress-bar rounded-pill"
+                          role="progressbar"
+                          style={{
+                            width: `${pct}%`,
+                            backgroundColor: conf.dotColor,
+                            transition: 'width 0.4s ease',
+                          }}
+                          aria-valuenow={pct}
+                          aria-valuemin="0"
+                          aria-valuemax="100"
+                        />
                       </div>
                     </div>
                   )
@@ -159,37 +247,57 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* 3. Candidate Sources Statistics */}
-        <div className="col-lg-6">
-          <div className="card h-100 shadow-sm border-0">
-            <div className="card-header bg-white py-3 border-bottom">
-              <h2 className="h6 mb-0 fw-bold">Nguồn ứng viên</h2>
+        {/* Candidate Sources */}
+        <div className="col-12 col-lg-5">
+          <div className="card-modern h-100">
+            <div className="card-modern-header">
+              <div className="d-flex align-items-center gap-2">
+                <i className="bi bi-pie-chart-fill text-indigo" style={{ color: '#4f46e5' }}></i>
+                <span>Cơ cấu nguồn ứng viên</span>
+              </div>
+              <span className="text-muted small fw-normal">
+                {totalSourceCandidates} ứng viên
+              </span>
             </div>
-            <div className="card-body">
+            <div className="card-modern-body">
               {candidateSources.length === 0 ? (
-                <p className="text-muted mb-0">Chưa có dữ liệu nguồn ứng viên.</p>
+                <div className="text-center py-4 text-muted small">
+                  <i className="bi bi-inbox d-block fs-3 text-secondary mb-2"></i>
+                  Chưa có dữ liệu nguồn ứng viên.
+                </div>
               ) : (
                 <div className="d-flex flex-column gap-3">
                   {candidateSources.map((item) => {
-                    const label = SOURCE_LABELS[item.source] || item.source
+                    const conf = SOURCE_CONFIG[item.source] || {
+                      label: item.source,
+                      icon: 'bi-tag',
+                      color: '#64748b',
+                    }
                     const count = item.count || 0
-                    const pct = totalSourceCandidates > 0
-                      ? Math.round((count / totalSourceCandidates) * 100)
-                      : 0
+                    const pct =
+                      totalSourceCandidates > 0
+                        ? Math.round((count / totalSourceCandidates) * 100)
+                        : 0
+
                     return (
                       <div key={item.source}>
-                        <div className="d-flex justify-content-between small mb-1">
-                          <span className="fw-semibold">{label}</span>
-                          <span className="text-muted">{count} ứng viên ({pct}%)</span>
+                        <div className="d-flex justify-content-between align-items-center small mb-1">
+                          <div className="d-flex align-items-center gap-2">
+                            <i className={`bi ${conf.icon}`} style={{ color: conf.color }}></i>
+                            <span className="fw-semibold">{conf.label}</span>
+                          </div>
+                          <span className="text-muted">
+                            <strong>{count}</strong> ({pct}%)
+                          </span>
                         </div>
-                        <div className="progress" style={{ height: '8px' }}>
+                        <div className="progress" style={{ height: '6px', backgroundColor: '#f1f5f9' }}>
                           <div
-                            className="progress-bar bg-primary"
-                            role="progressbar"
-                            style={{ width: `${pct}%` }}
-                            aria-valuenow={pct}
-                            aria-valuemin="0"
-                            aria-valuemax="100"
+                            className="progress-bar rounded-pill"
+                            style={{
+                              width: `${pct}%`,
+                              backgroundColor: conf.color,
+                              transition: 'width 0.4s ease',
+                            }}
                           />
                         </div>
                       </div>
@@ -202,84 +310,154 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      {/* 3. Bottom Row: Pass Rate & Hiring Time Statement */}
       <div className="row g-4 mb-4">
-        {/* 4. Pass Rate */}
-        <div className="col-md-6">
-          <div className="card h-100 shadow-sm border-0">
-            <div className="card-header bg-white py-3 border-bottom">
-              <h2 className="h6 mb-0 fw-bold">Tỷ lệ trúng tuyển (Pass Rate)</h2>
+        {/* Pass Rate Metric */}
+        <div className="col-12 col-md-6">
+          <div className="card-modern h-100">
+            <div className="card-modern-header">
+              <div className="d-flex align-items-center gap-2">
+                <i className="bi bi-check2-circle text-success fs-5"></i>
+                <span>Tỷ lệ trúng tuyển (Pass Rate)</span>
+              </div>
+              <span className="soft-badge soft-badge-success">Đã hoàn tất</span>
             </div>
-            <div className="card-body">
-              <div className="d-flex align-items-center mb-2">
-                <span className="display-6 fw-bold text-success me-3">{passRate.rate}%</span>
-                <span className="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
-                  Đã kết thúc: {passRate.finalized}
-                </span>
+            <div className="card-modern-body">
+              <div className="d-flex align-items-baseline gap-3 mb-2">
+                <div className="display-5 fw-bold text-success">{passRate.rate}%</div>
+                <div className="text-muted small">
+                  ({passRate.passed} đỗ / {passRate.finalized} hồ sơ đã có kết quả)
+                </div>
               </div>
-              <p className="text-muted small mb-2">
-                <strong>Công thức:</strong> <code>PASSED / (PASSED + REJECTED) &times; 100%</code>
+              <div className="progress mb-3" style={{ height: '8px', backgroundColor: '#e2e8f0' }}>
+                <div
+                  className="progress-bar bg-success rounded-pill"
+                  style={{ width: `${Math.min(passRate.rate, 100)}%` }}
+                />
+              </div>
+              <p className="text-muted small mb-0">
+                <strong>Quy tắc tính toán:</strong> <code>PASSED / (PASSED + REJECTED) &times; 100%</code>. Các hồ sơ đang ở giai đoạn Sàng lọc hoặc Phỏng vấn chưa được tính vào mẫu số.
               </p>
-              <div className="text-muted small">
-                Chi tiết: <strong>{passRate.passed}</strong> trúng tuyển (PASSED), <strong>{passRate.rejected}</strong> không đạt (REJECTED) trên tổng số <strong>{passRate.finalized}</strong> hồ sơ đã hoàn tất quy trình đánh giá.
-              </div>
             </div>
           </div>
         </div>
 
-        {/* 5. Hiring Time / Data Limitation */}
-        <div className="col-md-6">
-          <div className="card h-100 shadow-sm border-0">
-            <div className="card-header bg-white py-3 border-bottom">
-              <h2 className="h6 mb-0 fw-bold">Thời gian tuyển dụng (Time-to-Hire)</h2>
+        {/* Time-to-Hire Limitation Statement */}
+        <div className="col-12 col-md-6">
+          <div className="card-modern h-100">
+            <div className="card-modern-header">
+              <div className="d-flex align-items-center gap-2">
+                <i className="bi bi-clock-history text-secondary fs-5"></i>
+                <span>Thời gian tuyển dụng (Time-to-Hire)</span>
+              </div>
+              <span className="soft-badge soft-badge-secondary">Báo cáo dữ liệu</span>
             </div>
-            <div className="card-body">
-              <div className="alert alert-secondary py-2 px-3 mb-2 small">
-                <i className="bi bi-info-circle me-1"></i>
-                <strong>Giới hạn dữ liệu:</strong> {hiringTime.message}
+            <div className="card-modern-body">
+              <div
+                className="d-flex align-items-start gap-2 p-2.5 rounded-3 mb-2.5 small"
+                style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}
+              >
+                <i className="bi bi-info-circle-fill text-primary mt-0.5"></i>
+                <div>
+                  <strong className="text-dark">Giới hạn mô hình dữ liệu:</strong>{' '}
+                  <span className="text-secondary">{hiringTime.message}</span>
+                </div>
               </div>
               <p className="text-muted small mb-0">
-                Cơ sở dữ liệu chỉ lưu mốc thời gian tạo hồ sơ (<code>applied_at</code>) mà không lưu mốc thời gian chuyển sang trạng thái kết thúc (<code>PASSED</code> / <code>REJECTED</code>). Hệ thống tuân thủ nguyên tắc không suy đoán hoặc bịa số liệu thống kê.
+                Theo quy chuẩn AI-SDLC, hệ thống kiên quyết không tạo số liệu giả lập. Do schema hiện tại chỉ lưu trữ ngày nộp ban đầu (<code>applied_at</code>) mà không lưu mốc thời gian hoàn thành (<code>completed_at</code>), chỉ số này được để trống trung thực.
               </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 6. Upcoming Interviews Table */}
-      <div className="card shadow-sm border-0 mb-4">
-        <div className="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
-          <h2 className="h6 mb-0 fw-bold">Lịch phỏng vấn sắp tới</h2>
-          <Link to="/interviews" className="btn btn-sm btn-outline-primary">
-            Xem tất cả lịch phỏng vấn
+      {/* 4. Upcoming Interviews Table */}
+      <div className="card-modern mb-4">
+        <div className="card-modern-header">
+          <div className="d-flex align-items-center gap-2">
+            <i className="bi bi-calendar-check-fill text-primary"></i>
+            <span>5 buổi phỏng vấn sắp diễn ra gần nhất</span>
+          </div>
+          <Link to="/interviews" className="btn btn-sm btn-secondary-modern">
+            <span>Xem tất cả lịch</span>
+            <i className="bi bi-arrow-right"></i>
           </Link>
         </div>
-        <div className="card-body p-0">
+        <div className="card-modern-body p-0">
           {upcomingInterviews.length === 0 ? (
-            <div className="p-4 text-center text-muted">
-              Hiện không có lịch phỏng vấn nào sắp diễn ra.
+            <div className="empty-state-box border-0">
+              <div className="empty-state-icon">
+                <i className="bi bi-calendar-x"></i>
+              </div>
+              <h6 className="fw-semibold text-dark">Hiện chưa có lịch phỏng vấn nào</h6>
+              <p className="text-muted small mb-3">Tất cả các buổi phỏng vấn đã hoàn tất hoặc chưa được lên lịch mới.</p>
+              {['ADMIN', 'HR'].includes(user?.role) && (
+                <Link to="/interviews/new" className="btn btn-primary-modern btn-sm text-decoration-none">
+                  <i className="bi bi-plus-lg"></i>
+                  <span>Lên lịch phỏng vấn ngay</span>
+                </Link>
+              )}
             </div>
           ) : (
             <div className="table-responsive">
-              <table className="table table-hover align-middle mb-0">
-                <thead className="table-light small text-uppercase text-muted">
+              <table className="table-modern">
+                <thead>
                   <tr>
                     <th>Ứng viên</th>
-                    <th>Vị trí</th>
+                    <th>Vị trí tuyển dụng</th>
                     <th>Thời gian phỏng vấn</th>
                     <th>Người phỏng vấn</th>
-                    <th>Địa điểm</th>
+                    <th>Địa điểm / Hình thức</th>
+                    <th style={{ width: '80px' }}></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {upcomingInterviews.map((iv) => (
-                    <tr key={iv.id}>
-                      <td className="fw-semibold">{iv.candidate_name}</td>
-                      <td>{iv.job_title}</td>
-                      <td className="text-primary fw-medium">{iv.interview_date}</td>
-                      <td>{iv.interviewer_name}</td>
-                      <td><span className="badge bg-light text-dark border">{iv.location || 'Chưa cập nhật'}</span></td>
-                    </tr>
-                  ))}
+                  {upcomingInterviews.map((iv) => {
+                    const initials = (iv.candidate_name || 'U')
+                      .split(' ')
+                      .filter(Boolean)
+                      .map((w) => w[0])
+                      .slice(0, 2)
+                      .join('')
+                      .toUpperCase()
+
+                    return (
+                      <tr key={iv.id}>
+                        <td>
+                          <div className="d-flex align-items-center gap-2.5">
+                            <div className="table-avatar-initials">{initials}</div>
+                            <span className="fw-semibold text-dark">{iv.candidate_name}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <span className="soft-badge soft-badge-secondary">{iv.job_title}</span>
+                        </td>
+                        <td>
+                          <span className="text-primary fw-semibold small">
+                            <i className="bi bi-clock me-1"></i>
+                            {iv.interview_date}
+                          </span>
+                        </td>
+                        <td>
+                          <span className="small text-secondary">{iv.interviewer_name}</span>
+                        </td>
+                        <td>
+                          <span className="small text-dark">
+                            <i className="bi bi-geo-alt me-1 text-danger"></i>
+                            {iv.location || 'Chưa cập nhật'}
+                          </span>
+                        </td>
+                        <td className="text-end">
+                          <Link
+                            to={`/interviews/${iv.id}`}
+                            className="btn btn-sm btn-outline-primary rounded-pill px-2.5 py-0.5 small"
+                          >
+                            Chi tiết
+                          </Link>
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>
