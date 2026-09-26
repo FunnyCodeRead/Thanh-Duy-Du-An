@@ -1,17 +1,18 @@
-# M1–M6 Test Report
+# M1–M7 Test Report
 
 Test date: 26 September 2026
 
 Environment: Windows, Python 3.11, Node/Vite, MySQL Community Server 8.4, database `ai_recruitment`.
 
-## Results
+## Results Summary
 
 | Check | Result | Evidence |
 |---|---|---|
-| Backend automated tests | PASS | `136 passed in 3.72s` (101 existing + 16 M5 AI tests + 11 M6 Dashboard tests + 8 M6 Search tests) |
-| Frontend lint | PASS | `npm run lint` (oxlint), exit 0, 0 warnings, 0 errors across 24 files |
+| Backend automated tests | PASS | `136 passed in 3.35s` (0 failed) across all test modules |
+| Frontend static lint | PASS | `npm run lint` (oxlint), exit 0, 0 warnings, 0 errors across 24 files |
 | Frontend production build | PASS | 46 modules transformed; `vite build` completed |
 | Flask direct health | PASS | `/api/health`: `ok`, database `connected` |
+| Session Cookie Hardening | PASS | `Set-Cookie` header includes `HttpOnly` and `SameSite=Lax` |
 | Application API & permissions | PASS | TC-APP-01 through TC-APP-14 verified (HR create/transition, MANAGER 403, 401 unauth) |
 | Interview API & transitions | PASS | TC-INT-01 through TC-INT-12 verified (HR create/edit, status transition, reverse rejection 400) |
 | Candidate Evaluations API | PASS | TC-EVAL-01 through TC-EVAL-10 verified (1-5 score boundaries, runtime average calculation) |
@@ -23,12 +24,14 @@ Environment: Windows, Python 3.11, Node/Vite, MySQL Community Server 8.4, databa
 | Duplicate prevention | PASS | Duplicate candidate_id + job_id returns HTTP 409 and clean message |
 | Status transition validation | PASS | Application and Interview workflows strictly enforce allowed transitions |
 | Real MySQL integration | PASS | Live creation, detail queries, interview completion, evaluation calculation, dashboard aggregations, and `ai_results` verified |
-| MANAGER permissions | PASS | Read allowed for Jobs, Candidates, Applications, Interviews, AI results, and Dashboard; unauthorized mutations denied |
+| MANAGER permissions | PASS | Read allowed for Jobs, Candidates, Applications, Interviews, AI results, and Dashboard; unauthorized mutations denied (HTTP 403) |
+| Code Review Report | PASS | Documented in `docs/code-review.md` with traceability and severity findings |
+| Security Review Report | PASS | Documented in `docs/security-review.md` covering Auth, SQLi, XSS, CSRF, Uploads, Secrets |
 | Manual React browser check | PASS | Login, Dashboard, Jobs, Candidates, Applications, Interviews, and AI Assistant rendered without errors |
 
-## Defects Found and Corrected
+## Defects Found and Corrected Across Milestones
 
-1. *Legacy CV Path*: Legacy sample rows stored CV names with an `uploads/` prefix, producing `/uploads/uploads/...` links. The frontend emits a basename-only URL and the backend accepts both representations.
+1. *Legacy CV Path*: Legacy sample rows stored CV names with an `uploads/` prefix, producing `/uploads/uploads/...` links. The frontend emits a basename-only URL and the backend accepts both representations via `os.path.basename`.
 2. *Linter Warnings in M3/M4 Components*: Initial oxlint pass flagged fast-refresh warning for non-component exports, unused variables, and synchronous setState in effects. Refactored into promise chains and cleaned unused imports to achieve 0 warnings and 0 errors.
 3. *Interview Re-scheduling Guard*: Transitioning from COMPLETED or CANCELLED back to SCHEDULED returned 400 with message "Không thể chuyển trạng thái từ COMPLETED sang SCHEDULED."
 4. *Evaluation Score Boundaries*: Submitting technical score = 0 or communication score = 6 returned HTTP 400 with user-friendly Vietnamese messages.
@@ -37,12 +40,14 @@ Environment: Windows, Python 3.11, Node/Vite, MySQL Community Server 8.4, databa
 7. *Missing cv_text in get_application_by_id*: Fixed query in `db.py` to retrieve `c.cv_text` from candidates for live Gemini processing.
 8. *Zero Finalized Applications Division*: Handled `finalized == 0` safely in `pass_rate` calculation to return `0.0%` instead of division-by-zero error.
 9. *Empty Application Status Handling*: Ensured all 5 status keys (`NEW`, `SCREENING`, `INTERVIEW`, `PASSED`, `REJECTED`) default to `0` when no database rows exist for that state.
+10. *Session Cookie Hardening (M7)*: Added explicit `SESSION_COOKIE_SAMESITE = "Lax"` and `SESSION_COOKIE_HTTPONLY = True` in `Config` to ensure consistent browser CSRF mitigation.
+11. *Outdated Documentation (M7)*: Harmonized `README.md`, `docs/project-state.md`, and test reports with completed M1–M6 deliverables.
 
 ## Database Integrity
 
 The live schema still contains exactly 7 tables: `ai_results`, `applications`, `candidates`, `evaluations`, `interviews`, `jobs`, `users`. Verified via `SHOW TABLES;`. No migration or 8th table was introduced.
 
-## Real Gemini Integration
+## Real Gemini Integration Verification
 
 - Model: `gemini-flash-latest` (với fallback `gemini-3.1-flash-lite`)
 - CV Summary: PASS (HTTP 200, nội dung thực 1007 ký tự từ Gemini, lưu bản ghi `CV_SUMMARY` trong `ai_results`, `application.status` không đổi)
@@ -58,9 +63,7 @@ The live schema still contains exactly 7 tables: `ai_results`, `applications`, `
 
 ## Conclusion
 
-- Milestone M6 technical verification: PASS (136 automated tests PASS, frontend lint PASS, build PASS, real MySQL integration PASS).
-- Final functional testing: PASS across M1 to M6 modules.
-- Human review: READY FOR HUMAN REVIEW (Human Gate 4 deferred to M7).
-
-
-
+- Milestone M7 verification: PASS WITH DOCUMENTED LIMITATIONS.
+- Automated regression suite: 136 tests PASS, 0 fail.
+- Frontend static quality: 0 lint errors/warnings, production build successful.
+- Final Human Approval: PENDING STUDENT REVIEW at `docs/human-gate-4.md`.

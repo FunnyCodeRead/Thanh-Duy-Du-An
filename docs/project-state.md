@@ -11,17 +11,19 @@
 - Milestone M3 (Applications & Status Progression): PASS
 - Milestone M4 (Interviews & Evaluations): PASS
 - Milestone M5 (Google Gemini AI Recruitment Assistant): PASS
-- Milestone M6 (Dashboard, Search, Final Testing): TECHNICAL PASS
-- Milestone M7 (Security Review & Production Polish): NOT STARTED
+- Milestone M6 (Dashboard, Search, Final Testing): PASS
+- Milestone M7 (Final Code Review, Security Review, Documentation Audit): PASS WITH DOCUMENTED LIMITATIONS
 
 ## Verified State
 
 - React 19 + Vite is the active frontend; Jinja assets are archived in `legacy/`.
 - Flask exposes REST endpoints under `/api` and protected CV files under `/uploads`.
-- Authentication uses MySQL, Werkzeug password hashes and Flask Session.
-- ADMIN/HR can mutate Jobs, Candidates, Applications, and Interviews; MANAGER is read-only at the API boundary (HTTP 403 on mutations, except marking assigned interviews COMPLETED).
-- All authenticated roles (`ADMIN`, `HR`, `MANAGER`) can submit candidate evaluations with 1-5 score boundaries and runtime arithmetic average calculation; only the evaluator or ADMIN can edit an evaluation.
-- Application management fully functional: listing with search/filter (keyword, status, job), creation with candidate and job selection, duplicate rejection (HTTP 409), detail view (Candidate, Job, Application, Interviews, Evaluations, AI Assistant), and status progression (`NEW` -> `SCREENING` -> `INTERVIEW` -> `PASSED`/`REJECTED`).
+- Authentication uses MySQL, Werkzeug password hashes (`scrypt`), and Flask Session with `HttpOnly; SameSite=Lax`.
+- Role-based authorization enforced at the API boundary:
+  - `ADMIN`: full system management, can edit all evaluations and create all resources.
+  - `HR`: recruitment operations (Jobs, Candidates, Applications, Interviews, Evaluations, AI summaries, AI questions, AI email drafting).
+  - `MANAGER`: read-only access for Jobs, Candidates, Applications, Interviews, AI results, and Dashboard; can complete assigned interviews and submit candidate evaluations.
+- Application management fully functional: listing with search/filter, creation with duplicate prevention (HTTP 409), detail view, and status progression (`NEW` -> `SCREENING` -> `INTERVIEW` -> `PASSED`/`REJECTED`).
 - Interview management fully functional: scheduling, interviewers dropdown, detail view, status progression (`SCHEDULED` -> `COMPLETED`/`CANCELLED`), and protection against illegal re-scheduling.
 - Candidate evaluation fully functional: 3 score dimensions (1-5), runtime arithmetic average `(t+c+e)/3` rounded to 2 decimals, feedback comments, and edit permissions.
 - Google Gemini AI Assistant fully functional across 3 advisory capabilities:
@@ -39,21 +41,24 @@
   - Time-to-hire limitation transparently communicated without synthetic data fabrication.
 - Search and Filter fully audited across Jobs, Candidates, Applications, and Interviews with parameterized SQL queries.
 - MySQL contains exactly seven tables (`ai_results`, `applications`, `candidates`, `evaluations`, `interviews`, `jobs`, `users`); no schema change was made.
-- Backend automated suite: 136 passed in 3.72s (101 existing + 16 AI + 11 Dashboard + 8 Search).
-- Frontend lint (oxlint) and production build: passed with 0 warnings and 0 errors across 24 files.
+- Code Review (`docs/code-review.md`) and Security Review (`docs/security-review.md`) completed and documented.
+- Backend automated suite: 136 passed in 3.35s (0 failed).
+- Frontend lint (`oxlint`) and production build: passed with 0 warnings and 0 errors across 24 files.
 - Live MySQL and browser checks: passed without console errors.
 
-## Deliberately Out of Scope
+## Deliberately Out of Scope (Accepted Project Limitations)
 
 - Automated hiring decisions or automatic status changes triggered by AI results.
 - AI ranking, scoring, or candidate matching percentages.
 - Automated email dispatching (only drafts generated; no Gmail API or SMTP integration).
 - RAG, vector databases, or multiple parallel AI models.
 - Complex BI charting engines, data warehousing, or fabricated time-to-hire formulas.
+- Microservices, Redis/Celery background task queues, or external OAuth providers.
 
-## Human Gates
+## Human Gates Status
 
-Formal Human Gate 1 remains `NEEDS CHANGES` and Human Gate 2 remains `PENDING HUMAN APPROVAL` in their respective review records. Human Gate 3 covers M3 and M4 and remains `PENDING HUMAN APPROVAL`. Human Gate 4 will be reviewed at the final delivery stage in M7. The M6 implementation was performed in response to the student's explicit authorization; no formal gate approval is inferred.
-
-
-
+- **Human Gate 1 (Requirements Review):** `NEEDS CHANGES` (recorded in `docs/human-gate-1.md`).
+- **Human Gate 2 (React REST Architecture Review):** `PENDING HUMAN APPROVAL` (recorded in `docs/human-gate-2.md`).
+- **Human Gate 3 (M3/M4 Review):** `PENDING HUMAN APPROVAL` (recorded in `docs/human-gate-3.md`).
+- **Human Gate 4 (Final Delivery Review):** `READY FOR HUMAN APPROVAL` (recorded in `docs/human-gate-4.md`).
+- Comprehensive Human Review Summary available in `docs/human-review-summary.md`. All gate approvals are reserved strictly for the student reviewer.
