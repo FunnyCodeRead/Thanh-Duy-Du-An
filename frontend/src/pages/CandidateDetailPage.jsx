@@ -120,19 +120,35 @@ export default function CandidateDetailPage() {
             <div className="col-12 border-top pt-2">
               <div className="fw-semibold text-secondary mb-1">Hồ sơ CV đính kèm</div>
               {c.cv_file ? (
-                <a
-                  href={cvUrl(c.cv_file)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="btn btn-sm btn-outline-primary rounded-pill px-3 py-1.5 small d-inline-flex align-items-center gap-1.5"
-                >
-                  <i className="bi bi-file-earmark-pdf-fill fs-6"></i>
-                  <span>Tải / Mở xem tệp CV</span>
-                </a>
+                <div className="d-flex flex-wrap gap-2 align-items-center mb-1">
+                  <a
+                    href={cvUrl(c.cv_file)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn btn-sm btn-outline-primary rounded-pill px-3 py-1.5 small d-inline-flex align-items-center gap-1.5"
+                  >
+                    <i className="bi bi-file-earmark-pdf-fill fs-6"></i>
+                    <span>Tải / Mở xem tệp CV</span>
+                  </a>
+                </div>
               ) : (
                 <span className="text-muted">Chưa đính kèm tệp CV</span>
               )}
             </div>
+
+            {c.cv_text && (
+              <div className="col-12 border-top pt-2">
+                <div className="fw-semibold text-secondary mb-1">
+                  <i className="bi bi-file-earmark-text text-primary me-1"></i>Nội dung CV trích xuất
+                </div>
+                <div
+                  className="p-3 rounded-3 bg-light border small text-dark"
+                  style={{ maxHeight: '180px', overflowY: 'auto', whiteSpace: 'pre-wrap' }}
+                >
+                  {c.cv_text}
+                </div>
+              </div>
+            )}
 
             <div className="col-12 border-top pt-2">
               <span className="text-muted small">

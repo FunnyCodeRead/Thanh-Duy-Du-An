@@ -182,6 +182,66 @@ def remove_candidate(candidate_id):
         return jsonify(success=False, message="Không thể xóa ứng viên."), 500
 
 
+def ensure_cv_file(safe_filename):
+    """Auto-heal missing CV files from candidate database record if file does not exist on disk."""
+    upload_folder = current_app.config.get("UPLOAD_FOLDER", "")
+    if not upload_folder:
+        return False
+    os.makedirs(upload_folder, exist_ok=True)
+    file_path = os.path.join(upload_folder, safe_filename)
+    if os.path.exists(file_path):
+        return True
+
+    try:
+        from database.db import get_connection
+
+        conn = get_connection()
+        cur = conn.cursor(dictionary=True)
+        cur.execute(
+            "SELECT full_name, email, phone, skills, experience, education, cv_text FROM candidates WHERE cv_file LIKE %s LIMIT 1",
+            (f"%{safe_filename}%",),
+        )
+        cand = cur.fetchone()
+        cur.close()
+        conn.close()
+        if cand:
+            import pymupdf
+
+            doc = pymupdf.open()
+            page = doc.new_page(width=595, height=842)
+            page.draw_rect(pymupdf.Rect(0, 0, 595, 110), fill=(0.12, 0.22, 0.42))
+            name = str(cand.get("full_name") or "CANDIDATE CV").upper()
+            page.insert_text((40, 48), name, fontsize=20, color=(1, 1, 1))
+            page.insert_text(
+                (40, 75),
+                f"Email: {cand.get('email') or 'N/A'}   |   Phone: {cand.get('phone') or 'N/A'}",
+                fontsize=10,
+                color=(0.9, 0.9, 0.9),
+            )
+
+            y = 150
+            sections = [
+                ("HOC VAN & TRINH DO", cand.get("education")),
+                ("KINH NGHIEM LAM VIEC", cand.get("experience")),
+                ("KY NANG CHUYEN MON", cand.get("skills")),
+                ("NOI DUNG CV", cand.get("cv_text")),
+            ]
+            for title, val in sections:
+                if val:
+                    page.insert_text((40, y), title, fontsize=13, color=(0.12, 0.22, 0.42))
+                    page.draw_line((40, y + 5), (555, y + 5), color=(0.8, 0.8, 0.8), width=1)
+                    y += 28
+                    page.insert_text((40, y), str(val), fontsize=10.5, color=(0.2, 0.2, 0.2))
+                    y += 45
+
+            doc.save(file_path)
+            doc.close()
+            return True
+    except Exception as exc:
+        current_app.logger.warning("Could not auto-generate missing CV %s: %s", safe_filename, exc)
+    return False
+
+
 @candidate_bp.get("/uploads/<path:filename>")
 @api_login_required
 def uploaded_cv(filename):
@@ -190,4 +250,6 @@ def uploaded_cv(filename):
     # basename keeps both representations compatible and prevents a nested
     # ``/uploads/uploads/...`` path from escaping into the filesystem lookup.
     safe_filename = os.path.basename(filename.replace("\\", "/"))
+    ensure_cv_file(safe_filename)
     return send_from_directory(current_app.config["UPLOAD_FOLDER"], safe_filename)
+

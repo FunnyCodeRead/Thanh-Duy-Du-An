@@ -70,5 +70,11 @@ def internal_error(_error):
 
 
 if __name__ == "__main__":
+    try:
+        from generate_sample_cvs import generate
+        generate()
+    except Exception:
+        pass
     app.run(debug=app.config.get("DEBUG", False))
+
 

@@ -379,19 +379,35 @@ export default function ApplicationDetailPage() {
                 <div className="col-sm-4 text-muted fw-semibold">File CV đính kèm:</div>
                 <div className="col-sm-8">
                   {candidate.cv_file ? (
-                    <a
-                      href={cvUrl(candidate.cv_file)}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 small d-inline-flex align-items-center gap-1.5"
-                    >
-                      <i className="bi bi-file-earmark-pdf-fill"></i>
-                      <span>Mở xem file CV</span>
-                    </a>
+                    <div className="d-flex flex-wrap gap-2 align-items-center">
+                      <a
+                        href={cvUrl(candidate.cv_file)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 small d-inline-flex align-items-center gap-1.5"
+                      >
+                        <i className="bi bi-file-earmark-pdf-fill"></i>
+                        <span>Mở xem file CV</span>
+                      </a>
+                    </div>
                   ) : (
                     <span className="text-muted">Chưa đính kèm file CV</span>
                   )}
                 </div>
+
+                {candidate.cv_text && (
+                  <>
+                    <div className="col-sm-4 text-muted fw-semibold">Nội dung CV:</div>
+                    <div className="col-sm-8">
+                      <div
+                        className="p-2.5 rounded-3 bg-light border small text-dark"
+                        style={{ maxHeight: '140px', overflowY: 'auto', whiteSpace: 'pre-wrap' }}
+                      >
+                        {candidate.cv_text}
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
