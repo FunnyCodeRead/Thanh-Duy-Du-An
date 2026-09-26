@@ -179,26 +179,8 @@ def build_documents_from_db(data: dict) -> list[dict]:
         }
         documents.append({"text": text, "metadata": metadata})
 
-    # 6. AI Result Documents (Historical references)
-    for ar in data.get("ai_results", []):
-        # Truncate overly long historical content to 1500 chars to avoid prompt bloat
-        content = ar.get("content") or ""
-        trimmed_content = content[:1500] if len(content) > 1500 else content
-        text = (
-            f"THỰC THỂ: KẾT QUẢ AI LỊCH SỬ (AI RESULT)\n"
-            f"Mã kết quả: {ar['id']}\n"
-            f"Ứng viên: {ar.get('candidate_name')}\n"
-            f"Vị trí: {ar.get('job_title')}\n"
-            f"Loại AI: {ar.get('type')}\n"
-            f"Nội dung:\n{trimmed_content}"
-        )
-        metadata = {
-            "entity_type": "ai_result",
-            "entity_id": ar["id"],
-            "candidate_id": ar.get("candidate_id"),
-            "job_id": ar.get("job_id"),
-            "display_name": f"Kết quả AI ({ar.get('type')}) - {ar.get('candidate_name')}",
-        }
-        documents.append({"text": text, "metadata": metadata})
+    # Note: ai_results are deliberately excluded from RAG vector indexing
+    # to avoid recursive hallucination and retain only authoritative source data.
 
     return documents
+

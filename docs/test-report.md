@@ -8,7 +8,7 @@ Environment: Windows, Python 3.11, Node/Vite, MySQL Community Server 8.4, databa
 
 | Check | Result | Evidence |
 |---|---|---|
-| Backend automated tests | PASS | `158 passed in 3.73s` (0 failed) across all test modules (136 baseline + 22 M8 Chat tests) |
+| Backend automated tests | PASS | `175 passed in 30.38s` (0 failed) across all test modules (136 baseline + 22 M8 Chat + 17 RAG Hardening tests) |
 | Frontend static lint | PASS | `npm run lint` (oxlint), exit 0, 0 warnings, 0 errors across 25 files |
 | Frontend production build | PASS | 47 modules transformed; `vite build` completed |
 | Flask direct health | PASS | `/api/health`: `ok`, database `connected` |
@@ -18,6 +18,7 @@ Environment: Windows, Python 3.11, Node/Vite, MySQL Community Server 8.4, databa
 | Candidate Evaluations API | PASS | TC-EVAL-01 through TC-EVAL-10 verified (1-5 score boundaries, runtime average calculation) |
 | AI Assistant API | PASS | TC-AI-01 through TC-AI-16 verified (CV Summary, Interview Questions, Email Draft, AI Results) |
 | Recruitment Knowledge Chatbot API | PASS | TC-CHAT-01 through TC-CHAT-22 verified (Scope Guard, Decision Guard, SQL & Vector search, Reindexing RBAC) |
+| RAG Hardening & Vietnamese Retrieval | PASS | RAG-HARD-001 through RAG-HARD-017 verified (Cosine L2 norm, Q1-Q6 100% Top-1, paraphrase, no ai_results, no secrets) |
 | Status Decoupling Guarantee | PASS | TC-AI-15 confirmed: AI operations never alter application status |
 | Minimal AI Bias Check | PASS | Documented in `docs/ai-bias-check.md` with identical qualifications across genders |
 | Dashboard Statistics API | PASS | TC-DASH-01 through TC-DASH-11 verified (Summary cards, status distribution, candidate sources, pass rate, hiring time, upcoming interviews) |
@@ -43,6 +44,8 @@ Environment: Windows, Python 3.11, Node/Vite, MySQL Community Server 8.4, databa
 9. *Empty Application Status Handling*: Ensured all 5 status keys (`NEW`, `SCREENING`, `INTERVIEW`, `PASSED`, `REJECTED`) default to `0` when no database rows exist for that state.
 10. *Session Cookie Hardening (M7)*: Added explicit `SESSION_COOKIE_SAMESITE = "Lax"` and `SESSION_COOKIE_HTTPONLY = True` in `Config` to ensure consistent browser CSRF mitigation.
 11. *Outdated Documentation (M7)*: Harmonized `README.md`, `docs/project-state.md`, and test reports with completed M1–M6 deliverables.
+12. *RAG Normalization Invariant (M8 Hardened)*: Enforced defensive L2 normalization on all document and query embeddings in `embedding_service.py` to guarantee exact cosine similarity via `IndexFlatIP`.
+13. *Exclusion of Derivative ai_results (M8 Hardened)*: Purged historical `ai_results` from the vector knowledge base to eliminate recursive hallucination; rebuilt FAISS index with exactly 21 authoritative recruitment documents.
 
 ## Database Integrity
 

@@ -100,6 +100,24 @@ Verify that the system preserves authentication, role enforcement, Job and Candi
   - TC-CHAT-20: Admin can rebuild FAISS vector index (HTTP 200)
   - TC-CHAT-21: HR / Manager cannot rebuild index (HTTP 403)
   - TC-CHAT-22: Authenticated user can query vector index metadata (HTTP 200)
+- RAG Hardening & Vietnamese Retrieval (M8 Hardened):
+  - RAG-HARD-001: Document embedding L2 norm ≈ 1.0 (abs(norm - 1.0) < 1e-5)
+  - RAG-HARD-002: Query embedding L2 norm ≈ 1.0
+  - RAG-HARD-003: IndexFlatIP cosine similarity ranking verification
+  - RAG-HARD-004: Vietnamese Q1 semantic retrieval (web/server -> Candidate A)
+  - RAG-HARD-005: Vietnamese Q2 semantic retrieval (relational database -> Candidate D)
+  - RAG-HARD-006: Vietnamese Q3 semantic retrieval (recruiter communication -> Candidate B)
+  - RAG-HARD-007: Vietnamese paraphrase semantic retrieval (different phrasing ranks Candidate A in top 3)
+  - RAG-HARD-008: Vietnamese no-context handling (no hallucination on non-existent experience)
+  - RAG-HARD-009: ai_results excluded from document builder
+  - RAG-HARD-010: ai_results excluded from vector metadata
+  - RAG-HARD-011: users table excluded from vector index
+  - RAG-HARD-012: secrets excluded from metadata and text
+  - RAG-HARD-013: semantic sources do not contain ai_result or user
+  - RAG-HARD-014: structured retrieval regression check
+  - RAG-HARD-015: hybrid retrieval regression check
+  - RAG-HARD-016: out-of-scope rejection regression check
+  - RAG-HARD-017: decision refusal regression check
 
 ## Integration Scope
 
@@ -140,7 +158,8 @@ Verify that the system preserves authentication, role enforcement, Job and Candi
 
 ## Exit Criteria
 
-All pytest tests pass (158 tests), oxlint exits zero without warnings, Vite production build succeeds, live MySQL integration suite succeeds, minimal bias check documented, and manual verification confirms the flow.
+All pytest tests pass (175 tests), oxlint exits zero without warnings, Vite production build succeeds, live MySQL integration suite succeeds, minimal bias check documented, and manual verification confirms the flow.
+
 
 
 

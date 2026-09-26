@@ -42,14 +42,17 @@
   - Time-to-hire limitation transparently communicated without synthetic data fabrication.
 - Search and Filter fully audited across Jobs, Candidates, Applications, and Interviews with parameterized SQL queries.
 - MySQL contains exactly seven tables (`ai_results`, `applications`, `candidates`, `evaluations`, `interviews`, `jobs`, `users`); no schema change was made.
-- Recruitment Knowledge Chatbot (Milestone M8) fully functional:
+- Recruitment Knowledge Chatbot (Milestone M8 Hardened) fully functional:
   - Hybrid RAG combining parameterized MySQL queries and dense vector retrieval (FAISS IndexFlatIP).
+  - Explicit L2 normalization on document and query embeddings guaranteeing exact cosine similarity.
+  - Comprehensive Vietnamese retrieval evaluation completed: 100% Top-1 accuracy and 100% Top-3 recall on standard benchmarks; existing model `all-MiniLM-L6-v2` retained with evidence.
+  - Derivative `ai_results` and `users` table strictly excluded from vector index; exactly 21 authoritative recruitment documents indexed.
   - Scope Guard rejecting general queries, trivia, and secret leak attempts.
   - Decision Guard refusing automated hiring decisions and candidate rankings.
   - Dedicated chat interface (`/ai-chat`) with direct clickable citations (`/candidates/:id`, `/jobs/:id`).
   - Admin-only reindexing endpoint (`POST /api/chat/reindex`) with RBAC enforcement.
 - Code Review (`docs/code-review.md`) and Security Review (`docs/security-review.md`) completed and documented.
-- Backend automated suite: 158 passed in 3.73s (0 failed).
+- Backend automated suite: 175 passed in 30.38s (0 failed).
 - Frontend lint (`oxlint`) and production build: passed with 0 warnings and 0 errors across 25 files.
 - Live MySQL and browser checks: passed without console errors.
 

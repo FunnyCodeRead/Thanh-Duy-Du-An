@@ -4,17 +4,20 @@
 
 The AI agent continued the verified recruitment management system by executing Milestone M7 (Final Code Review, Security Review, Documentation Audit & Human Gate Preparation) and Milestone M8 (Recruitment Knowledge Chatbot with Hybrid RAG).
 - In M8, developed a domain-grounded recruitment chatbot combining direct parameterized MySQL queries, local dense vector search (FAISS IndexFlatIP + SentenceTransformers `all-MiniLM-L6-v2`), and Google Gemini LLM synthesis.
+- Hardened the RAG pipeline with defensive L2 normalization on document and query embeddings, guaranteeing exact cosine similarity via `IndexFlatIP`.
+- Conducted extensive Vietnamese semantic retrieval evaluation (100% Top-1 accuracy and 100% Top-3 recall on standard benchmarks), documenting findings in `docs/rag-vietnamese-evaluation.md` and keeping the efficient `all-MiniLM-L6-v2` model with evidence.
+- Purged derivative `ai_results` from vector indexing to eliminate recursive hallucination; rebuilt FAISS index with exactly 21 authoritative human-entered documents.
 - Implemented strict Scope Guard (refuses general knowledge, weather, cooking, system admin) and Decision Guard (refuses automated hiring decisions and candidate rankings).
 - Enforced zero arbitrary SQL generation by LLM; all structured queries execute via predefined parameterized functions.
 - Preserved the strict architectural boundary of exactly 7 tables in MySQL (FAISS vector index stored locally on disk in `backend/rag/index/`).
 - Implemented comprehensive RBAC: reindexing is strictly restricted to `ADMIN`, returning HTTP 403 for `HR` and `MANAGER`.
-- Created 22 new automated tests in `backend/tests/test_chat.py`, elevating the backend test suite from 136 to 158 tests (100% passing).
+- Created 17 new automated tests in `backend/tests/test_rag_vietnamese.py`, elevating the backend test suite from 158 to 175 tests (100% passing).
 - Built interactive frontend chat interface (`/ai-chat`) with source citations linking directly to candidate and job details.
-- A comprehensive static code review was performed and recorded in `docs/code-review.md`, confirming requirement-to-code traceability across all 20 functional requirements.
+- A comprehensive static code review was performed and recorded in `docs/code-review.md`.
 - An extensive security review was executed and documented in `docs/security-review.md`.
 - Session cookie configuration was hardened in `backend/config.py` with explicit `SESSION_COOKIE_SAMESITE = "Lax"` and `SESSION_COOKIE_HTTPONLY = True`.
-- Documentation was thoroughly synchronized: `docs/rag-design.md`, `README.md`, `docs/code-review.md`, `docs/security-review.md`, `docs/project-state.md`, `docs/test-report.md`, and `docs/ai-tasks/M8-task.md`.
-- Automated regression suite achieved 158 passing tests with 0 failures; frontend linting confirmed 0 errors and 0 warnings; production build succeeded with 47 modules transformed.
+- Documentation was thoroughly synchronized: `docs/rag-design.md`, `docs/rag-vietnamese-evaluation.md`, `README.md`, `docs/code-review.md`, `docs/security-review.md`, `docs/project-state.md`, `docs/test-report.md`, and `docs/ai-tasks/M8-task.md`.
+- Automated regression suite achieved 175 passing tests with 0 failures; frontend linting confirmed 0 errors and 0 warnings; production build succeeded with 47 modules transformed.
 - The fixed seven-table MySQL database schema was strictly preserved.
 - Human Gate 4 was prepared in `docs/human-gate-4.md`. All Human Gates strictly reserve the final approval action for the student.
 

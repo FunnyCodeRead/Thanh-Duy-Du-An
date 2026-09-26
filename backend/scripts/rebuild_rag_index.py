@@ -71,7 +71,6 @@ def rebuild_index() -> dict:
             "applications": applications_count,
             "interviews": interviews_count,
             "evaluations": evaluations_count,
-            "ai_results": ai_results_count,
         },
     }
 
@@ -88,7 +87,7 @@ def rebuild_index() -> dict:
     print(f"Applications: {applications_count}")
     print(f"Interviews: {interviews_count}")
     print(f"Evaluations: {evaluations_count}")
-    print(f"AI Results: {ai_results_count}")
+    print(f"AI Results excluded: {ai_results_count}")
     print()
     print(f"Total documents: {total_docs}")
     print()

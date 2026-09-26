@@ -61,28 +61,35 @@ Direct Data Response     Gemini LLM (Grounded Prompt)
 ## 3. Hybrid RAG Architecture Components
 
 ### 3.1 Document Builder (`backend/rag/document_builder.py`)
-Extracts and normalizes records from the 7 MySQL tables into standardized search documents:
-- **Jobs:** Title, department, requirements, description, salary, status.
-- **Candidates & CVs:** Candidate info, skills, education, experience, with long CV text chunked into 1,000 characters with 150-character sliding overlap.
-- **Applications:** Candidate, job, status, stage, dates.
-- **Interviews:** Candidate, job, interview type, scheduled time, status.
-- **Evaluations:** Technical, communication, experience ratings, evaluation comments.
-- **AI Results:** Historical CV summaries, generated interview questions, email drafts.
+Extracts and normalizes records from the MySQL database into standardized search documents.
 
-*Security Guarantee:* The `users` table password hashes and system credentials are strictly excluded from document building.
+**Primary Vector Sources of Truth (Authoritative Data):**
+1. **Jobs:** Title, department, requirements, description, salary, status.
+2. **Candidates & CVs:** Candidate info, skills, education, experience, with long CV text chunked into 1,000 characters with 150-character sliding overlap.
+3. **Applications:** Candidate, job, status, stage, dates.
+4. **Interviews:** Candidate, job, interview type, scheduled time, status.
+5. **Evaluations:** Technical, communication, experience ratings, evaluation comments.
+
+**Deliberately Excluded Entities:**
+- **`users` Table:** Password hashes, internal system credentials, and employee authentication records are strictly excluded from embedding to prevent credential leakage.
+- **`ai_results` Table:** AI-generated outputs (`CV_SUMMARY`, `INTERVIEW_QUESTION`, `EMAIL`) are deliberately excluded from vector indexing.
+  *Reason:* AI-generated content must not recursively become authoritative source facts for future AI answers. This prevents the recursive hallucination feedback loop:
+  `Real Data ➔ Gemini Summary ➔ ai_results ➔ Vector Embedding ➔ Retrieve AI Summary ➔ Gemini ➔ Derivative Answer`.
 
 ### 3.2 Embedding Service (`backend/rag/embedding_service.py`)
 - **Model:** `sentence-transformers/all-MiniLM-L6-v2` (384-dimensional dense vectors).
 - **Execution:** Runs locally on CPU via PyTorch CPU wheel (`torch==2.14.0+cpu`), requiring zero external network calls for vectorization.
-- **Normalization:** L2-normalized embeddings enable exact inner product (`IndexFlatIP`) to compute cosine similarity directly.
+- **Normalization Invariant:**
+  Both document vectors and query vectors are strictly L2-normalized (`||vector||₂ ≈ 1.0` with tolerance `< 1e-5`).
+  $$\text{FAISS IndexFlatIP} + \text{L2-normalized embeddings} = \text{Exact Cosine Similarity}$$
 
 ### 3.3 Vector Store (`backend/rag/vector_store.py`)
 - **Engine:** Meta FAISS (`faiss-cpu==1.15.1`).
-- **Index Type:** `faiss.IndexFlatIP` (Cosine similarity via inner product of normalized vectors).
+- **Index Type:** `faiss.IndexFlatIP` (Cosine similarity computed directly as the inner product of normalized vectors).
 - **Persistence:** Saved locally in `backend/rag/index/`:
-  - `recruitment.faiss`: Binary dense vector index.
-  - `metadata.json`: Document chunks, entity IDs, titles, and sources.
-  - `index_info.json`: Build timestamp, document count, and dimension metadata.
+  - `recruitment.faiss`: Binary dense vector index (21 documents).
+  - `metadata.json`: Document chunks, entity IDs, titles, and sources (contains only `job`, `candidate`, `application`, `interview`, `evaluation`).
+  - `index_info.json`: Build timestamp, document count (21), and dimension metadata.
 - **Zero 8th Table:** Retains the strict architectural rule of exactly 7 tables in MySQL.
 
 ### 3.4 Retriever (`backend/rag/retriever.py`)

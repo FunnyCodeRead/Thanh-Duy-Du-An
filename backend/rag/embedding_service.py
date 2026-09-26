@@ -24,19 +24,36 @@ def get_embedding_model():
     return _model_instance
 
 
-def embed_text(text: str) -> np.ndarray:
-    """Tạo vector nhúng chuẩn hóa (L2 normalized) cho một đoạn văn bản."""
+def embed_text(text: str, normalize: bool = True) -> np.ndarray:
+    """Tạo vector nhúng chuẩn hóa (L2 normalized) cho một đoạn văn bản.
+    
+    Khi normalize=True: ||vector||₂ ≈ 1.0, cho phép FAISS IndexFlatIP thực hiện Cosine Similarity chính xác.
+    """
     model = get_embedding_model()
     cleaned = (text or "").strip()
-    vector = model.encode(cleaned, normalize_embeddings=True)
-    return np.asarray(vector, dtype=np.float32)
+    vector = model.encode(cleaned, normalize_embeddings=normalize)
+    arr = np.asarray(vector, dtype=np.float32)
+    if normalize:
+        norm = float(np.linalg.norm(arr))
+        if norm > 0:
+            arr = arr / norm
+    return arr
 
 
-def embed_texts(texts: list[str]) -> np.ndarray:
-    """Tạo mảng vector nhúng chuẩn hóa (L2 normalized) cho danh sách văn bản."""
+def embed_texts(texts: list[str], normalize: bool = True) -> np.ndarray:
+    """Tạo mảng vector nhúng chuẩn hóa (L2 normalized) cho danh sách văn bản.
+    
+    Khi normalize=True: mọi vector hàng đều có ||v||₂ ≈ 1.0.
+    """
     if not texts:
         return np.empty((0, EMBEDDING_DIM), dtype=np.float32)
     model = get_embedding_model()
     cleaned = [t.strip() if t else "" for t in texts]
-    vectors = model.encode(cleaned, normalize_embeddings=True, show_progress_bar=False)
-    return np.asarray(vectors, dtype=np.float32)
+    vectors = model.encode(cleaned, normalize_embeddings=normalize, show_progress_bar=False)
+    arr = np.asarray(vectors, dtype=np.float32)
+    if normalize:
+        norms = np.linalg.norm(arr, axis=1, keepdims=True)
+        norms[norms == 0] = 1.0
+        arr = arr / norms
+    return arr
+
