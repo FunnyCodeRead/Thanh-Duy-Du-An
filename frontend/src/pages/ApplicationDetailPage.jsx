@@ -15,6 +15,7 @@ import {
   formatRole,
   formatSource,
 } from '../utils/formatters'
+import FormattedAiContent from '../components/FormattedAiContent'
 
 const nextStatusMap = {
   NEW: ['SCREENING', 'REJECTED'],
@@ -57,7 +58,6 @@ export default function ApplicationDetailPage() {
   const [aiError, setAiError] = useState('')
   const [aiCurrentResult, setAiCurrentResult] = useState(null)
   const [emailType, setEmailType] = useState('INTERVIEW_INVITATION')
-  const [copied, setCopied] = useState(false)
 
   const loadDetail = useCallback(() => {
     Promise.all([
@@ -93,7 +93,7 @@ export default function ApplicationDetailPage() {
 
     try {
       await applicationApi.updateStatus(id, selectedStatus)
-      setActionMessage({ text: `Đã chuyển trạng thái sang ${selectedStatus} thành công.`, type: 'success' })
+      setActionMessage({ text: `Đã chuyển trạng thái sang "${formatApplicationStatus(selectedStatus)}" thành công.`, type: 'success' })
       loadDetail()
     } catch (err) {
       setActionMessage({ text: err.message || 'Không thể cập nhật trạng thái.', type: 'danger' })
@@ -487,80 +487,87 @@ export default function ApplicationDetailPage() {
           </div>
         </div>
 
-        {/* AI Action Buttons */}
+        {/* AI Action Cards */}
         <div className="row g-3 mb-3">
+          {/* Card 1: CV Summary */}
           <div className="col-12 col-md-4">
             <button
+              type="button"
               className="ai-action-btn w-100"
               onClick={handleCvSummary}
               disabled={Boolean(aiLoading)}
             >
-              <div className="d-flex align-items-center justify-content-between w-100">
-                <span className="fw-bold text-dark small">
-                  <i className="bi bi-file-text-fill text-primary me-1.5"></i>
+              <div className="d-flex align-items-center justify-content-between w-100 mb-1">
+                <span className="fw-bold text-dark small d-flex align-items-center gap-2">
+                  <i className="bi bi-file-text-fill text-primary"></i>
                   Tóm tắt năng lực CV
                 </span>
                 {aiLoading === 'CV_SUMMARY' && (
                   <span className="spinner-border spinner-border-sm text-primary" role="status"></span>
                 )}
               </div>
-              <span className="text-muted" style={{ fontSize: '0.785rem' }}>
+              <span className="text-muted" style={{ fontSize: '0.8rem', lineHeight: 1.45 }}>
                 Phân tích điểm mạnh, kinh nghiệm & độ phù hợp với JD
               </span>
             </button>
           </div>
 
+          {/* Card 2: Interview Questions */}
           <div className="col-12 col-md-4">
             <button
+              type="button"
               className="ai-action-btn w-100"
               onClick={handleInterviewQuestions}
               disabled={Boolean(aiLoading)}
             >
-              <div className="d-flex align-items-center justify-content-between w-100">
-                <span className="fw-bold text-dark small">
-                  <i className="bi bi-patch-question-fill text-indigo me-1.5" style={{ color: '#6366f1' }}></i>
+              <div className="d-flex align-items-center justify-content-between w-100 mb-1">
+                <span className="fw-bold text-dark small d-flex align-items-center gap-2">
+                  <i className="bi bi-patch-question-fill text-indigo" style={{ color: '#6366f1' }}></i>
                   Gợi ý câu hỏi phỏng vấn
                 </span>
                 {aiLoading === 'INTERVIEW_QUESTION' && (
                   <span className="spinner-border spinner-border-sm text-indigo" role="status"></span>
                 )}
               </div>
-              <span className="text-muted" style={{ fontSize: '0.785rem' }}>
+              <span className="text-muted" style={{ fontSize: '0.8rem', lineHeight: 1.45 }}>
                 Đề xuất 5 câu hỏi phỏng vấn có trọng tâm theo CV
               </span>
             </button>
           </div>
 
+          {/* Card 3: Email Assistant */}
           <div className="col-12 col-md-4">
-            <div className="d-flex gap-1.5">
-              <select
-                className="form-select form-select-sm"
-                value={emailType}
-                onChange={(e) => setEmailType(e.target.value)}
-                disabled={Boolean(aiLoading)}
-                style={{ width: '130px', borderRadius: 'var(--radius-md)', fontSize: '0.785rem' }}
-              >
-                <option value="INTERVIEW_INVITATION">Mời phỏng vấn</option>
-                <option value="RESULT">Thông báo kết quả</option>
-              </select>
-              <button
-                className="ai-action-btn flex-grow-1"
-                onClick={handleGenerateEmail}
-                disabled={Boolean(aiLoading)}
-              >
-                <div className="d-flex align-items-center justify-content-between w-100">
-                  <span className="fw-bold text-dark small">
-                    <i className="bi bi-envelope-paper-fill text-success me-1.5"></i>
-                    Soạn email
-                  </span>
-                  {aiLoading === 'EMAIL' && (
-                    <span className="spinner-border spinner-border-sm text-success" role="status"></span>
-                  )}
-                </div>
-                <span className="text-muted" style={{ fontSize: '0.785rem' }}>
-                  Sinh bản thảo thư tín
+            <div className="ai-action-card">
+              <div className="d-flex justify-content-between align-items-center mb-1">
+                <span className="fw-bold text-dark small d-flex align-items-center gap-2">
+                  <i className="bi bi-envelope-paper-fill text-success"></i>
+                  Soạn email tuyển dụng
                 </span>
-              </button>
+                {aiLoading === 'EMAIL' && (
+                  <span className="spinner-border spinner-border-sm text-success" role="status"></span>
+                )}
+              </div>
+              <div className="d-flex gap-2 align-items-center mt-1">
+                <select
+                  className="form-select form-select-sm flex-grow-1"
+                  value={emailType}
+                  onChange={(e) => setEmailType(e.target.value)}
+                  disabled={Boolean(aiLoading)}
+                  style={{ borderRadius: 'var(--radius-md)', fontSize: '0.8rem' }}
+                >
+                  <option value="INTERVIEW_INVITATION">Mời phỏng vấn</option>
+                  <option value="RESULT">Thông báo kết quả</option>
+                </select>
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline-success px-3 rounded-pill flex-shrink-0 fw-medium"
+                  onClick={handleGenerateEmail}
+                  disabled={Boolean(aiLoading)}
+                  style={{ fontSize: '0.8rem' }}
+                >
+                  Tạo email
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -591,32 +598,24 @@ export default function ApplicationDetailPage() {
         {/* Live Result Display Box */}
         {aiCurrentResult && (
           <div className="card-modern shadow-sm border-0 mb-3" style={{ borderLeft: '4px solid #6366f1' }}>
-            <div className="card-modern-header py-2.5 bg-white">
+            <div className="card-modern-header py-2.5 bg-white d-flex justify-content-between align-items-center">
               <div className="d-flex align-items-center gap-2">
-                <i className="bi bi-stars text-primary"></i>
-                <span className="fw-bold text-dark small">
-                  Kết quả phân tích vừa tạo ({aiCurrentResult.type})
+                <i className="bi bi-stars text-primary fs-5"></i>
+                <span className="fw-bold text-dark">
+                  Kết quả phân tích: <span className="text-primary">{formatAiType(aiCurrentResult.type)}</span>
                 </span>
               </div>
-              <div className="d-flex align-items-center gap-2">
-                <button
-                  className="btn btn-sm btn-outline-secondary rounded-pill px-2.5 py-0.5 small d-inline-flex align-items-center gap-1"
-                  onClick={() => handleCopy(aiCurrentResult.content)}
-                >
-                  <i className={`bi ${copied ? 'bi-check-lg text-success' : 'bi-clipboard'}`}></i>
-                  <span>{copied ? 'Đã sao chép!' : 'Sao chép'}</span>
-                </button>
-                <button
-                  className="btn btn-sm btn-link text-muted p-0 text-decoration-none"
-                  onClick={() => setAiCurrentResult(null)}
-                  title="Đóng kết quả này"
-                >
-                  <i className="bi bi-x-lg"></i>
-                </button>
-              </div>
+              <button
+                type="button"
+                className="btn btn-sm btn-link text-muted p-1 text-decoration-none"
+                onClick={() => setAiCurrentResult(null)}
+                title="Đóng kết quả này"
+              >
+                <i className="bi bi-x-lg"></i>
+              </button>
             </div>
-            <div className="card-modern-body pt-2">
-              <div className="ai-result-box">{aiCurrentResult.content}</div>
+            <div className="card-modern-body pt-3 pb-3">
+              <FormattedAiContent content={aiCurrentResult.content} type={aiCurrentResult.type} />
             </div>
           </div>
         )}
@@ -631,12 +630,12 @@ export default function ApplicationDetailPage() {
               </span>
             </div>
             <div className="d-flex flex-column gap-2">
-              {aiResults.slice(0, 3).map((item) => (
+              {aiResults.slice(0, 5).map((item) => (
                 <div
                   key={item.id}
-                  className="p-2.5 rounded-3 bg-white border small d-flex flex-column gap-1"
+                  className="p-3 rounded-3 bg-white border small d-flex flex-column gap-2"
                 >
-                  <div className="d-flex justify-content-between align-items-center">
+                  <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
                     <span className="soft-badge soft-badge-primary">
                       {formatAiType(item.type)}
                     </span>
@@ -645,17 +644,40 @@ export default function ApplicationDetailPage() {
                         {item.created_at ? new Date(item.created_at).toLocaleString('vi-VN') : ''}
                       </span>
                       <button
-                        className="btn btn-sm btn-outline-secondary py-0 px-2 rounded-pill"
-                        style={{ fontSize: '0.7rem' }}
+                        type="button"
+                        className="btn btn-sm btn-outline-primary py-0.5 px-2.5 rounded-pill"
+                        style={{ fontSize: '0.75rem' }}
+                        onClick={() => {
+                          setAiCurrentResult(item)
+                        }}
+                      >
+                        <i className="bi bi-eye me-1"></i>
+                        Xem chi tiết
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary py-0.5 px-2.5 rounded-pill"
+                        style={{ fontSize: '0.75rem' }}
                         onClick={() => handleCopy(item.content)}
                       >
+                        <i className="bi bi-clipboard me-1"></i>
                         Sao chép
                       </button>
                     </div>
                   </div>
                   <div
-                    className="text-secondary text-truncate"
-                    style={{ maxHeight: '48px', whiteSpace: 'pre-line' }}
+                    className="text-secondary"
+                    style={{
+                      maxHeight: '48px',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      lineHeight: 1.5,
+                      overflowWrap: 'break-word',
+                      wordBreak: 'break-word',
+                    }}
                   >
                     {item.content}
                   </div>

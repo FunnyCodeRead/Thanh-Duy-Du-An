@@ -8,8 +8,10 @@ export default function Layout({ user }) {
       <Navbar user={user} />
       <div className="app-body">
         <Sidebar user={user} />
-        <main className="content-area">
-          <Outlet context={{ user }} />
+        <main className="content-area-wrapper">
+          <div className="content-area">
+            <Outlet context={{ user }} />
+          </div>
         </main>
       </div>
     </div>
