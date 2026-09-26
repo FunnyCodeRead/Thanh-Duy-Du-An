@@ -1,56 +1,74 @@
-# AI Recruitment Management System — M2
+# AI Recruitment Management System — React + Flask REST
 
-Project hiện có nền tảng Flask/MySQL, authentication bằng session và CRUD truyền thống cho vị trí tuyển dụng, ứng viên.
+Ứng dụng quản lý tuyển dụng cho phạm vi M1/M2, dùng React + Vite ở frontend, Flask REST API ở backend và MySQL 8. Phần Jinja cũ đã được lưu trong `legacy/` và không còn là giao diện chạy chính. M3 (Application, Interview, Evaluation, Gemini) chưa được triển khai.
 
-## M2 Features
+## Chức năng hiện có
 
-- Job CRUD, tìm theo tên/phòng ban/kỹ năng và lọc trạng thái.
-- Candidate CRUD, tìm theo tên/email/điện thoại/kỹ năng và lọc nguồn.
-- Upload CV định dạng PDF, DOC, DOCX; giới hạn 5 MB và đặt tên bằng UUID.
-- Trích xuất text từ PDF/DOCX vào `candidates.cv_text`; DOC cũ chỉ được lưu file.
-- ADMIN và HR được tạo/sửa/xóa; MANAGER chỉ được xem.
-- Không cho xóa Job hoặc Candidate đã có Application.
+- Đăng nhập/đăng xuất bằng Flask Session và khôi phục phiên qua `/api/auth/me`.
+- Phân quyền `ADMIN`, `HR`, `MANAGER`; backend luôn kiểm tra quyền.
+- Dashboard đọc số liệu thật từ MySQL.
+- Job CRUD, tìm kiếm, lọc trạng thái và chặn xóa khi đã có Application.
+- Candidate CRUD, tìm kiếm, lọc nguồn và chặn xóa khi đã có Application.
+- Upload PDF/DOC/DOCX tối đa 10 MB bằng tên UUID; trích xuất text PDF/DOCX.
+- React Router, giao diện Bootstrap và Vite proxy `/api`, `/uploads` sang Flask.
+
+## Cấu trúc
+
+```text
+backend/       Flask REST API, database, uploads, pytest
+frontend/      React + Vite
+sql/           schema và dữ liệu mẫu cho đúng 7 bảng
+docs/          yêu cầu, kiến trúc, API, kiểm thử, hướng dẫn
+legacy/        templates và static Jinja đã ngừng sử dụng
+scripts/       script khởi động MySQL local
+```
 
 ## Yêu cầu
 
 - Python 3.11+
-- MySQL Server 8+
+- Node.js 20+
+- MySQL Community Server 8+
 
-## Cài đặt
+## 1. MySQL
 
-```powershell
-python -m venv venv
-venv\Scripts\activate
-pip install -r requirements.txt
-Copy-Item .env.example .env
-```
-
-Cập nhật thông tin MySQL và `SECRET_KEY` trong `.env`. Sau đó import schema và dữ liệu mẫu:
-
-```powershell
-mysql -u root -p < sql/schema.sql
-mysql -u root -p ai_recruitment < sql/sample_data.sql
-```
-
-Nếu không import user mẫu, tạo ba user demo bằng Werkzeug sau khi đã import schema:
-
-```powershell
-python seed_users.py
-```
-
-## Chạy ứng dụng
-
-```powershell
-python app.py
-```
-
-Mở <http://127.0.0.1:5000>. Kiểm tra MySQL tại <http://127.0.0.1:5000/health>.
-
-Trên máy hiện tại MySQL chạy ở user level vì phiên cài đặt không có quyền Administrator để đăng ký Windows Service. Sau khi khởi động lại Windows, chạy:
+Trên máy hiện tại MySQL chạy ở user level. Sau khi khởi động lại Windows:
 
 ```powershell
 powershell -ExecutionPolicy RemoteSigned -File scripts\start_mysql.ps1
 ```
+
+Khởi tạo lại database khi cần:
+
+```powershell
+mysql -u root -p < sql\schema.sql
+mysql -u root -p ai_recruitment < sql\sample_data.sql
+```
+
+## 2. Backend
+
+```powershell
+cd backend
+python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
+Copy-Item .env.example .env
+python seed_users.py
+python app.py
+```
+
+Điền thông tin MySQL và `SECRET_KEY` trong `backend/.env`. API chạy tại <http://127.0.0.1:5000>; health check: <http://127.0.0.1:5000/api/health>.
+
+## 3. Frontend
+
+Mở terminal khác:
+
+```powershell
+cd frontend
+npm install
+npm run dev -- --host 127.0.0.1
+```
+
+Mở <http://127.0.0.1:5173>. Vite tự chuyển tiếp request `/api` và `/uploads` đến Flask.
 
 ## Tài khoản demo
 
@@ -60,43 +78,26 @@ powershell -ExecutionPolicy RemoteSigned -File scripts\start_mysql.ps1
 | `hr@example.com` | `123456` | HR |
 | `manager@example.com` | `123456` | MANAGER |
 
-Chỉ dùng các tài khoản trên cho môi trường học tập/local.
-
-## Routes M1
-
-| Route | Mô tả |
-|---|---|
-| `/` | Điều hướng theo trạng thái đăng nhập |
-| `/login` | Đăng nhập |
-| `/logout` | Xóa session và đăng xuất |
-| `/dashboard` | Dashboard cần đăng nhập |
-| `/health` | Kiểm tra kết nối MySQL |
-| `/admin-only` | Demo role ADMIN |
-| `/recruitment-demo` | Demo role ADMIN hoặc HR |
-| `/jobs` | Danh sách, tìm kiếm và lọc vị trí |
-| `/jobs/add` | Thêm vị trí |
-| `/candidates` | Danh sách, tìm kiếm và lọc ứng viên |
-| `/candidates/add` | Thêm ứng viên và upload CV |
+Các tài khoản này chỉ dành cho môi trường học tập/local.
 
 ## Kiểm thử
 
-Authentication tests dùng mock cho thao tác database nên không phụ thuộc database production:
-
 ```powershell
+cd backend
 pytest -q
+
+cd ..\frontend
+npm run lint
+npm run build
 ```
 
-Luồng kết nối dễ giải thích:
+Kết quả xác minh gần nhất: backend `47 passed`, frontend lint sạch và production build thành công. Chi tiết nằm trong `docs/test-report.md`.
 
-```text
-.env → config.py → database/db.py:get_connection() → mysql.connector → MySQL
-```
+## Tài liệu
 
-Luồng đăng nhập:
-
-```text
-Form → POST /login → SELECT user bằng query có parameter
-→ check_password_hash() → Flask session → dashboard
-```
-
-Phân quyền dùng `users.role`, `session["role"]` và decorator `@role_required(...)`; không dùng RBAC framework vì M1 chỉ có ba role cố định.
+- `docs/architecture.md` — kiến trúc và traceability.
+- `docs/api.md` — hợp đồng REST API.
+- `docs/database-design.md` — thiết kế 7 bảng giữ nguyên.
+- `docs/test-plan.md`, `docs/test-report.md` — kế hoạch và bằng chứng kiểm thử.
+- `docs/user-guide.md` — hướng dẫn sử dụng.
+- `docs/ai-sdlc-report.md` — báo cáo AI-Augmented SDLC.

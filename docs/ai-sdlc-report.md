@@ -1,59 +1,47 @@
-# AI Augmented SDLC Report
+# AI-Augmented SDLC Report
 
-## Current Scope
+## Scope and Outcome
 
-This report records verified work through requirements preparation for the revised React and Flask REST roadmap. Later architecture and implementation evidence will be added only after the required human gates.
+Codex migrated the verified M1/M2 application from server-rendered Flask/Jinja to the official React + Vite, Flask REST and MySQL architecture. Existing database behavior and the fixed seven-table schema were preserved. Jinja assets were archived only after live React verification. M3 was not implemented.
 
-## AI Agent Used
+## Skills Applied
 
-Codex inspected the existing repository, database, tests, course reference, and revised project request. It preserved the working seven-table implementation while preparing traceable requirements.
+- Requirements analysis: preserved traceability and unresolved human decisions.
+- Architecture design: documented React, REST, session, database and trust boundaries.
+- Database design: confirmed no schema change and exactly seven tables.
+- Implementation: built the Flask APIs and React pages incrementally.
+- Testing: added REST regression tests and collected real MySQL/browser evidence.
+- Documentation: aligned setup, architecture, API, test and user guidance with verified code.
 
-## Skills Used
+## Generated or Updated Artifacts
 
-- Documents skill to read the supplied course DOCX as reference material.
-- Skill Creator to create and validate eight project-level SDLC skills.
-- Project `requirements-analysis` workflow to create requirements, stories, criteria, issues, and traceability.
+- `backend/` Flask application with auth, Job and Candidate API blueprints.
+- `frontend/` React application with protected routes and CRUD pages.
+- Architecture, ADR, database, API, test plan/report and user guide documents.
+- Updated M1/M2 task evidence and project state.
+- Archived `legacy/templates` and `legacy/static`.
 
-The remaining project skills have been created but have not yet been applied because Human Gate 1 is pending.
+## Verification Evidence
 
-## Tools Used
+- 47 backend tests pass.
+- Frontend lint passes without warnings.
+- Vite production build passes.
+- Direct Flask and Vite-proxied health checks pass.
+- Live MySQL flows pass for HR and MANAGER, CRUD, search/filter, CV upload/extraction/access and delete protection.
+- Manual browser verification passes for Login, Dashboard, Jobs and Candidates with no console error.
 
-- Read-only DOCX text extraction using the bundled document runtime.
-- Shell inspection for repository, Node, Python, MySQL, and test status.
-- MySQL connectivity and table validation.
-- pytest execution.
-- Patch-based project file creation.
+## AI-Detected Defect
 
-## MCP Usage
+During manual browser verification, old `cv_file` values containing `uploads/` generated duplicated URL paths. Codex normalized stored paths on the React side, made the Flask file endpoint backward compatible and added a regression test.
 
-The Codex workspace dependency loader was used to locate the supported document runtime. No external project service, issue tracker, or Git hosting MCP was used.
+## Tools and MCP Usage
 
-## Artifacts Generated
+Shell and patch tools handled repository inspection, implementation, MySQL checks, automated tests and builds. The workspace dependency loader previously supported course DOCX inspection. Browser computer-use tooling verified the running React UI. No external issue tracker, hosting service or Git hosting integration was used.
 
-- Eight `.agents/skills/*/SKILL.md` files.
-- Customer requirement, requirements, user stories, acceptance criteria, issues, project state, and Human Gate 1 artifacts.
-- Task evidence for completed and pending milestones.
+## Human Oversight
 
-## Problems Detected by AI
-
-- The working project uses Jinja while the revised roadmap requires React and REST.
-- Candidate email optionality conflicts with the existing `NOT NULL` column semantics.
-- AI qualitative fit wording could be confused with prohibited numeric ranking.
-- MANAGER evaluation permissions and ADMIN user management scope need confirmation.
-- The supplied document renderer could not complete visual rendering because the bundled LibreOffice executable was unavailable; text extraction succeeded.
-
-## Human Corrections
-
-No human corrections have been recorded for the revised requirements yet.
-
-## Human Gates
-
-- Human Gate 1: NEEDS CHANGES pending student requirements review.
-- Human Gate 2: not started.
-- Human Gate 3: not started.
-- Human Gate 4: not started.
+Formal Human Gate 1 remains `NEEDS CHANGES`; Human Gate 2 remains `PENDING HUMAN APPROVAL`. The student's explicit implementation requests authorized the migration work, but were not recorded as formal checklist approval. Human Gate 3 and Human Gate 4 have not started.
 
 ## Current Evaluation
 
-The existing M2 application remains operational with 32 passing tests and seven MySQL tables. The revised React REST migration is blocked by the intentionally required Human Gate 1 review.
-
+Technical M1/M2 migration criteria are satisfied with reproducible automated, integration and manual evidence. Later Application, Interview, Evaluation and Gemini work remains outside this increment.

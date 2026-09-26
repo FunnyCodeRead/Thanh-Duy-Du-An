@@ -1,12 +1,11 @@
 # Testing Task Evidence
 
-**Task:** Verify the current M1 and original M2 implementation.
+**Task:** Verify the migrated M1/M2 React and Flask REST implementation.
 
-**Input:** Existing authentication, Job, and Candidate tests plus live MySQL.
+**Input:** REST authentication, Job, Candidate and upload tests; live MySQL; Vite proxy; running React UI.
 
-**Expected Result:** Automated and focused integration evidence without weakening tests.
+**Expected Result:** Automated, integration and manual browser evidence without weakening tests.
 
-**Actual Result:** `pytest -q` reported 32 passed tests on 26 September 2026. MySQL reported seven tables.
+**Actual Result:** The final test count is recorded in `docs/test-report.md`. MySQL reports seven tables, frontend lint/build pass, and the live React flows pass manual verification.
 
-**Human Decision:** New REST and React tests must be added after implementation approval.
-
+**Human Decision:** Formal gate approval remains with the student; technical test evidence is complete for this increment.

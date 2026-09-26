@@ -1,12 +1,13 @@
 # M1 Task Evidence
 
-**Task:** Implement Flask, MySQL connectivity, session authentication, and simple roles.
+**Task:** Implement Flask, MySQL connectivity, session authentication and simple roles, then migrate the interface to React.
 
-**Input:** M1 project specification and the fixed users table.
+**Input:** M1 project specification, fixed users table and explicit React/REST migration command.
 
-**Expected Result:** Login, logout, current session, health check, and ADMIN HR MANAGER enforcement.
+**Expected Result:** Login, logout, current session, health check, dashboard and ADMIN/HR/MANAGER enforcement through REST.
 
-**Actual Result:** The server-rendered implementation works with MySQL and its authentication tests pass. REST-compatible auth endpoints are not implemented yet.
+**Actual Result:** `/api/auth/login`, `/api/auth/logout`, `/api/auth/me`, `/api/health` and `/api/dashboard` are implemented. React protects private routes and restores the session. Live HR and MANAGER sessions were verified against MySQL.
 
-**Human Decision:** Preserve working authentication and migrate it incrementally after architecture approval.
+**Evidence:** Backend authentication tests are part of the 47-test passing suite; Vite proxy login and manual browser dashboard checks passed.
 
+**Human Decision:** Formal Human Gate records remain pending; implementation authorization came from the student's direct request.
