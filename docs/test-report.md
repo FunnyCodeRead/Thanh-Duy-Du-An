@@ -39,19 +39,19 @@ The live schema still contains exactly 7 tables: `ai_results`, `applications`, `
 
 ## Real Gemini Integration
 
-- Model: `gemini-2.5-flash`
-- CV Summary: BLOCKED (Missing GEMINI_API_KEY in backend/.env)
-- Interview Questions: BLOCKED (Missing GEMINI_API_KEY in backend/.env)
-- Email Draft: BLOCKED (Missing GEMINI_API_KEY in backend/.env)
-- Secrets exposed: NO
-- Application status changed by AI: NO
+- Model: `gemini-flash-latest` (với fallback `gemini-3.1-flash-lite`)
+- CV Summary: PASS (HTTP 200, nội dung thực 1007 ký tự từ Gemini, lưu bản ghi `CV_SUMMARY` trong `ai_results`, `application.status` không đổi)
+- Interview Questions: PASS (HTTP 200, sinh đủ 5 câu hỏi phỏng vấn có cấu trúc, lưu bản ghi `INTERVIEW_QUESTION`, `application.status` không đổi)
+- Email Draft: PASS (HTTP 200, sinh Tiêu đề + Nội dung cho thư mời phỏng vấn và thông báo kết quả, lưu bản ghi `EMAIL`, không gửi email thật, `application.status` không đổi)
+- Secrets exposed: NO (Không in, không ghi log API key hay bất kỳ secret nào)
+- Application status changed by AI: NO (Trạng thái ứng tuyển được giữ nguyên vẹn 100% trước và sau mọi tác vụ AI)
 
 ## Conclusion
 
-- Milestone M5 Automated & Mock Verification: PASS (117 tests PASS, build PASS, lint PASS).
-- Real Live Gemini Verification: PARTIAL (Blocked pending valid `GEMINI_API_KEY` configuration in `backend/.env`).
-- Milestone M5 Status: PARTIAL.
-- Human review: PENDING (Human Gate 3 status: PENDING HUMAN APPROVAL).
+- Milestone M5 Automated & Mock Verification: PASS (117 backend tests PASS, frontend lint PASS, build PASS).
+- Real Live Gemini Verification: PASS (Toàn bộ 3 bài test thực tế với Google Gemini API thành công).
+- Milestone M5 Status: PASS.
+- Human review: READY FOR HUMAN REVIEW (Human Gate 3).
 
 
 
