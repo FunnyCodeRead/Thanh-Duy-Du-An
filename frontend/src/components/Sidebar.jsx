@@ -8,8 +8,8 @@ export default function Sidebar() {
         <NavLink className={activeClass} to="/jobs">Vị trí tuyển dụng</NavLink>
         <NavLink className={activeClass} to="/candidates">Ứng viên</NavLink>
         <NavLink className={activeClass} to="/applications">Hồ sơ ứng tuyển</NavLink>
-        <span className="nav-link disabled">Phỏng vấn</span>
-        <span className="nav-link disabled">Đánh giá</span>
+        <NavLink className={activeClass} to="/interviews">Phỏng vấn</NavLink>
+        <span className="nav-link disabled" title="Đánh giá ứng viên được thực hiện trong chi tiết hồ sơ hoặc buổi phỏng vấn">Đánh giá</span>
       </nav>
     </aside>
   )

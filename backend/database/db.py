@@ -505,3 +505,364 @@ def update_application_status(application_id, status):
         if connection and connection.is_connected():
             connection.close()
 
+
+def get_user_by_id(user_id):
+    connection = None
+    cursor = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute(
+            """
+            SELECT id, full_name, email, role
+            FROM users
+            WHERE id = %s
+            LIMIT 1
+            """,
+            (user_id,),
+        )
+        return cursor.fetchone()
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+
+def get_interviewers():
+    connection = None
+    cursor = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute(
+            """
+            SELECT id, full_name, role
+            FROM users
+            ORDER BY full_name ASC
+            """
+        )
+        return cursor.fetchall()
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+
+def get_interviews(keyword=None, status=None, application_id=None, interviewer_id=None):
+    connection = None
+    cursor = None
+    query = """
+        SELECT i.id, i.application_id, i.interviewer_id, i.interview_date, i.location,
+               i.status, i.note, i.created_at,
+               c.full_name AS candidate_name, c.email AS candidate_email,
+               j.title AS job_title, j.department AS job_department,
+               u.full_name AS interviewer_name, u.role AS interviewer_role
+        FROM interviews i
+        JOIN applications a ON i.application_id = a.id
+        JOIN candidates c ON a.candidate_id = c.id
+        JOIN jobs j ON a.job_id = j.id
+        JOIN users u ON i.interviewer_id = u.id
+    """
+    conditions = []
+    params = []
+
+    if keyword:
+        search_value = f"%{keyword}%"
+        conditions.append("(c.full_name LIKE %s OR j.title LIKE %s OR u.full_name LIKE %s)")
+        params.extend([search_value, search_value, search_value])
+    if status in ("SCHEDULED", "COMPLETED", "CANCELLED"):
+        conditions.append("i.status = %s")
+        params.append(status)
+    if application_id is not None:
+        try:
+            conditions.append("i.application_id = %s")
+            params.append(int(application_id))
+        except (ValueError, TypeError):
+            pass
+    if interviewer_id is not None:
+        try:
+            conditions.append("i.interviewer_id = %s")
+            params.append(int(interviewer_id))
+        except (ValueError, TypeError):
+            pass
+
+    if conditions:
+        query += " WHERE " + " AND ".join(conditions)
+    query += " ORDER BY i.interview_date ASC, i.id DESC"
+
+    try:
+        connection = get_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute(query, tuple(params))
+        return cursor.fetchall()
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+
+def get_interview_by_id(interview_id):
+    connection = None
+    cursor = None
+    query = """
+        SELECT i.id, i.application_id, i.interviewer_id, i.interview_date, i.location,
+               i.status, i.note, i.created_at,
+               a.status AS application_status, a.candidate_id, a.job_id,
+               c.full_name AS candidate_name, c.email AS candidate_email, c.phone AS candidate_phone,
+               j.title AS job_title, j.department AS job_department,
+               u.full_name AS interviewer_name, u.role AS interviewer_role
+        FROM interviews i
+        JOIN applications a ON i.application_id = a.id
+        JOIN candidates c ON a.candidate_id = c.id
+        JOIN jobs j ON a.job_id = j.id
+        JOIN users u ON i.interviewer_id = u.id
+        WHERE i.id = %s
+    """
+    try:
+        connection = get_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute(query, (interview_id,))
+        row = cursor.fetchone()
+        if not row:
+            return None
+        return {
+            "id": row["id"],
+            "application_id": row["application_id"],
+            "interviewer_id": row["interviewer_id"],
+            "interview_date": row["interview_date"],
+            "location": row["location"] or "",
+            "status": row["status"],
+            "note": row["note"] or "",
+            "created_at": row["created_at"],
+            "candidate": {
+                "id": row["candidate_id"],
+                "full_name": row["candidate_name"],
+                "email": row["candidate_email"],
+                "phone": row["candidate_phone"],
+            },
+            "job": {
+                "id": row["job_id"],
+                "title": row["job_title"],
+                "department": row["job_department"],
+            },
+            "interviewer": {
+                "id": row["interviewer_id"],
+                "full_name": row["interviewer_name"],
+                "role": row["interviewer_role"],
+            },
+            "application_status": row["application_status"],
+        }
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+
+def get_interviews_by_application(application_id):
+    return get_interviews(application_id=application_id)
+
+
+def create_interview(application_id, interviewer_id, interview_date, location=None, note=None):
+    connection = None
+    cursor = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+            INSERT INTO interviews (application_id, interviewer_id, interview_date, location, status, note)
+            VALUES (%s, %s, %s, %s, 'SCHEDULED', %s)
+            """,
+            (application_id, interviewer_id, interview_date, location or "", note or ""),
+        )
+        connection.commit()
+        return cursor.lastrowid
+    except Error:
+        if connection:
+            connection.rollback()
+        raise
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+
+def update_interview(interview_id, interviewer_id, interview_date, location=None, note=None):
+    connection = None
+    cursor = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+            UPDATE interviews
+            SET interviewer_id = %s, interview_date = %s, location = %s, note = %s
+            WHERE id = %s
+            """,
+            (interviewer_id, interview_date, location or "", note or "", interview_id),
+        )
+        connection.commit()
+        return cursor.rowcount > 0
+    except Error:
+        if connection:
+            connection.rollback()
+        raise
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+
+def update_interview_status(interview_id, status):
+    connection = None
+    cursor = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+            UPDATE interviews
+            SET status = %s
+            WHERE id = %s
+            """,
+            (status, interview_id),
+        )
+        connection.commit()
+        return cursor.rowcount > 0
+    except Error:
+        if connection:
+            connection.rollback()
+        raise
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+
+def get_evaluations(application_id=None):
+    connection = None
+    cursor = None
+    query = """
+        SELECT e.id, e.application_id, e.evaluator_id, e.technical_score,
+               e.communication_score, e.experience_score, e.comment, e.created_at,
+               u.full_name AS evaluator_name, u.role AS evaluator_role
+        FROM evaluations e
+        JOIN users u ON e.evaluator_id = u.id
+    """
+    params = []
+    if application_id is not None:
+        try:
+            query += " WHERE e.application_id = %s"
+            params.append(int(application_id))
+        except (ValueError, TypeError):
+            pass
+    query += " ORDER BY e.created_at DESC, e.id DESC"
+
+    try:
+        connection = get_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute(query, tuple(params))
+        rows = cursor.fetchall()
+        for r in rows:
+            avg = (r["technical_score"] + r["communication_score"] + r["experience_score"]) / 3.0
+            r["average_score"] = round(avg, 2)
+        return rows
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+
+def get_evaluation_by_id(evaluation_id):
+    connection = None
+    cursor = None
+    query = """
+        SELECT e.id, e.application_id, e.evaluator_id, e.technical_score,
+               e.communication_score, e.experience_score, e.comment, e.created_at,
+               u.full_name AS evaluator_name, u.role AS evaluator_role
+        FROM evaluations e
+        JOIN users u ON e.evaluator_id = u.id
+        WHERE e.id = %s
+    """
+    try:
+        connection = get_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute(query, (evaluation_id,))
+        row = cursor.fetchone()
+        if not row:
+            return None
+        avg = (row["technical_score"] + row["communication_score"] + row["experience_score"]) / 3.0
+        row["average_score"] = round(avg, 2)
+        return row
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+
+def get_application_evaluations(application_id):
+    return get_evaluations(application_id=application_id)
+
+
+def create_evaluation(application_id, evaluator_id, technical_score, communication_score, experience_score, comment=None):
+    connection = None
+    cursor = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+            INSERT INTO evaluations (application_id, evaluator_id, technical_score, communication_score, experience_score, comment)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            """,
+            (application_id, evaluator_id, technical_score, communication_score, experience_score, comment or ""),
+        )
+        connection.commit()
+        return cursor.lastrowid
+    except Error:
+        if connection:
+            connection.rollback()
+        raise
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+
+def update_evaluation(evaluation_id, technical_score, communication_score, experience_score, comment=None):
+    connection = None
+    cursor = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+            UPDATE evaluations
+            SET technical_score = %s, communication_score = %s, experience_score = %s, comment = %s
+            WHERE id = %s
+            """,
+            (technical_score, communication_score, experience_score, comment or "", evaluation_id),
+        )
+        connection.commit()
+        return cursor.rowcount > 0
+    except Error:
+        if connection:
+            connection.rollback()
+        raise
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+

@@ -43,6 +43,22 @@ export const applicationApi = {
   updateStatus: (id, status) => apiRequest(`/api/applications/${id}/status`, { method: 'PUT', body: { status } }),
 }
 
+export const interviewApi = {
+  list: (params = '') => apiRequest(`/api/interviews${params}`),
+  get: (id) => apiRequest(`/api/interviews/${id}`),
+  create: (data) => apiRequest('/api/interviews', { method: 'POST', body: data }),
+  update: (id, data) => apiRequest(`/api/interviews/${id}`, { method: 'PUT', body: data }),
+  updateStatus: (id, status) => apiRequest(`/api/interviews/${id}/status`, { method: 'PUT', body: { status } }),
+  interviewers: () => apiRequest('/api/interviews/interviewers'),
+}
+
+export const evaluationApi = {
+  listByApplication: (applicationId) => apiRequest(`/api/applications/${applicationId}/evaluations`),
+  get: (id) => apiRequest(`/api/evaluations/${id}`),
+  create: (data) => apiRequest('/api/evaluations', { method: 'POST', body: data }),
+  update: (id, data) => apiRequest(`/api/evaluations/${id}`, { method: 'PUT', body: data }),
+}
+
 export function cvUrl(storedPath) {
   if (!storedPath) return null
   const filename = String(storedPath).replaceAll('\\', '/').split('/').pop()

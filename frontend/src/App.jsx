@@ -12,6 +12,10 @@ import CandidateDetailPage from './pages/CandidateDetailPage'
 import ApplicationsPage from './pages/ApplicationsPage'
 import ApplicationCreatePage from './pages/ApplicationCreatePage'
 import ApplicationDetailPage from './pages/ApplicationDetailPage'
+import InterviewsPage from './pages/InterviewsPage'
+import InterviewFormPage from './pages/InterviewFormPage'
+import InterviewDetailPage from './pages/InterviewDetailPage'
+import EvaluationFormPage from './pages/EvaluationFormPage'
 
 export default function App() {
   return (
@@ -30,6 +34,12 @@ export default function App() {
         <Route path="/applications" element={<ApplicationsPage />} />
         <Route path="/applications/create" element={<ApplicationCreatePage />} />
         <Route path="/applications/:id" element={<ApplicationDetailPage />} />
+        <Route path="/interviews" element={<InterviewsPage />} />
+        <Route path="/interviews/create" element={<InterviewFormPage />} />
+        <Route path="/interviews/:id" element={<InterviewDetailPage />} />
+        <Route path="/interviews/:id/edit" element={<InterviewFormPage />} />
+        <Route path="/applications/:id/evaluations/create" element={<EvaluationFormPage />} />
+        <Route path="/evaluations/:id/edit" element={<EvaluationFormPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>

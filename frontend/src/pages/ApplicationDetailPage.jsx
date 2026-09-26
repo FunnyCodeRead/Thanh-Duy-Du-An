@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useOutletContext, useParams } from 'react-router-dom'
 import Loading from '../components/Loading'
-import { applicationApi, cvUrl } from '../services/api'
+import { applicationApi, cvUrl, evaluationApi, interviewApi } from '../services/api'
 
 const nextStatusMap = {
   NEW: ['SCREENING', 'REJECTED'],
@@ -9,6 +9,19 @@ const nextStatusMap = {
   INTERVIEW: ['PASSED', 'REJECTED'],
   PASSED: [],
   REJECTED: [],
+}
+
+function interviewBadgeClass(status) {
+  switch (status) {
+    case 'SCHEDULED':
+      return 'badge bg-primary'
+    case 'COMPLETED':
+      return 'badge bg-success'
+    case 'CANCELLED':
+      return 'badge bg-secondary'
+    default:
+      return 'badge bg-light text-dark'
+  }
 }
 
 function statusBadgeClass(status) {
@@ -34,18 +47,25 @@ export default function ApplicationDetailPage() {
   const canUpdate = ['ADMIN', 'HR'].includes(user.role)
 
   const [state, setState] = useState({ loading: true, data: null, error: '' })
+  const [interviews, setInterviews] = useState([])
+  const [evaluations, setEvaluations] = useState([])
   const [selectedStatus, setSelectedStatus] = useState('')
   const [updating, setUpdating] = useState(false)
   const [actionMessage, setActionMessage] = useState({ text: '', type: '' })
 
   const loadDetail = useCallback(() => {
-    applicationApi
-      .get(id)
-      .then((res) => {
-        setState({ loading: false, data: res.data, error: '' })
-        const current = res.data?.status
+    Promise.all([
+      applicationApi.get(id),
+      interviewApi.list(`?application_id=${id}`),
+      evaluationApi.listByApplication(id),
+    ])
+      .then(([appRes, intRes, evalRes]) => {
+        setState({ loading: false, data: appRes.data, error: '' })
+        const current = appRes.data?.status
         const availableNext = nextStatusMap[current] || []
         setSelectedStatus(availableNext[0] || '')
+        setInterviews(intRes.data || [])
+        setEvaluations(evalRes.data || [])
       })
       .catch((err) => {
         setState({ loading: false, data: null, error: err.message })
@@ -246,10 +266,153 @@ export default function ApplicationDetailPage() {
           </div>
         </div>
 
-        {/* Milestone thong bao sau */}
+        {/* Khu vuc 4: Danh sach Lich phong van */}
         <div className="col-12">
-          <div className="alert alert-info mb-0">
-            Phỏng vấn và đánh giá sẽ được bổ sung ở milestone sau.
+          <div className="card shadow-sm border-0">
+            <div className="card-header bg-light fw-bold d-flex justify-content-between align-items-center">
+              <span>Lịch phỏng vấn ({interviews.length})</span>
+              {canUpdate && (
+                <Link
+                  className="btn btn-sm btn-primary"
+                  to={`/interviews/create?application_id=${app.id}`}
+                >
+                  + Lên lịch phỏng vấn
+                </Link>
+              )}
+            </div>
+            <div className="card-body">
+              {interviews.length === 0 ? (
+                <p className="text-muted text-center py-3 mb-0">
+                  Chưa có lịch phỏng vấn nào cho hồ sơ này.
+                </p>
+              ) : (
+                <div className="table-responsive">
+                  <table className="table table-hover align-middle mb-0">
+                    <thead className="table-light">
+                      <tr>
+                        <th style={{ width: '60px' }}>#</th>
+                        <th>Thời gian</th>
+                        <th>Người phỏng vấn</th>
+                        <th>Địa điểm / Link</th>
+                        <th>Trạng thái</th>
+                        <th className="text-end" style={{ width: '120px' }}>Thao tác</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {interviews.map((iv) => (
+                        <tr key={iv.id}>
+                          <td className="fw-semibold">#{iv.id}</td>
+                          <td>
+                            {iv.interview_date
+                              ? new Date(iv.interview_date).toLocaleString('vi-VN', {
+                                  dateStyle: 'medium',
+                                  timeStyle: 'short',
+                                })
+                              : '-'}
+                          </td>
+                          <td>
+                            <div>{iv.interviewer_name || '-'}</div>
+                            <div className="small text-muted">{iv.interviewer_email}</div>
+                          </td>
+                          <td>{iv.location || '-'}</td>
+                          <td>
+                            <span className={interviewBadgeClass(iv.status)}>
+                              {iv.status}
+                            </span>
+                          </td>
+                          <td className="text-end">
+                            <Link to={`/interviews/${iv.id}`} className="btn btn-sm btn-outline-primary">
+                              Chi tiết
+                            </Link>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Khu vuc 5: Danh sach Danh gia */}
+        <div className="col-12">
+          <div className="card shadow-sm border-0">
+            <div className="card-header bg-light fw-bold d-flex justify-content-between align-items-center">
+              <span>Đánh giá ứng viên ({evaluations.length})</span>
+              <Link
+                className="btn btn-sm btn-success"
+                to={`/applications/${app.id}/evaluations/create`}
+              >
+                + Thêm đánh giá
+              </Link>
+            </div>
+            <div className="card-body">
+              {evaluations.length === 0 ? (
+                <p className="text-muted text-center py-3 mb-0">
+                  Chưa có đánh giá nào cho ứng viên này.
+                </p>
+              ) : (
+                <div className="table-responsive">
+                  <table className="table table-hover align-middle mb-0">
+                    <thead className="table-light">
+                      <tr>
+                        <th style={{ width: '50px' }}>#</th>
+                        <th>Người đánh giá</th>
+                        <th className="text-center">Chuyên môn</th>
+                        <th className="text-center">Giao tiếp</th>
+                        <th className="text-center">Kinh nghiệm</th>
+                        <th className="text-center">Điểm TB</th>
+                        <th>Nhận xét</th>
+                        <th style={{ width: '120px' }}>Thời gian</th>
+                        <th className="text-end" style={{ width: '80px' }}>Thao tác</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {evaluations.map((ev) => {
+                        const canEditEval = user.role === 'ADMIN' || Number(ev.evaluator_id) === Number(user.id)
+                        return (
+                          <tr key={ev.id}>
+                            <td className="fw-semibold">#{ev.id}</td>
+                            <td>
+                              <div className="fw-semibold">{ev.evaluator_name || '-'}</div>
+                              <div className="small text-muted">{ev.evaluator_role}</div>
+                            </td>
+                            <td className="text-center">
+                              <span className="badge bg-light text-dark border">{ev.technical_score}/5</span>
+                            </td>
+                            <td className="text-center">
+                              <span className="badge bg-light text-dark border">{ev.communication_score}/5</span>
+                            </td>
+                            <td className="text-center">
+                              <span className="badge bg-light text-dark border">{ev.experience_score}/5</span>
+                            </td>
+                            <td className="text-center">
+                              <span className="badge bg-success fs-6">{ev.average_score?.toFixed(2)}</span>
+                            </td>
+                            <td>
+                              <div className="small text-break" style={{ maxHeight: '60px', overflowY: 'auto' }}>
+                                {ev.comment || <span className="text-muted">Không có nhận xét</span>}
+                              </div>
+                            </td>
+                            <td className="small text-muted">
+                              {ev.created_at ? new Date(ev.created_at).toLocaleDateString('vi-VN') : '-'}
+                            </td>
+                            <td className="text-end">
+                              {canEditEval && (
+                                <Link to={`/evaluations/${ev.id}/edit`} className="btn btn-sm btn-outline-secondary">
+                                  Sửa
+                                </Link>
+                              )}
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

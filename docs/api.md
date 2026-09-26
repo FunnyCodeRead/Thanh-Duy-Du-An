@@ -62,3 +62,79 @@ Enforces valid workflow transitions:
 
 Returns HTTP 200 on success, HTTP 400 for invalid status or illegal transition, HTTP 403 for MANAGER role, HTTP 404 if application not found.
 
+## Interviews API
+
+### List Interviews (`GET /api/interviews`)
+Query parameters:
+- `keyword` (optional string): Search by candidate name, job title, interviewer name, or location.
+- `status` (optional string): Filter by `SCHEDULED`, `COMPLETED`, `CANCELLED`.
+- `application_id` (optional integer): Filter interviews belonging to a specific application.
+
+Requires authenticated session (ADMIN, HR, MANAGER). Returns list of interview records.
+
+### Interviewers List (`GET /api/interviews/interviewers`)
+Returns all active staff members available for interview assignment (users with ADMIN, HR, or MANAGER role).
+
+### Get Interview Detail (`GET /api/interviews/{id}`)
+Returns full interview record including candidate, job, and interviewer information.
+
+### Create Interview (`POST /api/interviews`)
+Roles: `ADMIN`, `HR` (MANAGER receives HTTP 403).
+JSON fields:
+- `application_id` (integer, required): ID of existing application.
+- `interviewer_id` (integer, required): ID of staff user.
+- `interview_date` (string, required): Interview date and time (ISO or YYYY-MM-DD HH:MM:SS format).
+- `location` (string, optional): Meeting room or virtual meeting link.
+- `note` (string, optional): Interview focus notes.
+
+Initial status is automatically set to `SCHEDULED`. Returns HTTP 201 on success.
+
+### Update Interview Details (`PUT /api/interviews/{id}`)
+Roles: `ADMIN`, `HR`.
+Only permissible when interview is in `SCHEDULED` status (HTTP 400 if already `COMPLETED` or `CANCELLED`).
+Allows updating `interviewer_id`, `interview_date`, `location`, and `note`.
+
+### Update Interview Status (`PUT /api/interviews/{id}/status`)
+JSON fields:
+- `status` (string, required): One of `COMPLETED`, `CANCELLED`.
+
+Permissions:
+- `ADMIN`, `HR`: Can set `COMPLETED` or `CANCELLED`.
+- Assigned interviewer (`session['user_id'] == interviewer_id`): Can set `COMPLETED`.
+- Other users receive HTTP 403.
+
+Enforces valid transition from `SCHEDULED` only. Reversing back to `SCHEDULED` returns HTTP 400.
+
+## Evaluations API
+
+### List Application Evaluations (`GET /api/applications/{application_id}/evaluations` or `GET /api/evaluations?application_id={id}`)
+Requires authenticated session.
+Returns all evaluations submitted for the specified application.
+Each evaluation calculates runtime arithmetic average score `average_score = round((technical_score + communication_score + experience_score) / 3.0, 2)`.
+
+### Get Evaluation Detail (`GET /api/evaluations/{id}`)
+Returns single evaluation record with evaluator details and runtime average score.
+
+### Create Evaluation (`POST /api/evaluations`)
+Roles: All authenticated roles (`ADMIN`, `HR`, `MANAGER`). Evaluator is bound securely to `session['user_id']`.
+JSON fields:
+- `application_id` (integer, required): ID of existing application.
+- `technical_score` (integer, required): Integer from 1 to 5.
+- `communication_score` (integer, required): Integer from 1 to 5.
+- `experience_score` (integer, required): Integer from 1 to 5.
+- `comment` (string, optional): Feedback text.
+
+Scores outside 1-5 return HTTP 400. Returns HTTP 201 on success.
+*Note: Submitting an evaluation does NOT automatically alter the application status or trigger hiring decisions.*
+
+### Update Evaluation (`PUT /api/evaluations/{id}`)
+Permissions: `ADMIN` or the original evaluator who submitted the review (`evaluator_id == session['user_id']`). Other roles receive HTTP 403.
+JSON fields:
+- `technical_score` (integer, optional): Integer from 1 to 5.
+- `communication_score` (integer, optional): Integer from 1 to 5.
+- `experience_score` (integer, optional): Integer from 1 to 5.
+- `comment` (string, optional): Updated feedback text.
+
+Returns HTTP 200 on success.
+
+
