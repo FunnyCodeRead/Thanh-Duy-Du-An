@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom'
 import Navbar from './Navbar'
 import Sidebar from './Sidebar'
+import FloatingAIChat from './FloatingAIChat'
 
 export default function Layout({ user }) {
   return (
@@ -14,6 +15,8 @@ export default function Layout({ user }) {
           </div>
         </main>
       </div>
+      <FloatingAIChat user={user} />
     </div>
   )
 }
+

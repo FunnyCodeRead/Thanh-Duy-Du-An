@@ -12,23 +12,6 @@ const QUICK_QUESTIONS = [
   'Thời tiết hôm nay thế nào?',
 ]
 
-function formatRetrievalBadge(type) {
-  switch (type) {
-    case 'STRUCTURED':
-      return { label: 'Dữ liệu cấu trúc (SQL)', className: 'soft-badge-primary', icon: 'bi-database-fill' }
-    case 'SEMANTIC':
-      return { label: 'Tìm kiếm ngữ nghĩa (Vector)', className: 'soft-badge-purple', icon: 'bi-cpu-fill' }
-    case 'HYBRID':
-      return { label: 'Tìm kiếm kết hợp (Hybrid)', className: 'soft-badge-success', icon: 'bi-lightning-charge-fill' }
-    case 'DECISION_REFUSAL':
-      return { label: 'Quyền quyết định thuộc về nhân sự', className: 'soft-badge-warning', icon: 'bi-shield-check' }
-    case 'OUT_OF_SCOPE':
-      return { label: 'Ngoài phạm vi tuyển dụng', className: 'soft-badge-secondary', icon: 'bi-info-circle-fill' }
-    default:
-      return { label: type || 'AI Assistant', className: 'soft-badge-secondary', icon: 'bi-robot' }
-  }
-}
-
 function parseFormattedText(text) {
   if (!text) return null
   const lines = text.split('\n')
@@ -295,21 +278,27 @@ export default function AIChatPage() {
 
   return (
     <div className="d-flex flex-column h-100" style={{ maxWidth: '1100px', margin: '0 auto' }}>
-      {/* 1. Header & Reindex Banner */}
+      {/* 1. Header */}
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
-        <div>
-          <div className="d-flex align-items-center gap-2 mb-1">
-            <h1 className="h3 fw-bold mb-0 text-dark d-flex align-items-center gap-2">
-              <span className="brand-icon" style={{ width: '36px', height: '36px', fontSize: '1.1rem' }}>
-                <i className="bi bi-robot"></i>
-              </span>
+        <div className="d-flex align-items-center gap-3">
+          <img
+            src="/ai-avatar.png"
+            alt="AI Assistant"
+            className="rounded-circle border border-2 border-primary-subtle shadow-sm"
+            style={{ width: '46px', height: '46px', objectFit: 'cover' }}
+          />
+          <div>
+            <h1 className="h4 fw-bold mb-0.5 text-dark d-flex align-items-center gap-2">
               <span>Trợ lý Tuyển dụng AI</span>
+              <span className="badge bg-success-subtle text-success border border-success-subtle rounded-pill small fw-medium" style={{ fontSize: '0.72rem' }}>
+                ● Trực tuyến
+              </span>
             </h1>
-            <span className="soft-badge soft-badge-primary">RAG + Database</span>
+            <p className="text-muted small mb-0">
+              Tra cứu nhanh hồ sơ ứng viên, kỹ năng CV, vị trí tuyển dụng và lịch phỏng vấn.
+              {indexInfo?.documents ? ` (Đã đồng bộ ${indexInfo.documents} mục dữ liệu)` : ''}
+            </p>
           </div>
-          <p className="text-muted small mb-0">
-            Hỏi đáp thông minh dựa trên dữ liệu tuyển dụng thực tế lưu trong hệ thống.
-          </p>
         </div>
 
         <div className="d-flex align-items-center gap-2 flex-wrap">
@@ -319,10 +308,10 @@ export default function AIChatPage() {
               className="btn btn-sm btn-outline-primary rounded-pill px-3 py-1.5 d-inline-flex align-items-center gap-1.5"
               onClick={handleReindex}
               disabled={reindexing}
-              title="Đồng bộ lại cơ sở dữ liệu MySQL vào chỉ mục tìm kiếm ngữ nghĩa FAISS"
+              title="Đồng bộ lại dữ liệu hệ thống vào chỉ mục tìm kiếm"
             >
               <i className={`bi ${reindexing ? 'spinner-border spinner-border-sm' : 'bi-arrow-repeat'}`}></i>
-              <span>{reindexing ? 'Đang cập nhật chỉ mục...' : 'Cập nhật dữ liệu AI'}</span>
+              <span>{reindexing ? 'Đang cập nhật...' : 'Cập nhật dữ liệu'}</span>
             </button>
           )}
 
@@ -330,9 +319,9 @@ export default function AIChatPage() {
             type="button"
             className="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1.5 d-inline-flex align-items-center gap-1.5"
             onClick={handleClearChat}
-            title="Xóa toàn bộ lịch sử trò chuyện hiện tại"
+            title="Làm mới toàn bộ cuộc trò chuyện"
           >
-            <i className="bi bi-trash3"></i>
+            <i className="bi bi-arrow-clockwise"></i>
             <span>Làm mới đoạn chat</span>
           </button>
         </div>
@@ -345,30 +334,14 @@ export default function AIChatPage() {
         </div>
       )}
 
-      {/* 2. Disclaimer Notice */}
-      <div className="p-2.5 px-3 rounded-3 bg-light border small text-secondary d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
-        <div className="d-flex align-items-center gap-2">
-          <i className="bi bi-shield-check text-success"></i>
-          <span>
-            <strong>Nguyên tắc hệ thống:</strong> AI chỉ cung cấp thông tin tham khảo từ dữ liệu hiện có; quyết định tuyển dụng thuộc về người phụ trách.
-          </span>
-        </div>
-        {indexInfo?.built_at && (
-          <span className="text-muted" style={{ fontSize: '0.75rem' }}>
-            Dữ liệu cập nhật: {new Date(indexInfo.built_at).toLocaleString('vi-VN')}
-          </span>
-        )}
-      </div>
-
-      {/* 3. Chat Messages Container */}
+      {/* 2. Chat Messages Container */}
       <div
         className="card-modern flex-grow-1 d-flex flex-column mb-3"
-        style={{ height: 'calc(100vh - 380px)', minHeight: '380px', overflow: 'hidden' }}
+        style={{ height: 'calc(100vh - 360px)', minHeight: '380px', overflow: 'hidden' }}
       >
-        <div className="p-3.5 flex-grow-1 overflow-y-auto d-flex flex-column gap-3.5" style={{ background: '#fcfcfd' }}>
+        <div className="p-3.5 flex-grow-1 overflow-y-auto d-flex flex-column gap-3.5" style={{ background: '#f8fafc' }}>
           {messages.map((msg) => {
             const isUser = msg.role === 'user'
-            const badge = msg.retrievalType ? formatRetrievalBadge(msg.retrievalType) : null
 
             return (
               <div
@@ -376,17 +349,17 @@ export default function AIChatPage() {
                 className={`d-flex gap-2.5 ${isUser ? 'justify-content-end' : 'justify-content-start'}`}
               >
                 {!isUser && (
-                  <div
-                    className="brand-icon flex-shrink-0"
+                  <img
+                    src="/ai-avatar.png"
+                    alt="AI"
+                    className="rounded-circle flex-shrink-0 shadow-xs mt-0.5"
                     style={{
                       width: '34px',
                       height: '34px',
-                      fontSize: '0.95rem',
-                      background: 'linear-gradient(135deg, #4f46e5, #06b6d4)',
+                      objectFit: 'cover',
+                      border: '1px solid #cbd5e1',
                     }}
-                  >
-                    <i className="bi bi-stars"></i>
-                  </div>
+                  />
                 )}
 
                 <div
@@ -411,11 +384,7 @@ export default function AIChatPage() {
 
                     {/* Sources Attribution */}
                     {!isUser && msg.sources && msg.sources.length > 0 && (
-                      <div className="mt-3 pt-2.5 border-top border-light-subtle">
-                        <div className="small text-muted fw-semibold mb-1.5 d-flex align-items-center gap-1.5" style={{ fontSize: '0.785rem' }}>
-                          <i className="bi bi-link-45deg text-primary"></i>
-                          <span>Nguồn dữ liệu tham khảo ({msg.sources.length}):</span>
-                        </div>
+                      <div className="mt-2.5 pt-2 border-top border-light-subtle">
                         <div className="d-flex flex-wrap gap-1.5">
                           {msg.sources.map((s, idx) => (
                             <SourceBadge key={idx} source={s} />
@@ -427,16 +396,10 @@ export default function AIChatPage() {
 
                   <div
                     className={`d-flex align-items-center gap-2 mt-1 px-1 small ${
-                      isUser ? 'justify-content-end text-muted' : 'justify-content-between text-muted'
+                      isUser ? 'justify-content-end text-muted' : 'justify-content-start text-muted'
                     }`}
-                    style={{ fontSize: '0.75rem' }}
+                    style={{ fontSize: '0.72rem' }}
                   >
-                    {!isUser && badge && (
-                      <span className={`soft-badge ${badge.className} d-inline-flex align-items-center gap-1`} style={{ fontSize: '0.7rem', padding: '0.1rem 0.5rem' }}>
-                        <i className={`bi ${badge.icon}`}></i>
-                        {badge.label}
-                      </span>
-                    )}
                     <span>{msg.timestamp}</span>
                   </div>
                 </div>
