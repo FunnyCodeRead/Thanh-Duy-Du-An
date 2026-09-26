@@ -69,10 +69,17 @@ export const aiApi = {
   listResults: (applicationId) => apiRequest(`/api/applications/${applicationId}/ai-results`),
 }
 
+export const chatApi = {
+  ask: (message) => apiRequest('/api/chat', { method: 'POST', body: { message } }),
+  reindex: () => apiRequest('/api/chat/reindex', { method: 'POST' }),
+  indexInfo: () => apiRequest('/api/chat/index-info'),
+}
+
 export function cvUrl(storedPath) {
   if (!storedPath) return null
   const filename = String(storedPath).replaceAll('\\', '/').split('/').pop()
   return `/uploads/${encodeURIComponent(filename)}`
 }
+
 
 

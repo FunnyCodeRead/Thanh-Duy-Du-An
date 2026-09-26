@@ -8,15 +8,16 @@ Environment: Windows, Python 3.11, Node/Vite, MySQL Community Server 8.4, databa
 
 | Check | Result | Evidence |
 |---|---|---|
-| Backend automated tests | PASS | `136 passed in 3.35s` (0 failed) across all test modules |
-| Frontend static lint | PASS | `npm run lint` (oxlint), exit 0, 0 warnings, 0 errors across 24 files |
-| Frontend production build | PASS | 46 modules transformed; `vite build` completed |
+| Backend automated tests | PASS | `158 passed in 3.73s` (0 failed) across all test modules (136 baseline + 22 M8 Chat tests) |
+| Frontend static lint | PASS | `npm run lint` (oxlint), exit 0, 0 warnings, 0 errors across 25 files |
+| Frontend production build | PASS | 47 modules transformed; `vite build` completed |
 | Flask direct health | PASS | `/api/health`: `ok`, database `connected` |
 | Session Cookie Hardening | PASS | `Set-Cookie` header includes `HttpOnly` and `SameSite=Lax` |
 | Application API & permissions | PASS | TC-APP-01 through TC-APP-14 verified (HR create/transition, MANAGER 403, 401 unauth) |
 | Interview API & transitions | PASS | TC-INT-01 through TC-INT-12 verified (HR create/edit, status transition, reverse rejection 400) |
 | Candidate Evaluations API | PASS | TC-EVAL-01 through TC-EVAL-10 verified (1-5 score boundaries, runtime average calculation) |
 | AI Assistant API | PASS | TC-AI-01 through TC-AI-16 verified (CV Summary, Interview Questions, Email Draft, AI Results) |
+| Recruitment Knowledge Chatbot API | PASS | TC-CHAT-01 through TC-CHAT-22 verified (Scope Guard, Decision Guard, SQL & Vector search, Reindexing RBAC) |
 | Status Decoupling Guarantee | PASS | TC-AI-15 confirmed: AI operations never alter application status |
 | Minimal AI Bias Check | PASS | Documented in `docs/ai-bias-check.md` with identical qualifications across genders |
 | Dashboard Statistics API | PASS | TC-DASH-01 through TC-DASH-11 verified (Summary cards, status distribution, candidate sources, pass rate, hiring time, upcoming interviews) |
@@ -26,8 +27,8 @@ Environment: Windows, Python 3.11, Node/Vite, MySQL Community Server 8.4, databa
 | Real MySQL integration | PASS | Live creation, detail queries, interview completion, evaluation calculation, dashboard aggregations, and `ai_results` verified |
 | MANAGER permissions | PASS | Read allowed for Jobs, Candidates, Applications, Interviews, AI results, and Dashboard; unauthorized mutations denied (HTTP 403) |
 | Code Review Report | PASS | Documented in `docs/code-review.md` with traceability and severity findings |
-| Security Review Report | PASS | Documented in `docs/security-review.md` covering Auth, SQLi, XSS, CSRF, Uploads, Secrets |
-| Manual React browser check | PASS | Login, Dashboard, Jobs, Candidates, Applications, Interviews, and AI Assistant rendered without errors |
+| Security Review Report | PASS | Documented in `docs/security-review.md` covering Auth, SQLi, XSS, CSRF, Uploads, Secrets, RAG Scope |
+| Manual React browser check | PASS | Login, Dashboard, Jobs, Candidates, Applications, Interviews, AI Assistant, and AI Chatbot rendered without errors |
 
 ## Defects Found and Corrected Across Milestones
 

@@ -13,6 +13,7 @@
 - Milestone M5 (Google Gemini AI Recruitment Assistant): PASS
 - Milestone M6 (Dashboard, Search, Final Testing): PASS
 - Milestone M7 (Final Code Review, Security Review, Documentation Audit): PASS WITH DOCUMENTED LIMITATIONS
+- Milestone M8 (Recruitment Knowledge Chatbot — Hybrid RAG): PASS
 
 ## Verified State
 
@@ -41,9 +42,15 @@
   - Time-to-hire limitation transparently communicated without synthetic data fabrication.
 - Search and Filter fully audited across Jobs, Candidates, Applications, and Interviews with parameterized SQL queries.
 - MySQL contains exactly seven tables (`ai_results`, `applications`, `candidates`, `evaluations`, `interviews`, `jobs`, `users`); no schema change was made.
+- Recruitment Knowledge Chatbot (Milestone M8) fully functional:
+  - Hybrid RAG combining parameterized MySQL queries and dense vector retrieval (FAISS IndexFlatIP).
+  - Scope Guard rejecting general queries, trivia, and secret leak attempts.
+  - Decision Guard refusing automated hiring decisions and candidate rankings.
+  - Dedicated chat interface (`/ai-chat`) with direct clickable citations (`/candidates/:id`, `/jobs/:id`).
+  - Admin-only reindexing endpoint (`POST /api/chat/reindex`) with RBAC enforcement.
 - Code Review (`docs/code-review.md`) and Security Review (`docs/security-review.md`) completed and documented.
-- Backend automated suite: 136 passed in 3.35s (0 failed).
-- Frontend lint (`oxlint`) and production build: passed with 0 warnings and 0 errors across 24 files.
+- Backend automated suite: 158 passed in 3.73s (0 failed).
+- Frontend lint (`oxlint`) and production build: passed with 0 warnings and 0 errors across 25 files.
 - Live MySQL and browser checks: passed without console errors.
 
 ## Deliberately Out of Scope (Accepted Project Limitations)
@@ -51,9 +58,9 @@
 - Automated hiring decisions or automatic status changes triggered by AI results.
 - AI ranking, scoring, or candidate matching percentages.
 - Automated email dispatching (only drafts generated; no Gmail API or SMTP integration).
-- RAG, vector databases, or multiple parallel AI models.
 - Complex BI charting engines, data warehousing, or fabricated time-to-hire formulas.
 - Microservices, Redis/Celery background task queues, or external OAuth providers.
+- MySQL 8th table (vector index is stored locally as FAISS files in `backend/rag/index/`).
 
 ## Human Gates Status
 

@@ -2,14 +2,21 @@
 
 ## Scope and Outcome
 
-The AI agent continued the verified recruitment management system by executing Milestone M7 (Final Code Review, Security Review, Documentation Audit & Human Gate Preparation) following the successful technical completion of Milestones M1 through M6.
-- A comprehensive static code review was performed and recorded in `docs/code-review.md`, confirming requirement-to-code traceability across all 19 functional requirements.
-- An extensive security review was executed and documented in `docs/security-review.md`, covering authentication, authorization, SQL injection, XSS, CSRF mitigation, file uploads, secrets management, and Google Gemini AI boundaries.
+The AI agent continued the verified recruitment management system by executing Milestone M7 (Final Code Review, Security Review, Documentation Audit & Human Gate Preparation) and Milestone M8 (Recruitment Knowledge Chatbot with Hybrid RAG).
+- In M8, developed a domain-grounded recruitment chatbot combining direct parameterized MySQL queries, local dense vector search (FAISS IndexFlatIP + SentenceTransformers `all-MiniLM-L6-v2`), and Google Gemini LLM synthesis.
+- Implemented strict Scope Guard (refuses general knowledge, weather, cooking, system admin) and Decision Guard (refuses automated hiring decisions and candidate rankings).
+- Enforced zero arbitrary SQL generation by LLM; all structured queries execute via predefined parameterized functions.
+- Preserved the strict architectural boundary of exactly 7 tables in MySQL (FAISS vector index stored locally on disk in `backend/rag/index/`).
+- Implemented comprehensive RBAC: reindexing is strictly restricted to `ADMIN`, returning HTTP 403 for `HR` and `MANAGER`.
+- Created 22 new automated tests in `backend/tests/test_chat.py`, elevating the backend test suite from 136 to 158 tests (100% passing).
+- Built interactive frontend chat interface (`/ai-chat`) with source citations linking directly to candidate and job details.
+- A comprehensive static code review was performed and recorded in `docs/code-review.md`, confirming requirement-to-code traceability across all 20 functional requirements.
+- An extensive security review was executed and documented in `docs/security-review.md`.
 - Session cookie configuration was hardened in `backend/config.py` with explicit `SESSION_COOKIE_SAMESITE = "Lax"` and `SESSION_COOKIE_HTTPONLY = True`.
-- Documentation was thoroughly synchronized: `README.md`, `docs/code-review.md`, `docs/security-review.md`, `docs/human-gate-4.md`, `docs/human-review-summary.md`, `docs/project-state.md`, `docs/test-report.md`, and `docs/ai-tasks/M7-task.md`.
-- Automated regression suite achieved 136 passing tests with 0 failures; frontend linting confirmed 0 errors and 0 warnings; production build succeeded with 46 modules transformed.
-- The fixed seven-table MySQL database schema was strictly preserved (`users`, `jobs`, `candidates`, `applications`, `interviews`, `evaluations`, `ai_results`). No migration or eighth table was introduced.
-- Human Gate 4 was prepared in `docs/human-gate-4.md` with status `READY FOR HUMAN APPROVAL`. All Human Gates strictly reserve the final approval action for the student.
+- Documentation was thoroughly synchronized: `docs/rag-design.md`, `README.md`, `docs/code-review.md`, `docs/security-review.md`, `docs/project-state.md`, `docs/test-report.md`, and `docs/ai-tasks/M8-task.md`.
+- Automated regression suite achieved 158 passing tests with 0 failures; frontend linting confirmed 0 errors and 0 warnings; production build succeeded with 47 modules transformed.
+- The fixed seven-table MySQL database schema was strictly preserved.
+- Human Gate 4 was prepared in `docs/human-gate-4.md`. All Human Gates strictly reserve the final approval action for the student.
 
 ## Skills Applied
 

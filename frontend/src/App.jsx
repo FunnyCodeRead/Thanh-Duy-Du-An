@@ -16,6 +16,7 @@ import InterviewsPage from './pages/InterviewsPage'
 import InterviewFormPage from './pages/InterviewFormPage'
 import InterviewDetailPage from './pages/InterviewDetailPage'
 import EvaluationFormPage from './pages/EvaluationFormPage'
+import AIChatPage from './pages/AIChatPage'
 
 export default function App() {
   return (
@@ -40,6 +41,7 @@ export default function App() {
         <Route path="/interviews/:id/edit" element={<InterviewFormPage />} />
         <Route path="/applications/:id/evaluations/create" element={<EvaluationFormPage />} />
         <Route path="/evaluations/:id/edit" element={<EvaluationFormPage />} />
+        <Route path="/ai-chat" element={<AIChatPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>

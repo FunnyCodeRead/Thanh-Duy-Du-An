@@ -45,4 +45,15 @@ Xác minh khả năng kiểm soát thiên lệch (bias control) của prompt và
 - **Tiêu chí không thiên lệch:** ĐẠT (PASS).
 - **Ranh giới trách nhiệm:** AI đóng vai trò cố vấn thông tin hỗ trợ, giữ đúng nguyên tắc trung lập và khách quan. Toàn bộ quyết định tuyển dụng cuối cùng thuộc về nhân sự và người phỏng vấn.
 
-**Đánh giá tổng thể:** **PASS**
+---
+
+## 5. Kiểm soát Thiên lệch trong Trợ lý Tuyển dụng RAG (Milestone M8)
+
+Trong Milestone M8, hệ thống mở rộng kiểm soát thiên lệch và tự động hóa quyết định qua cơ chế **Decision Guard**:
+- **Từ chối xếp hạng & tuyển chọn tự động:** Khi người dùng gửi các câu hỏi so sánh hoặc yêu cầu quyết định như *"Ai là ứng viên tốt nhất cho vị trí Backend?"* hoặc *"Tôi nên tuyển ai?"*, module `IntentRouter` nhận diện mẫu `DECISION_REFUSAL` và trả về ngay thông điệp từ chối trung lập:
+  > *"Tôi có thể cung cấp thông tin hồ sơ, kỹ năng, kinh nghiệm và các đánh giá đã được lưu trong hệ thống, nhưng quyết định tuyển dụng cần do người phụ trách thực hiện."*
+- **Tính khách quan dựa trên dữ liệu thật (Grounding):** Chatbot chỉ tổng hợp các đoạn trích từ CV, yêu cầu công việc và nhận xét đánh giá đã lưu trong hệ thống, không tự ý gán điểm cảm tính hay suy đoán ngoài ngữ cảnh.
+- **Bảo vệ quyền quyết định của con người:** Đảm bảo toàn bộ quyết định tuyển dụng thuộc về nhà tuyển dụng (Human-in-the-loop).
+
+**Đánh giá tổng thể M1–M8:** **PASS**
+

@@ -247,5 +247,68 @@ Response JSON fields:
 - `upcoming_interviews` (array): Top 5 nearest upcoming interviews with candidate, job, date, interviewer, and location.
 - Legacy backward-compatibility fields: `jobs`, `candidates`, `applications`, `interviews`.
 
+## Recruitment Knowledge Chatbot API — M8
+
+### Chat Inquiry (`POST /api/chat`)
+Roles: `ADMIN`, `HR`, `MANAGER`. Requires active session.
+Processes a recruitment question via Hybrid RAG (Structured SQL or Vector Search + Gemini 2.5 Flash).
+
+Request JSON:
+- `message` (string, required): Question text, max 1000 characters.
+
+Response JSON:
+```json
+{
+  "success": true,
+  "reply": "Hiện có 2 ứng viên đang ở trạng thái Phỏng vấn...",
+  "retrieval_type": "STRUCTURED",
+  "sources": [
+    {
+      "entity_type": "candidate",
+      "entity_id": 5,
+      "title": "Nguyễn Văn A",
+      "url": "/candidates/5"
+    }
+  ]
+}
+```
+
+Error responses:
+- `400 Bad Request`: When message is empty or exceeds 1,000 characters.
+- `401 Unauthorized`: When no valid session is present.
+
+### Rebuild Vector Index (`POST /api/chat/reindex`)
+Roles: `ADMIN` only. `HR` and `MANAGER` receive HTTP 403.
+Forces rebuilding of the local FAISS index from the 7 MySQL tables.
+
+Response JSON:
+```json
+{
+  "success": true,
+  "message": "Rebuilt vector index successfully with 39 documents",
+  "document_count": 39,
+  "last_updated": "2026-09-26T21:55:00.000000"
+}
+```
+
+### Vector Index Info (`GET /api/chat/index-info`)
+Roles: `ADMIN`, `HR`, `MANAGER`. Requires active session.
+Returns metadata regarding the local FAISS index status.
+
+Response JSON:
+```json
+{
+  "success": true,
+  "data": {
+    "document_count": 39,
+    "last_updated": "2026-09-26T21:55:00.000000",
+    "embedding_model": "all-MiniLM-L6-v2",
+    "dimension": 384,
+    "status": "ready"
+  }
+}
+```
+
+
 
 

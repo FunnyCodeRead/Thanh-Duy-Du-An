@@ -40,6 +40,16 @@ React Router owns navigation. `ProtectedRoute` calls `GET /api/auth/me` before r
 - `backend/services/gemini_service.py`: Dedicated API wrapper calling `google-genai` with model `gemini-2.5-flash`. Handles timeouts, API errors, and missing keys without crashing Flask. Never queries the database directly.
 - `backend/services/ai_service.py`: Domain layer fetching required context (job details, candidate CV text, application status) via parameterized SQL, formatting prompts from `backend/prompts/`, calling Gemini, and persisting outputs into the `ai_results` table.
 
+### Recruitment Knowledge RAG Subsystem (Milestone M8)
+
+- `backend/rag/scope_guard.py`: Intent and domain boundary filter that blocks out-of-scope queries (general trivia, weather, system administration) and prevents secret leaks.
+- `backend/rag/intent_router.py`: Classifies questions into `DECISION_REFUSAL` (blocks candidate rankings/automated hiring), `STRUCTURED` (direct SQL lookups/counts), `HYBRID`, or `SEMANTIC`.
+- `backend/rag/document_builder.py`: Extracts and chunks recruitment records from the 7 MySQL tables into normalized text chunks (1,000 chars, 150 overlap) with strict credential exclusion.
+- `backend/rag/embedding_service.py`: Singleton `sentence-transformers/all-MiniLM-L6-v2` generating 384-dimensional dense vectors locally on CPU.
+- `backend/rag/vector_store.py`: FAISS `IndexFlatIP` store with persistence in `backend/rag/index/` (`recruitment.faiss`, `metadata.json`, `index_info.json`). Avoids creating an 8th MySQL table.
+- `backend/rag/retriever.py` & `context_builder.py`: Threshold-filtered retrieval (cosine >= 0.25) with source deduplication and citation linking.
+- `backend/rag/rag_service.py`: Orchestrator coordinating structured queries, vector retrieval, and grounded Gemini response synthesis.
+
 ### Database Layer
 
 `backend/database/db.py` retains explicit mysql-connector operations across exactly 7 tables (`users`, `jobs`, `candidates`, `applications`, `interviews`, `evaluations`, `ai_results`). Each operation opens and closes its own connection and uses parameters for user-controlled values.
@@ -81,6 +91,7 @@ The equivalent React flows passed build, API, session, role, upload, MySQL integ
 | FR-017 (Dashboard) | DashboardPage | `GET /api/dashboard` | aggregate queries on jobs, candidates, applications, interviews |
 | FR-018 (Search/Filter) | React Search Controls on Jobs, Candidates, Applications, Interviews | `/api/jobs`, `/api/candidates`, `/api/applications`, `/api/interviews` | Parameterized SQL queries with indexed column filtering |
 | FR-019 | Development verification | `/api/health` | connection check |
+| FR-020 (RAG Chatbot) | AIChatPage (`/ai-chat`), Sidebar (`✨ Trợ lý AI`) | `/api/chat`, `/api/chat/reindex`, `/api/chat/index-info` | MySQL 7 tables + FAISS local index |
 
 ## Trust & Security Boundaries
 

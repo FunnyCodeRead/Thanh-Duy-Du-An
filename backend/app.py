@@ -10,6 +10,7 @@ from routes.evaluation_routes import evaluation_bp
 from routes.interview_routes import interview_bp
 from routes.job_routes import job_bp
 from routes.ai_routes import ai_bp
+from routes.chat_routes import chat_bp
 
 
 app = Flask(__name__)
@@ -22,6 +23,8 @@ app.register_blueprint(application_bp)
 app.register_blueprint(interview_bp)
 app.register_blueprint(evaluation_bp)
 app.register_blueprint(ai_bp)
+app.register_blueprint(chat_bp)
+
 
 
 
@@ -75,6 +78,6 @@ if __name__ == "__main__":
         generate()
     except Exception:
         pass
-    app.run(debug=app.config.get("DEBUG", False))
+    app.run(debug=app.config.get("DEBUG", False), use_reloader=False)
 
 

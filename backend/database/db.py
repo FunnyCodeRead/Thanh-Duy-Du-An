@@ -1014,3 +1014,383 @@ def get_ai_results_by_application(application_id):
             connection.close()
 
 
+# ---------------------------------------------------------------------------
+# M8 RAG Chatbot: Safe Parameterized Read-Only Structured Queries
+# ---------------------------------------------------------------------------
+
+def count_candidates():
+    """Dem tong so ung vien trong he thong."""
+    connection = None
+    cursor = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT COUNT(*) AS count FROM candidates")
+        row = cursor.fetchone()
+        return int(row["count"]) if row else 0
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+
+def count_applications_by_status(status=None):
+    """Dem so luong ho so theo trang thai, hoac tat ca neu status=None."""
+    connection = None
+    cursor = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor(dictionary=True)
+        if status:
+            cursor.execute("SELECT COUNT(*) AS count FROM applications WHERE status = %s", (status.upper(),))
+            row = cursor.fetchone()
+            return int(row["count"]) if row else 0
+        else:
+            cursor.execute("SELECT status, COUNT(*) AS count FROM applications GROUP BY status")
+            rows = cursor.fetchall()
+            return {r["status"]: int(r["count"]) for r in rows}
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+
+def get_candidates_by_application_status(status):
+    """Lay danh sach ung vien co ho so ung tuyen o trang thai chi dinh."""
+    connection = None
+    cursor = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute(
+            """
+            SELECT DISTINCT c.id, c.full_name, c.email, c.phone, c.skills, c.experience, c.education, c.source,
+                            a.id AS application_id, a.status AS application_status, j.title AS job_title
+            FROM candidates c
+            INNER JOIN applications a ON c.id = a.candidate_id
+            INNER JOIN jobs j ON a.job_id = j.id
+            WHERE a.status = %s
+            ORDER BY c.full_name ASC
+            """,
+            (status.upper(),),
+        )
+        return cursor.fetchall()
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+
+def get_jobs_by_status(status=None):
+    """Lay danh sach vi tri tuyen dung theo trang thai (OPEN/CLOSED) hoac tat ca."""
+    connection = None
+    cursor = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor(dictionary=True)
+        if status:
+            cursor.execute(
+                """
+                SELECT id, title, department, description, requirements, skills, quantity, status, created_at
+                FROM jobs
+                WHERE status = %s
+                ORDER BY created_at DESC
+                """,
+                (status.upper(),),
+            )
+        else:
+            cursor.execute(
+                """
+                SELECT id, title, department, description, requirements, skills, quantity, status, created_at
+                FROM jobs
+                ORDER BY created_at DESC
+                """
+            )
+        return cursor.fetchall()
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+
+def get_upcoming_interviews(limit=5):
+    """Lay danh sach cac buoi phong van sap toi (trang thai SCHEDULED)."""
+    connection = None
+    cursor = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute(
+            """
+            SELECT i.id, i.interview_date, i.location, i.status, i.note,
+                   c.id AS candidate_id, c.full_name AS candidate_name,
+                   j.id AS job_id, j.title AS job_title,
+                   u.id AS interviewer_id, u.full_name AS interviewer_name
+            FROM interviews i
+            INNER JOIN applications a ON i.application_id = a.id
+            INNER JOIN candidates c ON a.candidate_id = c.id
+            INNER JOIN jobs j ON a.job_id = j.id
+            INNER JOIN users u ON i.interviewer_id = u.id
+            WHERE i.status = 'SCHEDULED'
+            ORDER BY i.interview_date ASC
+            LIMIT %s
+            """,
+            (limit,),
+        )
+        return cursor.fetchall()
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+
+def get_candidate_by_name(name):
+    """Tim ung vien theo ten (so khop gan dung)."""
+    connection = None
+    cursor = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute(
+            """
+            SELECT id, full_name, email, phone, skills, experience, education, source, cv_text
+            FROM candidates
+            WHERE full_name LIKE %s
+            LIMIT 1
+            """,
+            (f"%{name.strip()}%",),
+        )
+        return cursor.fetchone()
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+
+def get_job_by_title(title):
+    """Tim vi tri theo ten (so khop gan dung)."""
+    connection = None
+    cursor = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute(
+            """
+            SELECT id, title, department, description, requirements, skills, quantity, status
+            FROM jobs
+            WHERE title LIKE %s
+            LIMIT 1
+            """,
+            (f"%{title.strip()}%",),
+        )
+        return cursor.fetchone()
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+
+def get_candidate_applications(candidate_id):
+    """Lay danh sach ho so ung tuyen cua mot ung vien kem thong tin vi tri."""
+    connection = None
+    cursor = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute(
+            """
+            SELECT a.id, a.candidate_id, a.job_id, a.status, a.applied_at, a.note,
+                   j.title AS job_title, j.department AS job_department
+            FROM applications a
+            INNER JOIN jobs j ON a.job_id = j.id
+            WHERE a.candidate_id = %s
+            ORDER BY a.applied_at DESC
+            """,
+            (candidate_id,),
+        )
+        return cursor.fetchall()
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+
+def get_candidate_interviews(candidate_id):
+    """Lay danh sach buoi phong van cua mot ung vien."""
+    connection = None
+    cursor = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute(
+            """
+            SELECT i.id, i.interview_date, i.location, i.status, i.note,
+                   j.title AS job_title, u.full_name AS interviewer_name
+            FROM interviews i
+            INNER JOIN applications a ON i.application_id = a.id
+            INNER JOIN jobs j ON a.job_id = j.id
+            INNER JOIN users u ON i.interviewer_id = u.id
+            WHERE a.candidate_id = %s
+            ORDER BY i.interview_date DESC
+            """,
+            (candidate_id,),
+        )
+        return cursor.fetchall()
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+
+def get_candidate_evaluations(candidate_id):
+    """Lay danh sach danh gia cua mot ung vien."""
+    connection = None
+    cursor = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute(
+            """
+            SELECT e.id, e.technical_score, e.communication_score, e.experience_score, e.comment, e.created_at,
+                   u.full_name AS evaluator_name, u.role AS evaluator_role, j.title AS job_title
+            FROM evaluations e
+            INNER JOIN applications a ON e.application_id = a.id
+            INNER JOIN jobs j ON a.job_id = j.id
+            INNER JOIN users u ON e.evaluator_id = u.id
+            WHERE a.candidate_id = %s
+            ORDER BY e.created_at DESC
+            """,
+            (candidate_id,),
+        )
+        return cursor.fetchall()
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+
+def get_candidates_for_job(job_id):
+    """Lay danh sach ung vien da nop ho so vao vi tri chi dinh."""
+    connection = None
+    cursor = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute(
+            """
+            SELECT c.id, c.full_name, c.email, c.phone, c.skills, c.experience, c.education, c.source,
+                   a.id AS application_id, a.status AS application_status, a.applied_at
+            FROM candidates c
+            INNER JOIN applications a ON c.id = a.candidate_id
+            WHERE a.job_id = %s
+            ORDER BY a.applied_at DESC
+            """,
+            (job_id,),
+        )
+        return cursor.fetchall()
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+
+def get_all_records_for_rag():
+    """Lay toan bo cac ban ghi can thiet tu MySQL de tao tap van ban chi muc RAG.
+    Tuyet doi khong truy van password_hash hoac cac truong bi mat."""
+    connection = None
+    cursor = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor(dictionary=True)
+
+        cursor.execute("SELECT id, title, department, description, requirements, skills, quantity, status FROM jobs ORDER BY id ASC")
+        jobs = cursor.fetchall()
+
+        cursor.execute("SELECT id, full_name, skills, experience, education, source, cv_text FROM candidates ORDER BY id ASC")
+        candidates = cursor.fetchall()
+
+        cursor.execute(
+            """
+            SELECT a.id, a.candidate_id, a.job_id, a.status, a.applied_at, a.note,
+                   c.full_name AS candidate_name, j.title AS job_title
+            FROM applications a
+            INNER JOIN candidates c ON a.candidate_id = c.id
+            INNER JOIN jobs j ON a.job_id = j.id
+            ORDER BY a.id ASC
+            """
+        )
+        applications = cursor.fetchall()
+
+        cursor.execute(
+            """
+            SELECT i.id, i.application_id, i.interview_date, i.location, i.status, i.note,
+                   c.id AS candidate_id, c.full_name AS candidate_name,
+                   j.id AS job_id, j.title AS job_title,
+                   u.full_name AS interviewer_name
+            FROM interviews i
+            INNER JOIN applications a ON i.application_id = a.id
+            INNER JOIN candidates c ON a.candidate_id = c.id
+            INNER JOIN jobs j ON a.job_id = j.id
+            INNER JOIN users u ON i.interviewer_id = u.id
+            ORDER BY i.id ASC
+            """
+        )
+        interviews = cursor.fetchall()
+
+        cursor.execute(
+            """
+            SELECT e.id, e.application_id, e.technical_score, e.communication_score, e.experience_score, e.comment,
+                   c.id AS candidate_id, c.full_name AS candidate_name,
+                   j.id AS job_id, j.title AS job_title,
+                   u.full_name AS evaluator_name, u.role AS evaluator_role
+            FROM evaluations e
+            INNER JOIN applications a ON e.application_id = a.id
+            INNER JOIN candidates c ON a.candidate_id = c.id
+            INNER JOIN jobs j ON a.job_id = j.id
+            INNER JOIN users u ON e.evaluator_id = u.id
+            ORDER BY e.id ASC
+            """
+        )
+        evaluations = cursor.fetchall()
+
+        cursor.execute(
+            """
+            SELECT ar.id, ar.application_id, ar.type, ar.content,
+                   c.id AS candidate_id, c.full_name AS candidate_name,
+                   j.id AS job_id, j.title AS job_title
+            FROM ai_results ar
+            INNER JOIN applications a ON ar.application_id = a.id
+            INNER JOIN candidates c ON a.candidate_id = c.id
+            INNER JOIN jobs j ON a.job_id = j.id
+            ORDER BY ar.id ASC
+            """
+        )
+        ai_results = cursor.fetchall()
+
+        return {
+            "jobs": jobs,
+            "candidates": candidates,
+            "applications": applications,
+            "interviews": interviews,
+            "evaluations": evaluations,
+            "ai_results": ai_results,
+        }
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+
+

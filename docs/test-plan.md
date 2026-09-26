@@ -77,6 +77,30 @@ Verify that the system preserves authentication, role enforcement, Job and Candi
 - Flask health and dashboard behavior.
 - Frontend static analysis and production compilation.
 
+- Recruitment Knowledge Chatbot (M8):
+  - TC-CHAT-01: Authenticated user chat query returns 200
+  - TC-CHAT-02: Unauthenticated chat query returns 401
+  - TC-CHAT-03: Empty message rejected with 400
+  - TC-CHAT-04: Excessively long message (> 1000 chars) rejected with 400
+  - TC-CHAT-05: Non-JSON body rejected with 400
+  - TC-CHAT-06: Out-of-scope question (weather) rejected safely
+  - TC-CHAT-07: Out-of-scope question (cooking recipe) rejected safely
+  - TC-CHAT-08: General programming help rejected safely
+  - TC-CHAT-09: Decision guard blocks candidate ranking / hiring recommendations
+  - TC-CHAT-10: Decision guard blocks "who should be hired" queries
+  - TC-CHAT-11: Structured query: count candidates returns accurate count
+  - TC-CHAT-12: Structured query: count applications by status
+  - TC-CHAT-13: Structured query: list candidates by status
+  - TC-CHAT-14: Structured query: candidate lookup by name with sources
+  - TC-CHAT-15: Structured query: upcoming interviews query
+  - TC-CHAT-16: Semantic search retrieves matching candidate skills via FAISS + Gemini
+  - TC-CHAT-17: Hybrid query combines structured filters and semantic retrieval
+  - TC-CHAT-18: No matching documents returns polite clarification without error
+  - TC-CHAT-19: Secret extraction attempts rejected safely
+  - TC-CHAT-20: Admin can rebuild FAISS vector index (HTTP 200)
+  - TC-CHAT-21: HR / Manager cannot rebuild index (HTTP 403)
+  - TC-CHAT-22: Authenticated user can query vector index metadata (HTTP 200)
+
 ## Integration Scope
 
 - Real MySQL login and session persistence.
@@ -92,6 +116,7 @@ Verify that the system preserves authentication, role enforcement, Job and Candi
 - MANAGER read-only behavior across Jobs, Candidates, Applications, Interviews, and Email generation.
 - Minimal AI bias check across identical CV qualifications (`docs/ai-bias-check.md`).
 - Vite proxy for `/api` and session cookies.
+- Local FAISS index building and querying with SentenceTransformers.
 
 ## Manual Browser Scope
 
@@ -108,13 +133,15 @@ Verify that the system preserves authentication, role enforcement, Job and Candi
 - Interview form schedules new interview with interviewer dropdown and datetime selection.
 - Interview detail page displays candidate/job info, status buttons (Complete/Cancel), and linked evaluations.
 - Evaluation form validates 1-5 scores, calculates live runtime average score, and accepts detailed comments.
-- Sidebar contains active links for Dashboard, Vị trí tuyển dụng, Ứng viên, Hồ sơ ứng tuyển, and Phỏng vấn.
-- MANAGER role hides unauthorized mutation controls.
+- Sidebar contains active links for Dashboard, Vị trí tuyển dụng, Ứng viên, Hồ sơ ứng tuyển, Phỏng vấn, and Trợ lý AI.
+- AI Chatbot page (`/ai-chat`) allows conversational query answering grounded in recruitment data with clickable source links.
+- MANAGER role hides unauthorized mutation controls and cannot trigger re-indexing.
 - Browser console has no errors.
 
 ## Exit Criteria
 
-All pytest tests pass (136 tests), oxlint exits zero without warnings, Vite production build succeeds, live MySQL integration suite succeeds, minimal bias check documented, and manual verification confirms the flow.
+All pytest tests pass (158 tests), oxlint exits zero without warnings, Vite production build succeeds, live MySQL integration suite succeeds, minimal bias check documented, and manual verification confirms the flow.
+
 
 
 

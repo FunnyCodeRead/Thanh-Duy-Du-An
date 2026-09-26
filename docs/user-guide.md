@@ -104,12 +104,30 @@ Choose **Ứng viên** to search by name, email, phone or skills and filter by s
 
 On Candidate create/edit, select a PDF, DOC or DOCX file up to 10 MB. PDF and DOCX text extraction is attempted automatically. Existing CV remains unchanged when editing without choosing a replacement. **Xem CV** requires an active session.
 
+## Trợ lý Tuyển dụng AI (Knowledge Chatbot — M8)
+
+Chọn **✨ Trợ lý AI** trên thanh điều hướng bên trái (`/ai-chat`):
+
+- **Giao diện trò chuyện chuyên nghiệp:**
+  - Hộp thoại hỏi đáp trực quan, hỗ trợ gõ câu hỏi hoặc bấm vào các gợi ý nhanh (Gợi ý câu hỏi về số lượng ứng viên, lịch phỏng vấn, hồ sơ kỹ năng,...).
+  - Tích hợp nhãn trạng thái vector index (Số lượng tài liệu đã lập chỉ mục và trạng thái hệ thống).
+- **Phạm vi phản hồi (Scope & Grounding):**
+  - Trợ lý **CHỈ** trả lời các thông tin tuyển dụng có thực trong hệ thống (vị trí, ứng viên, hồ sơ, phỏng vấn, đánh giá).
+  - Nghiêm cấm và từ chối các câu hỏi kiến thức ngoài (thời tiết, thể thao, lập trình, công thức nấu ăn, hệ điều hành).
+- **Ranh giới hỗ trợ quyết định (Decision Guard):**
+  - Trợ lý từ chối xếp hạng ứng viên hoặc đưa ra quyết định tuyển dụng tự động ("ai tốt nhất", "ai nên trúng tuyển"). Trợ lý chỉ tóm tắt các điểm mạnh, kỹ năng và nhận xét phỏng vấn đã lưu; quyết định thuộc về nhà tuyển dụng.
+- **Trích dẫn nguồn thông tin có thể nhấp (Clickable Citations):**
+  - Phản hồi từ trợ lý kèm theo danh sách các nguồn dữ liệu trích dẫn thực tế (`/candidates/:id`, `/jobs/:id`, `/applications/:id`, `/interviews/:id`). Người dùng có thể nhấp trực tiếp để chuyển tới trang chi tiết của đối tượng.
+- **Cập nhật chỉ mục tìm kiếm (Re-index - Dành cho Quản trị viên):**
+  - Tài khoản `ADMIN` có nút **Đồng bộ dữ liệu** để tái xây dựng chỉ mục vector FAISS khi có nhiều ứng viên hoặc việc làm mới.
+
 ## Common errors
 
 - `401`: sign in again because the session is missing or expired.
 - `403`: the current role cannot perform that mutation.
 - `409`: the record is referenced by an Application and cannot be deleted, or the candidate already applied for this job.
 - Upload rejected: verify the extension and 10 MB size limit.
+
 
 
 
