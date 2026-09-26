@@ -381,7 +381,7 @@ def get_application_by_id(application_id):
         SELECT a.id, a.candidate_id, a.job_id, a.status, a.applied_at, a.note,
                c.full_name AS candidate_name, c.email AS candidate_email, c.phone AS candidate_phone,
                c.skills AS candidate_skills, c.experience AS candidate_experience,
-               c.education AS candidate_education, c.source AS candidate_source, c.cv_file,
+               c.education AS candidate_education, c.source AS candidate_source, c.cv_file, c.cv_text,
                j.title AS job_title, j.department AS job_department, j.description AS job_description,
                j.requirements AS job_requirements, j.skills AS job_skills, j.status AS job_status
         FROM applications a
@@ -417,6 +417,7 @@ def get_application_by_id(application_id):
                 "education": row["candidate_education"],
                 "source": row["candidate_source"],
                 "cv_file": row["cv_file"],
+                "cv_text": row["cv_text"],
             },
             "job": {
                 "id": row["job_id"],

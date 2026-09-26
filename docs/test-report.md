@@ -37,10 +37,21 @@ Environment: Windows, Python 3.11, Node/Vite, MySQL Community Server 8.4, databa
 
 The live schema still contains exactly 7 tables: `ai_results`, `applications`, `candidates`, `evaluations`, `interviews`, `jobs`, `users`. Verified via `SHOW TABLES;`. No migration or 8th table was introduced.
 
+## Real Gemini Integration
+
+- Model: `gemini-2.5-flash`
+- CV Summary: BLOCKED (Missing GEMINI_API_KEY in backend/.env)
+- Interview Questions: BLOCKED (Missing GEMINI_API_KEY in backend/.env)
+- Email Draft: BLOCKED (Missing GEMINI_API_KEY in backend/.env)
+- Secrets exposed: NO
+- Application status changed by AI: NO
+
 ## Conclusion
 
-Milestone M5 technical verification: PASS.
-Human review: PENDING (Human Gate 3 status: PENDING HUMAN APPROVAL).
+- Milestone M5 Automated & Mock Verification: PASS (117 tests PASS, build PASS, lint PASS).
+- Real Live Gemini Verification: PARTIAL (Blocked pending valid `GEMINI_API_KEY` configuration in `backend/.env`).
+- Milestone M5 Status: PARTIAL.
+- Human review: PENDING (Human Gate 3 status: PENDING HUMAN APPROVAL).
 
 
 
