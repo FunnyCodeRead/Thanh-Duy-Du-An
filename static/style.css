@@ -1,0 +1,44 @@
+body {
+    min-height: 100vh;
+    background: #f4f7fb;
+}
+
+.login-wrapper {
+    min-height: calc(100vh - 190px);
+    display: grid;
+    place-items: center;
+}
+
+.login-card {
+    width: min(100%, 430px);
+    border: 0;
+    border-radius: 1rem;
+}
+
+.summary-card {
+    border: 0;
+    border-left: 4px solid #0d6efd;
+}
+
+.table {
+    background: white;
+    vertical-align: middle;
+}
+
+.form-page {
+    max-width: 900px;
+}
+
+.text-preline {
+    white-space: pre-line;
+}
+
+.error-page {
+    padding: 5rem 1rem;
+}
+
+@media (max-width: 991.98px) {
+    aside {
+        margin-bottom: 0.5rem;
+    }
+}

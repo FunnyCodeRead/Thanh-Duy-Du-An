@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · AI Recruitment{% endblock %}
+{% block content %}
+<div class="row g-4">
+    <aside class="col-lg-3">
+        <div class="list-group shadow-sm">
+            <a class="list-group-item list-group-item-action active" href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a class="list-group-item list-group-item-action" href="{{ url_for('jobs') }}">Vị trí tuyển dụng</a>
+            <a class="list-group-item list-group-item-action" href="{{ url_for('candidates') }}">Ứng viên</a>
+            <a class="list-group-item list-group-item-action" href="#">Hồ sơ ứng tuyển</a>
+            <a class="list-group-item list-group-item-action" href="#">Phỏng vấn</a>
+            <a class="list-group-item list-group-item-action" href="#">Đánh giá</a>
+            <a class="list-group-item list-group-item-action text-danger" href="{{ url_for('logout') }}">Đăng xuất</a>
+        </div>
+    </aside>
+    <section class="col-lg-9">
+        <div class="mb-4">
+            <h1 class="h3">Xin chào, {{ session.get('user_name') }}</h1>
+            <p class="text-muted">Vai trò: <strong>{{ session.get('role') }}</strong></p>
+        </div>
+        <div class="row g-3">
+            {% for label, value in [('Jobs', counts.jobs), ('Candidates', counts.candidates), ('Applications', counts.applications), ('Interviews', counts.interviews)] %}
+            <div class="col-sm-6 col-xl-3">
+                <div class="card summary-card h-100 shadow-sm">
+                    <div class="card-body">
+                        <div class="text-muted">{{ label }}</div>
+                        <div class="display-6 fw-semibold">{{ value }}</div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="alert alert-info mt-4 mb-0">M2 đã hỗ trợ quản lý vị trí tuyển dụng và ứng viên. Hồ sơ ứng tuyển sẽ được hoàn thiện ở M3.</div>
+    </section>
+</div>
+{% endblock %}

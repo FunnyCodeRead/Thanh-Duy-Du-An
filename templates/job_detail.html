@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{{ job.title }} · AI Recruitment{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">{{ job.title }}</h1>
+    <div><a class="btn btn-outline-secondary" href="{{ url_for('jobs') }}">Quay lại</a>{% if session.get('role') in ['ADMIN', 'HR'] %} <a class="btn btn-primary" href="{{ url_for('edit_job', job_id=job.id) }}">Sửa</a>{% endif %}</div>
+</div>
+<div class="card shadow-sm"><div class="card-body">
+    <dl class="row mb-0">
+        <dt class="col-sm-3">Phòng ban</dt><dd class="col-sm-9">{{ job.department or '-' }}</dd>
+        <dt class="col-sm-3">Trạng thái</dt><dd class="col-sm-9">{{ job.status }}</dd>
+        <dt class="col-sm-3">Số lượng</dt><dd class="col-sm-9">{{ job.quantity }}</dd>
+        <dt class="col-sm-3">Kỹ năng</dt><dd class="col-sm-9">{{ job.skills or '-' }}</dd>
+        <dt class="col-sm-3">Mô tả</dt><dd class="col-sm-9 text-preline">{{ job.description }}</dd>
+        <dt class="col-sm-3">Yêu cầu</dt><dd class="col-sm-9 text-preline">{{ job.requirements or '-' }}</dd>
+        <dt class="col-sm-3">Số hồ sơ ứng tuyển</dt><dd class="col-sm-9">{{ job.application_count }}</dd>
+        <dt class="col-sm-3">Ngày tạo</dt><dd class="col-sm-9">{{ job.created_at.strftime('%d/%m/%Y %H:%M') if job.created_at else '-' }}</dd>
+    </dl>
+</div></div>
+{% endblock %}
+

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{{ form_title }} · AI Recruitment{% endblock %}
+{% block content %}
+<div class="form-page mx-auto">
+    <div class="d-flex justify-content-between align-items-center mb-3"><h1 class="h3 mb-0">{{ form_title }}</h1><a class="btn btn-outline-secondary" href="{{ url_for('candidates') }}">Quay lại</a></div>
+    <form class="card card-body shadow-sm" method="post" enctype="multipart/form-data" novalidate>
+        <div class="row g-3">
+            <div class="col-md-6"><label class="form-label">Họ tên *</label><input class="form-control" name="full_name" value="{{ candidate.full_name|default('') }}"></div>
+            <div class="col-md-6"><label class="form-label">Email</label><input class="form-control" name="email" type="email" value="{{ candidate.email|default('') }}"></div>
+            <div class="col-md-6"><label class="form-label">Điện thoại</label><input class="form-control" name="phone" value="{{ candidate.phone|default('') }}"></div>
+            <div class="col-md-6"><label class="form-label">Nguồn</label><select class="form-select" name="source">{% for source in sources %}<option value="{{ source }}" {% if candidate.source == source %}selected{% endif %}>{{ source }}</option>{% endfor %}</select></div>
+            <div class="col-12"><label class="form-label">Kỹ năng</label><input class="form-control" name="skills" value="{{ candidate.skills|default('') }}"></div>
+            <div class="col-md-6"><label class="form-label">Kinh nghiệm</label><textarea class="form-control" name="experience" rows="3">{{ candidate.experience|default('') }}</textarea></div>
+            <div class="col-md-6"><label class="form-label">Học vấn</label><textarea class="form-control" name="education" rows="3">{{ candidate.education|default('') }}</textarea></div>
+            <div class="col-12"><label class="form-label">CV (PDF, DOC, DOCX; tối đa 5 MB)</label><input class="form-control" name="cv_file" type="file" accept=".pdf,.doc,.docx">{% if candidate.cv_file %}<div class="form-text">CV hiện tại: <a href="{{ url_for('uploaded_cv', filename=candidate.cv_file) }}" target="_blank">{{ candidate.cv_file }}</a>. Không chọn file mới để giữ nguyên.</div>{% endif %}</div>
+        </div>
+        <div class="mt-4"><button class="btn btn-primary">Lưu ứng viên</button></div>
+    </form>
+</div>
+{% endblock %}
+

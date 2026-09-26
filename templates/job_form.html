@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ form_title }} · AI Recruitment{% endblock %}
+{% block content %}
+<div class="form-page mx-auto">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="h3 mb-0">{{ form_title }}</h1>
+        <a class="btn btn-outline-secondary" href="{{ url_for('jobs') }}">Quay lại</a>
+    </div>
+    <form class="card card-body shadow-sm" method="post" novalidate>
+        <div class="row g-3">
+            <div class="col-md-8"><label class="form-label">Tên vị trí *</label><input class="form-control" name="title" value="{{ job.title|default('') }}"></div>
+            <div class="col-md-4"><label class="form-label">Phòng ban</label><input class="form-control" name="department" value="{{ job.department|default('') }}"></div>
+            <div class="col-12"><label class="form-label">Mô tả *</label><textarea class="form-control" name="description" rows="4">{{ job.description|default('') }}</textarea></div>
+            <div class="col-12"><label class="form-label">Yêu cầu</label><textarea class="form-control" name="requirements" rows="3">{{ job.requirements|default('') }}</textarea></div>
+            <div class="col-md-6"><label class="form-label">Kỹ năng</label><input class="form-control" name="skills" value="{{ job.skills|default('') }}"></div>
+            <div class="col-md-3"><label class="form-label">Số lượng *</label><input class="form-control" name="quantity" type="number" min="1" value="{{ job.quantity|default(1) }}"></div>
+            <div class="col-md-3"><label class="form-label">Trạng thái *</label><select class="form-select" name="status">{% for status in statuses %}<option value="{{ status }}" {% if job.status == status %}selected{% endif %}>{{ status }}</option>{% endfor %}</select></div>
+        </div>
+        <div class="mt-4"><button class="btn btn-primary">Lưu vị trí</button></div>
+    </form>
+</div>
+{% endblock %}
+

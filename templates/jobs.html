@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Vị trí tuyển dụng · AI Recruitment{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1 class="h3 mb-1">Vị trí tuyển dụng</h1>
+        <p class="text-muted mb-0">Tìm kiếm và quản lý các vị trí.</p>
+    </div>
+    {% if session.get('role') in ['ADMIN', 'HR'] %}
+    <a class="btn btn-primary" href="{{ url_for('add_job') }}">Thêm vị trí</a>
+    {% endif %}
+</div>
+
+<form class="card card-body shadow-sm mb-3" method="get">
+    <div class="row g-2">
+        <div class="col-md-8">
+            <input class="form-control" name="keyword" value="{{ keyword }}" placeholder="Tên vị trí, phòng ban hoặc kỹ năng">
+        </div>
+        <div class="col-md-2">
+            <select class="form-select" name="status">
+                <option value="ALL">Tất cả trạng thái</option>
+                {% for status in statuses %}
+                <option value="{{ status }}" {% if selected_status == status %}selected{% endif %}>{{ status }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2 d-grid"><button class="btn btn-outline-primary">Tìm kiếm</button></div>
+    </div>
+</form>
+
+<div class="table-responsive shadow-sm">
+    <table class="table table-hover mb-0">
+        <thead class="table-light">
+            <tr><th>ID</th><th>Tên vị trí</th><th>Phòng ban</th><th>Kỹ năng</th><th>Số lượng</th><th>Trạng thái</th><th>Ngày tạo</th><th>Thao tác</th></tr>
+        </thead>
+        <tbody>
+            {% for job in jobs %}
+            <tr>
+                <td>{{ job.id }}</td>
+                <td class="fw-semibold">{{ job.title }}</td>
+                <td>{{ job.department or '-' }}</td>
+                <td>{{ job.skills or '-' }}</td>
+                <td>{{ job.quantity }}</td>
+                <td><span class="badge text-bg-{{ 'success' if job.status == 'OPEN' else 'secondary' }}">{{ job.status }}</span></td>
+                <td>{{ job.created_at.strftime('%d/%m/%Y') if job.created_at else '-' }}</td>
+                <td class="text-nowrap">
+                    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('job_detail', job_id=job.id) }}">Xem</a>
+                    {% if session.get('role') in ['ADMIN', 'HR'] %}
+                    <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('edit_job', job_id=job.id) }}">Sửa</a>
+                    <form class="d-inline" method="post" action="{{ url_for('remove_job', job_id=job.id) }}" onsubmit="return confirm('Bạn có chắc muốn xóa vị trí này?')">
+                        <button class="btn btn-sm btn-outline-danger">Xóa</button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr><td class="text-center text-muted py-4" colspan="8">Chưa có vị trí tuyển dụng.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+

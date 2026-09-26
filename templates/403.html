@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}403 · Không có quyền{% endblock %}
+{% block content %}
+<div class="error-page text-center">
+    <div class="display-1 fw-bold text-danger">403</div>
+    <h1 class="h3">Bạn không có quyền truy cập chức năng này.</h1>
+    <a class="btn btn-primary mt-3" href="{{ url_for('index') }}">Về trang chính</a>
+</div>
+{% endblock %}
+
