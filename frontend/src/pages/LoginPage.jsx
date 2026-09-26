@@ -144,7 +144,7 @@ export default function LoginPage() {
           {/* Quick Demo Fill Buttons */}
           <div className="pt-3 border-top text-center">
             <span className="text-muted d-block small mb-2" style={{ fontSize: '0.785rem' }}>
-              Tài khoản dùng thử một chạm (Demo accounts):
+              Tài khoản thử nghiệm nhanh:
             </span>
             <div className="d-flex flex-wrap gap-2 justify-content-center">
               <button
@@ -152,21 +152,21 @@ export default function LoginPage() {
                 className="btn btn-sm btn-outline-primary rounded-pill px-2.5 py-1 small"
                 onClick={() => fillDemo('hr@example.com', '123456')}
               >
-                <i className="bi bi-person-badge me-1"></i> HR
+                <i className="bi bi-person-badge me-1"></i> Nhân sự (HR)
               </button>
               <button
                 type="button"
                 className="btn btn-sm btn-outline-danger rounded-pill px-2.5 py-1 small"
                 onClick={() => fillDemo('admin@example.com', '123456')}
               >
-                <i className="bi bi-shield-lock me-1"></i> Admin
+                <i className="bi bi-shield-lock me-1"></i> Quản trị viên
               </button>
               <button
                 type="button"
                 className="btn btn-sm btn-outline-secondary rounded-pill px-2.5 py-1 small"
                 onClick={() => fillDemo('manager@example.com', '123456')}
               >
-                <i className="bi bi-briefcase me-1"></i> Manager
+                <i className="bi bi-briefcase me-1"></i> Trưởng phòng
               </button>
             </div>
           </div>

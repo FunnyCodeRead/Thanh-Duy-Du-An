@@ -3,6 +3,8 @@ import { Link, useNavigate, useOutletContext } from 'react-router-dom'
 import Loading from '../components/Loading'
 import { applicationApi, candidateApi, jobApi } from '../services/api'
 
+import { formatJobStatus } from '../utils/formatters'
+
 export default function ApplicationCreatePage() {
   const { user } = useOutletContext()
   const navigate = useNavigate()
@@ -31,7 +33,7 @@ export default function ApplicationCreatePage() {
   if (!canCreate) {
     return (
       <div className="alert alert-danger rounded-3 my-4">
-        Bạn không có quyền tạo hồ sơ ứng tuyển. Chỉ ADMIN và HR mới được thực hiện thao tác này.
+        Bạn không có quyền tạo hồ sơ ứng tuyển. Chỉ Quản trị viên và Nhân sự mới có quyền thực hiện thao tác này.
       </div>
     )
   }
@@ -120,7 +122,7 @@ export default function ApplicationCreatePage() {
                 <option value="">-- Chọn ứng viên trong danh sách --</option>
                 {candidates.map((c) => (
                   <option key={c.id} value={c.id}>
-                    #{c.id} — {c.full_name} ({c.email || 'Chưa có email'})
+                    {c.full_name} ({c.email || 'Chưa có email'})
                   </option>
                 ))}
               </select>
@@ -139,7 +141,7 @@ export default function ApplicationCreatePage() {
                 <option value="">-- Chọn vị trí cần ứng tuyển --</option>
                 {jobs.map((j) => (
                   <option key={j.id} value={j.id}>
-                    #{j.id} — {j.title} [{j.department || 'Chung'}] ({j.status})
+                    {j.title} — {j.department || 'Chung'} [{formatJobStatus(j.status)}]
                   </option>
                 ))}
               </select>

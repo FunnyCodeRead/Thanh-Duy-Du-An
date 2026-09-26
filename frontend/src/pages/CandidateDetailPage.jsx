@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useOutletContext, useParams } from 'react-router-dom'
 import Loading from '../components/Loading'
 import { candidateApi, cvUrl } from '../services/api'
+import { formatSource } from '../utils/formatters'
 
 export default function CandidateDetailPage() {
   const { user } = useOutletContext()
@@ -71,7 +72,7 @@ export default function CandidateDetailPage() {
             <i className="bi bi-person-lines-fill text-primary"></i>
             <span>Thông tin chi tiết ứng viên</span>
           </div>
-          <span className="soft-badge soft-badge-secondary">Nguồn: {c.source || 'OTHER'}</span>
+          <span className="soft-badge soft-badge-secondary">Nguồn: {formatSource(c.source)}</span>
         </div>
 
         <div className="card-modern-body">

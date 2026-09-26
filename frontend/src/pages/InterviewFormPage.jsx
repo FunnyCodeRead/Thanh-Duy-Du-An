@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import Loading from '../components/Loading'
 import { applicationApi, interviewApi } from '../services/api'
+import { formatApplicationStatus, formatInterviewStatus, formatRole } from '../utils/formatters'
 
 function toDateTimeLocal(dateString) {
   if (!dateString) return ''
@@ -51,7 +52,7 @@ export default function InterviewFormPage() {
         if (interviewRes?.data) {
           const item = interviewRes.data
           if (item.status !== 'SCHEDULED') {
-            setError(`Chỉ có thể chỉnh sửa phỏng vấn ở trạng thái SCHEDULED (Hiện tại: ${item.status}).`)
+            setError(`Chỉ có thể chỉnh sửa buổi phỏng vấn khi đang ở trạng thái Đã lên lịch (Hiện tại: ${formatInterviewStatus(item.status)}).`)
           }
           setForm({
             application_id: String(item.application_id || ''),
@@ -163,8 +164,7 @@ export default function InterviewFormPage() {
                   <option value="">-- Chọn hồ sơ ứng tuyển --</option>
                   {applications.map((app) => (
                     <option key={app.id} value={app.id}>
-                      #{app.id} - {app.candidate_name || `Ứng viên #${app.candidate_id}`} |{' '}
-                      {app.job_title || `Vị trí #${app.job_id}`} ({app.status})
+                      {app.candidate_name || `Ứng viên #${app.candidate_id}`} — {app.job_title || 'Vị trí ứng tuyển'} [{formatApplicationStatus(app.status)}]
                     </option>
                   ))}
                 </select>
@@ -186,7 +186,7 @@ export default function InterviewFormPage() {
                   <option value="">-- Chọn người phỏng vấn --</option>
                   {interviewers.map((usr) => (
                     <option key={usr.id} value={usr.id}>
-                      {usr.full_name} ({usr.role} - {usr.email})
+                      {usr.full_name} ({formatRole(usr.role)} - {usr.email})
                     </option>
                   ))}
                 </select>

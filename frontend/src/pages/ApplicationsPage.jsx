@@ -4,11 +4,11 @@ import Loading from '../components/Loading'
 import { applicationApi, jobApi } from '../services/api'
 
 const STATUS_CONFIG = {
-  NEW: { label: 'Mới nhận (NEW)', badgeClass: 'soft-badge-secondary', icon: 'bi-inbox' },
-  SCREENING: { label: 'Sàng lọc (SCREENING)', badgeClass: 'soft-badge-info', icon: 'bi-search' },
-  INTERVIEW: { label: 'Phỏng vấn (INTERVIEW)', badgeClass: 'soft-badge-purple', icon: 'bi-calendar-event' },
-  PASSED: { label: 'Trúng tuyển (PASSED)', badgeClass: 'soft-badge-success', icon: 'bi-check-circle-fill' },
-  REJECTED: { label: 'Không đạt (REJECTED)', badgeClass: 'soft-badge-danger', icon: 'bi-x-circle-fill' },
+  NEW: { label: 'Mới nhận', badgeClass: 'soft-badge-secondary', icon: 'bi-inbox' },
+  SCREENING: { label: 'Sàng lọc hồ sơ', badgeClass: 'soft-badge-info', icon: 'bi-search' },
+  INTERVIEW: { label: 'Phỏng vấn', badgeClass: 'soft-badge-purple', icon: 'bi-calendar-event' },
+  PASSED: { label: 'Trúng tuyển', badgeClass: 'soft-badge-success', icon: 'bi-check-circle-fill' },
+  REJECTED: { label: 'Không đạt', badgeClass: 'soft-badge-danger', icon: 'bi-x-circle-fill' },
 }
 
 export default function ApplicationsPage() {

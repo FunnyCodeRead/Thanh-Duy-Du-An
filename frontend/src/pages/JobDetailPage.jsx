@@ -66,7 +66,7 @@ export default function JobDetailPage() {
               job.status === 'OPEN' ? 'soft-badge-success' : 'soft-badge-secondary'
             }`}
           >
-            {job.status === 'OPEN' ? 'Đang mở (OPEN)' : 'Đã đóng (CLOSED)'}
+            {job.status === 'OPEN' ? 'Đang mở tuyển' : 'Đã đóng tuyển'}
           </span>
         </div>
 

@@ -4,9 +4,9 @@ import Loading from '../components/Loading'
 import { interviewApi } from '../services/api'
 
 const STATUS_CONFIG = {
-  SCHEDULED: { label: 'Đã lên lịch (SCHEDULED)', badgeClass: 'soft-badge-primary', icon: 'bi-clock-fill' },
-  COMPLETED: { label: 'Đã hoàn thành (COMPLETED)', badgeClass: 'soft-badge-success', icon: 'bi-check-circle-fill' },
-  CANCELLED: { label: 'Đã hủy (CANCELLED)', badgeClass: 'soft-badge-secondary', icon: 'bi-x-circle' },
+  SCHEDULED: { label: 'Đã lên lịch', badgeClass: 'soft-badge-primary', icon: 'bi-clock-fill' },
+  COMPLETED: { label: 'Đã hoàn thành', badgeClass: 'soft-badge-success', icon: 'bi-check-circle-fill' },
+  CANCELLED: { label: 'Đã hủy', badgeClass: 'soft-badge-secondary', icon: 'bi-x-circle' },
 }
 
 export default function InterviewsPage() {
@@ -223,7 +223,7 @@ export default function InterviewsPage() {
                         <td>
                           <span className={`soft-badge ${conf.badgeClass}`}>
                             <i className={`bi ${conf.icon}`}></i>
-                            {item.status}
+                            {conf.label}
                           </span>
                         </td>
                         <td className="text-end text-nowrap">

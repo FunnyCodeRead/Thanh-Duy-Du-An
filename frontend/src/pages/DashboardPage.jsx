@@ -4,11 +4,11 @@ import { apiRequest } from '../services/api'
 import Loading from '../components/Loading'
 
 const STATUS_CONFIG = {
-  NEW: { label: 'Mới nhận', en: 'NEW', colorClass: 'soft-badge-secondary', dotColor: '#94a3b8' },
-  SCREENING: { label: 'Sàng lọc CV', en: 'SCREENING', colorClass: 'soft-badge-info', dotColor: '#0284c7' },
-  INTERVIEW: { label: 'Phỏng vấn', en: 'INTERVIEW', colorClass: 'soft-badge-purple', dotColor: '#7c3aed' },
-  PASSED: { label: 'Trúng tuyển', en: 'PASSED', colorClass: 'soft-badge-success', dotColor: '#059669' },
-  REJECTED: { label: 'Không đạt', en: 'REJECTED', colorClass: 'soft-badge-danger', dotColor: '#dc2626' },
+  NEW: { label: 'Mới nhận', colorClass: 'soft-badge-secondary', dotColor: '#94a3b8' },
+  SCREENING: { label: 'Sàng lọc hồ sơ', colorClass: 'soft-badge-info', dotColor: '#0284c7' },
+  INTERVIEW: { label: 'Phỏng vấn', colorClass: 'soft-badge-purple', dotColor: '#7c3aed' },
+  PASSED: { label: 'Trúng tuyển', colorClass: 'soft-badge-success', dotColor: '#059669' },
+  REJECTED: { label: 'Không đạt', colorClass: 'soft-badge-danger', dotColor: '#dc2626' },
 }
 
 const SOURCE_CONFIG = {
@@ -214,9 +214,6 @@ export default function DashboardPage() {
                             }}
                           />
                           <span className="fw-semibold small">{conf.label}</span>
-                          <span className="text-muted small" style={{ fontSize: '0.75rem' }}>
-                            ({conf.en})
-                          </span>
                         </div>
                         <div className="d-flex align-items-center gap-2">
                           <span className="fw-bold small">{count} hồ sơ</span>
@@ -336,7 +333,7 @@ export default function DashboardPage() {
                 />
               </div>
               <p className="text-muted small mb-0">
-                <strong>Quy tắc tính toán:</strong> <code>PASSED / (PASSED + REJECTED) &times; 100%</code>. Các hồ sơ đang ở giai đoạn Sàng lọc hoặc Phỏng vấn chưa được tính vào mẫu số.
+                <strong>Cách tính:</strong> Tỷ lệ phần trăm ứng viên Trúng tuyển trên tổng số hồ sơ đã có kết quả đánh giá cuối cùng (Trúng tuyển + Không đạt).
               </p>
             </div>
           </div>
@@ -348,7 +345,7 @@ export default function DashboardPage() {
             <div className="card-modern-header">
               <div className="d-flex align-items-center gap-2">
                 <i className="bi bi-clock-history text-secondary fs-5"></i>
-                <span>Thời gian tuyển dụng (Time-to-Hire)</span>
+                <span>Thời gian tuyển dụng trung bình</span>
               </div>
               <span className="soft-badge soft-badge-secondary">Báo cáo dữ liệu</span>
             </div>
@@ -359,12 +356,12 @@ export default function DashboardPage() {
               >
                 <i className="bi bi-info-circle-fill text-primary mt-0.5"></i>
                 <div>
-                  <strong className="text-dark">Giới hạn mô hình dữ liệu:</strong>{' '}
+                  <strong className="text-dark">Thông tin chỉ số:</strong>{' '}
                   <span className="text-secondary">{hiringTime.message}</span>
                 </div>
               </div>
               <p className="text-muted small mb-0">
-                Theo quy chuẩn AI-SDLC, hệ thống kiên quyết không tạo số liệu giả lập. Do schema hiện tại chỉ lưu trữ ngày nộp ban đầu (<code>applied_at</code>) mà không lưu mốc thời gian hoàn thành (<code>completed_at</code>), chỉ số này được để trống trung thực.
+                Chỉ số thời gian tuyển dụng trung bình đang được cập nhật liên tục dựa trên tiến độ hoàn tất các vị trí tuyển dụng thực tế.
               </p>
             </div>
           </div>

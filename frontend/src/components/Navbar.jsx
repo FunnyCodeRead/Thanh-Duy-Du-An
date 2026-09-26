@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { authApi } from '../services/api'
+import { formatRole } from '../utils/formatters'
 
 export default function Navbar({ user }) {
   const navigate = useNavigate()
@@ -42,9 +43,10 @@ export default function Navbar({ user }) {
           <span className="text-secondary small">Xin chào,</span>
           <span className="fw-semibold text-dark small">{user?.full_name}</span>
           <span className={`soft-badge ${roleBadgeClass}`}>
-            {role}
+            {formatRole(role)}
           </span>
         </div>
+
 
         <button
           className="btn btn-outline-danger btn-sm rounded-pill px-3 d-inline-flex align-items-center gap-1.5"

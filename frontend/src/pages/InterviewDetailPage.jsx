@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link, useOutletContext, useParams } from 'react-router-dom'
 import Loading from '../components/Loading'
 import { evaluationApi, interviewApi } from '../services/api'
+import { formatInterviewStatus, formatRole } from '../utils/formatters'
 
 function statusBadgeClass(status) {
   switch (status) {
@@ -69,14 +70,15 @@ export default function InterviewDetailPage() {
   }, [id])
 
   async function handleStatusChange(newStatus) {
-    if (!window.confirm(`Bạn có chắc muốn chuyển trạng thái phỏng vấn sang ${newStatus}?`)) {
+    const statusText = formatInterviewStatus(newStatus)
+    if (!window.confirm(`Bạn có chắc muốn chuyển trạng thái phỏng vấn sang ${statusText}?`)) {
       return
     }
     setProcessing(true)
     setActionMsg({ text: '', type: '' })
     try {
       await interviewApi.updateStatus(id, newStatus)
-      setActionMsg({ text: `Đã cập nhật trạng thái phỏng vấn thành ${newStatus}.`, type: 'success' })
+      setActionMsg({ text: `Đã cập nhật trạng thái phỏng vấn thành ${statusText}.`, type: 'success' })
       reloadData()
     } catch (err) {
       setActionMsg({ text: err.message || 'Không thể cập nhật trạng thái phỏng vấn.', type: 'danger' })
@@ -107,7 +109,7 @@ export default function InterviewDetailPage() {
             <div className="d-flex align-items-center gap-2">
               <h1 className="h4 mb-0 fw-bold">Chi tiết phỏng vấn #{interview.id}</h1>
               <span className={`badge ${statusBadgeClass(interview.status)} px-3 py-2 rounded-pill`}>
-                {interview.status}
+                {formatInterviewStatus(interview.status)}
               </span>
             </div>
             <p className="text-muted small mb-0 mt-1">
@@ -265,11 +267,11 @@ export default function InterviewDetailPage() {
                   <i className="bi bi-info-circle me-1"></i>Quy trình chuẩn:
                 </div>
                 <div className="d-flex align-items-center gap-2 small">
-                  <span className="badge soft-badge-primary">SCHEDULED</span>
+                  <span className="badge soft-badge-primary">Đã lên lịch</span>
                   <i className="bi bi-arrow-right text-muted"></i>
-                  <span className="badge soft-badge-success">COMPLETED</span>
+                  <span className="badge soft-badge-success">Đã hoàn thành</span>
                   <span className="text-muted">hoặc</span>
-                  <span className="badge soft-badge-secondary">CANCELLED</span>
+                  <span className="badge soft-badge-secondary">Đã hủy</span>
                 </div>
               </div>
 
@@ -281,7 +283,7 @@ export default function InterviewDetailPage() {
                       disabled={processing}
                       onClick={() => handleStatusChange('COMPLETED')}
                     >
-                      <i className="bi bi-check-circle-fill me-2"></i>Hoàn thành phỏng vấn (COMPLETED)
+                      <i className="bi bi-check-circle-fill me-2"></i>Xác nhận Hoàn thành phỏng vấn
                     </button>
                   )}
                   {canCancel && (
@@ -290,7 +292,7 @@ export default function InterviewDetailPage() {
                       disabled={processing}
                       onClick={() => handleStatusChange('CANCELLED')}
                     >
-                      <i className="bi bi-x-circle me-2"></i>Hủy phỏng vấn (CANCELLED)
+                      <i className="bi bi-x-circle me-2"></i>Hủy buổi phỏng vấn
                     </button>
                   )}
                   {!canComplete && !canCancel && (
@@ -302,7 +304,7 @@ export default function InterviewDetailPage() {
               ) : (
                 <div className="alert alert-secondary mb-0 rounded-3">
                   <i className="bi bi-flag-fill me-2"></i>
-                  Trạng thái hiện tại: <strong>{interview.status}</strong>. Phỏng vấn đã kết thúc chu trình.
+                  Trạng thái hiện tại: <strong className="text-primary">{formatInterviewStatus(interview.status)}</strong>. Buổi phỏng vấn đã kết thúc chu trình.
                 </div>
               )}
             </div>
@@ -388,7 +390,7 @@ export default function InterviewDetailPage() {
                           </div>
                           <div>
                             <div className="fw-semibold text-dark">{ev.evaluator_name || '-'}</div>
-                            <div className="text-muted" style={{ fontSize: '0.75rem' }}>{ev.evaluator_role}</div>
+                            <div className="text-muted" style={{ fontSize: '0.75rem' }}>{formatRole(ev.evaluator_role)}</div>
                           </div>
                         </div>
                       </td>

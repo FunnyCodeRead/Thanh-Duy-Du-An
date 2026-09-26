@@ -95,8 +95,8 @@ export default function JobsPage() {
               style={{ borderRadius: 'var(--radius-md)' }}
             >
               <option value="">Tất cả trạng thái</option>
-              <option value="OPEN">Đang mở (OPEN)</option>
-              <option value="CLOSED">Đã đóng (CLOSED)</option>
+              <option value="OPEN">Đang mở tuyển</option>
+              <option value="CLOSED">Đã đóng tuyển</option>
             </select>
           </div>
 

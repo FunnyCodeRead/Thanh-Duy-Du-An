@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom'
+import { formatRole } from '../utils/formatters'
 
 export default function Sidebar({ user }) {
   const role = user?.role || 'HR'
@@ -24,7 +25,7 @@ export default function Sidebar({ user }) {
             <div>
               <div style={{ lineHeight: 1.15 }}>AI Recruitment</div>
               <small style={{ fontSize: '0.68rem', color: '#64748b', fontWeight: 500 }}>
-                Smart ATS Copilot
+                Tuyển dụng Thông minh
               </small>
             </div>
           </NavLink>
@@ -83,7 +84,7 @@ export default function Sidebar({ user }) {
               {user?.full_name || 'Người dùng'}
             </div>
             <span className={`soft-badge ${roleBadgeClass}`} style={{ fontSize: '0.7rem', padding: '0.15rem 0.5rem' }}>
-              {role}
+              {formatRole(role)}
             </span>
           </div>
         </div>
@@ -91,3 +92,4 @@ export default function Sidebar({ user }) {
     </aside>
   )
 }
+

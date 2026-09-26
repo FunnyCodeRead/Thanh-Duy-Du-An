@@ -8,6 +8,13 @@ import {
   evaluationApi,
   interviewApi,
 } from '../services/api'
+import {
+  formatAiType,
+  formatApplicationStatus,
+  formatInterviewStatus,
+  formatRole,
+  formatSource,
+} from '../utils/formatters'
 
 const nextStatusMap = {
   NEW: ['SCREENING', 'REJECTED'],
@@ -18,11 +25,11 @@ const nextStatusMap = {
 }
 
 const STATUS_CONFIG = {
-  NEW: { label: 'Mới nhận (NEW)', badgeClass: 'soft-badge-secondary', stepIdx: 0 },
-  SCREENING: { label: 'Sàng lọc (SCREENING)', badgeClass: 'soft-badge-info', stepIdx: 1 },
-  INTERVIEW: { label: 'Phỏng vấn (INTERVIEW)', badgeClass: 'soft-badge-purple', stepIdx: 2 },
-  PASSED: { label: 'Trúng tuyển (PASSED)', badgeClass: 'soft-badge-success', stepIdx: 3 },
-  REJECTED: { label: 'Không đạt (REJECTED)', badgeClass: 'soft-badge-danger', stepIdx: 3 },
+  NEW: { label: 'Mới nhận', badgeClass: 'soft-badge-secondary', stepIdx: 0 },
+  SCREENING: { label: 'Sàng lọc hồ sơ', badgeClass: 'soft-badge-info', stepIdx: 1 },
+  INTERVIEW: { label: 'Phỏng vấn', badgeClass: 'soft-badge-purple', stepIdx: 2 },
+  PASSED: { label: 'Trúng tuyển', badgeClass: 'soft-badge-success', stepIdx: 3 },
+  REJECTED: { label: 'Không đạt', badgeClass: 'soft-badge-danger', stepIdx: 3 },
 }
 
 const STEP_DEFINITIONS = [
@@ -195,7 +202,7 @@ export default function ApplicationDetailPage() {
 
         <div className="d-flex align-items-center gap-2">
           <span className={`soft-badge ${STATUS_CONFIG[currentStatus]?.badgeClass || 'soft-badge-secondary'} px-3 py-1.5 fs-6`}>
-            {currentStatus}
+            {formatApplicationStatus(currentStatus)}
           </span>
           <Link to="/applications" className="btn btn-secondary-modern btn-sm text-decoration-none">
             Quay lại danh sách
@@ -227,7 +234,7 @@ export default function ApplicationDetailPage() {
             <span>Tiến trình tuyển dụng hồ sơ</span>
           </div>
           <span className="text-muted small">
-            Trạng thái hiện tại: <strong>{currentStatus}</strong>
+            Trạng thái hiện tại: <strong className="text-primary">{formatApplicationStatus(currentStatus)}</strong>
           </span>
         </div>
         <div className="card-modern-body">
@@ -261,7 +268,7 @@ export default function ApplicationDetailPage() {
                 <div className="text-secondary small d-flex align-items-center gap-2">
                   <i className="bi bi-check-circle text-success"></i>
                   <span>
-                    Hồ sơ đã đạt trạng thái cuối cùng (<strong>{currentStatus}</strong>). Quy trình tuyển dụng đã hoàn tất.
+                    Hồ sơ đã đạt trạng thái cuối cùng (<strong>{formatApplicationStatus(currentStatus)}</strong>). Quy trình tuyển dụng đã hoàn tất.
                   </span>
                 </div>
               ) : (
@@ -278,7 +285,7 @@ export default function ApplicationDetailPage() {
                   >
                     {allowedNext.map((st) => (
                       <option key={st} value={st}>
-                        {st} ({STATUS_CONFIG[st]?.label || st})
+                        {formatApplicationStatus(st)}
                       </option>
                     ))}
                   </select>
@@ -360,7 +367,7 @@ export default function ApplicationDetailPage() {
                 <div className="col-sm-8 text-dark">{candidate.experience || '—'}</div>
                 <div className="col-sm-4 text-muted fw-semibold">Nguồn ứng viên:</div>
                 <div className="col-sm-8">
-                  <span className="soft-badge soft-badge-secondary">{candidate.source || 'OTHER'}</span>
+                  <span className="soft-badge soft-badge-secondary">{formatSource(candidate.source)}</span>
                 </div>
                 <div className="col-sm-4 text-muted fw-semibold">Kỹ năng:</div>
                 <div className="col-sm-8">
@@ -631,7 +638,7 @@ export default function ApplicationDetailPage() {
                 >
                   <div className="d-flex justify-content-between align-items-center">
                     <span className="soft-badge soft-badge-primary">
-                      {item.type}
+                      {formatAiType(item.type)}
                     </span>
                     <div className="d-flex align-items-center gap-2">
                       <span className="text-muted" style={{ fontSize: '0.75rem' }}>
@@ -725,7 +732,7 @@ export default function ApplicationDetailPage() {
                                   : 'soft-badge-secondary'
                               }`}
                             >
-                              {iv.status}
+                              {formatInterviewStatus(iv.status)}
                             </span>
                           </td>
                           <td className="text-end">
@@ -791,6 +798,7 @@ export default function ApplicationDetailPage() {
                             <td>
                               <div className="fw-semibold text-dark small">{ev.evaluator_name}</div>
                               <div className="text-muted" style={{ fontSize: '0.75rem' }}>
+                                {ev.evaluator_role ? `${formatRole(ev.evaluator_role)} • ` : ''}
                                 {ev.created_at
                                   ? new Date(ev.created_at).toLocaleDateString('vi-VN')
                                   : ''}

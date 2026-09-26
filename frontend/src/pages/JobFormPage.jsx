@@ -167,8 +167,8 @@ export default function JobFormPage() {
               <div className="col-md-3">
                 <label className="form-label small fw-semibold text-secondary">Trạng thái</label>
                 <select className="form-select" {...field('status')}>
-                  <option value="OPEN">Đang mở (OPEN)</option>
-                  <option value="CLOSED">Đã đóng (CLOSED)</option>
+                  <option value="OPEN">Đang mở tuyển</option>
+                  <option value="CLOSED">Đã đóng tuyển</option>
                 </select>
               </div>
             </div>
