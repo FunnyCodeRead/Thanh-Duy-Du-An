@@ -36,6 +36,23 @@ Verify that the system preserves authentication, role enforcement, Job and Candi
   - TC-EVAL-08: Evaluator updates own evaluation (HTTP 200)
   - TC-EVAL-09: Unauthorized user forbidden from editing other's evaluation (HTTP 403)
   - TC-EVAL-10: Detailed evaluation comment persistence verified
+- AI Assistant (Google Gemini):
+  - TC-AI-01: Authenticated HR generate CV Summary (HTTP 200)
+  - TC-AI-02: Missing/invalid application returns HTTP 404
+  - TC-AI-03: Candidate CV text empty returns HTTP 400
+  - TC-AI-04: Gemini API error handled gracefully with user-friendly error (HTTP 500, no Flask crash)
+  - TC-AI-05: CV Summary saved into `ai_results` table
+  - TC-AI-06: Generate Interview Questions (HTTP 200)
+  - TC-AI-07: Interview Questions saved into `ai_results` table
+  - TC-AI-08: Email invitation generation (HTTP 200)
+  - TC-AI-09: Result email with valid final status (PASSED/REJECTED) (HTTP 200)
+  - TC-AI-10: Result email with non-final status returns HTTP 400
+  - TC-AI-11: MANAGER cannot generate email (HTTP 403)
+  - TC-AI-12: Authenticated user list AI results (HTTP 200)
+  - TC-AI-13: Unauthenticated AI requests return HTTP 401
+  - TC-AI-14: Missing Gemini API key handled gracefully without secret exposure
+  - TC-AI-15: AI generation NEVER modifies Application status (status preservation guarantee)
+  - TC-AI-16: CV Summary prompt safety rule check (CV content is reference data, not instructions)
 - Flask health and dashboard behavior.
 - Frontend static analysis and production compilation.
 
@@ -46,11 +63,13 @@ Verify that the system preserves authentication, role enforcement, Job and Candi
 - Real Application create, duplicate rejection, and status transitions against live MySQL.
 - Real Interview creation, SCHEDULED status, transition to COMPLETED/CANCELLED against live MySQL.
 - Real Evaluation submission, 1-5 score constraints, runtime average calculation against live MySQL.
+- Real AI Result persistence and retrieval from `ai_results` table.
 - Search and filter against inserted records.
 - DOCX upload, text extraction and authenticated retrieval.
 - Deletion protection for records linked to Applications.
 - Strict preservation of the 7 database tables.
-- MANAGER read-only behavior across Jobs, Candidates, Applications, and Interviews.
+- MANAGER read-only behavior across Jobs, Candidates, Applications, Interviews, and Email generation.
+- Minimal AI bias check across identical CV qualifications (`docs/ai-bias-check.md`).
 - Vite proxy for `/api` and session cookies.
 
 ## Manual Browser Scope
@@ -59,7 +78,11 @@ Verify that the system preserves authentication, role enforcement, Job and Candi
 - Dashboard renders live counts and clickable cards.
 - Applications page lists applications with status badges and filter controls.
 - Create Application form links candidates and jobs with duplicate alert handling.
-- Detail page displays Candidate info, Job info, Application info, Interviews list, and Evaluations list with role-aware controls.
+- Detail page displays Candidate info, Job info, Application info, Interviews list, Evaluations list, and Trợ lý AI section.
+- AI CV Summary generates clear 4-section summary with live copy action.
+- AI Interview Questions suggests 5 questions bám sát hồ sơ.
+- AI Email Draft generates invitation or outcome templates in Vietnamese.
+- AI History displays recent results with fast viewer.
 - Interviews page lists interviews with status filters and "+ Lên lịch phỏng vấn" button.
 - Interview form schedules new interview with interviewer dropdown and datetime selection.
 - Interview detail page displays candidate/job info, status buttons (Complete/Cancel), and linked evaluations.
@@ -70,6 +93,7 @@ Verify that the system preserves authentication, role enforcement, Job and Candi
 
 ## Exit Criteria
 
-All pytest tests pass (101 tests), oxlint exits zero without warnings, Vite production build succeeds, live MySQL integration suite succeeds, and manual verification confirms the flow.
+All pytest tests pass (117 tests), oxlint exits zero without warnings, Vite production build succeeds, live MySQL integration suite succeeds, minimal bias check documented, and manual verification confirms the flow.
+
 
 

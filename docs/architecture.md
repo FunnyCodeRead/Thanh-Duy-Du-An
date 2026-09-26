@@ -15,24 +15,30 @@ React and Vite frontend
   | HTTP JSON or multipart form data
   v
 Flask REST API
-  |
-  | parameterized SQL
-  v
-MySQL ai_recruitment
-
-Later milestone only:
-Flask AI endpoint -> Gemini API
+  |                   \
+  | parameterized SQL  \ Prompt string
+  v                     v
+MySQL ai_recruitment    AI Service -> Gemini Service -> Google Gemini API
+(7 tables)              (Advisory only)                     |
+  ^                                                         | Text result
+  |=========================================================|
+                     Stored in ai_results
 ```
 
 ## Components
 
 ### React Frontend
 
-React Router owns navigation. `ProtectedRoute` calls `GET /api/auth/me` before rendering protected pages. Layout components show the authenticated user and hide mutation controls from MANAGER. Page components use the shared Fetch API helper and never access database or Gemini credentials.
+React Router owns navigation. `ProtectedRoute` calls `GET /api/auth/me` before rendering protected pages. Layout components show the authenticated user and hide mutation controls from MANAGER. Page components use the shared Fetch API helper and never access database or Gemini credentials. The AI assistant section in `ApplicationDetailPage` provides UI triggers and displays results with a clear decision support disclaimer.
 
 ### Flask REST API
 
-`backend/app.py` initializes Flask, configuration, session support, health and dashboard endpoints, then registers authentication, Job, Candidate, Application, Interview, and Evaluation blueprints. Route modules validate input, enforce roles, call existing database functions, and return consistent JSON.
+`backend/app.py` initializes Flask, configuration, session support, health and dashboard endpoints, then registers authentication, Job, Candidate, Application, Interview, Evaluation, and AI blueprints. Route modules validate input, enforce roles, call existing database functions, and return consistent JSON.
+
+### AI Service & Gemini Integration Layer
+
+- `backend/services/gemini_service.py`: Dedicated API wrapper calling `google-genai` with model `gemini-2.5-flash`. Handles timeouts, API errors, and missing keys without crashing Flask. Never queries the database directly.
+- `backend/services/ai_service.py`: Domain layer fetching required context (job details, candidate CV text, application status) via parameterized SQL, formatting prompts from `backend/prompts/`, calling Gemini, and persisting outputs into the `ai_results` table.
 
 ### Database Layer
 
@@ -52,7 +58,7 @@ Candidate CVs are stored under `backend/uploads` with UUID-prefixed safe filenam
 
 ## Authorization Boundary
 
-Frontend controls improve usability but are not security controls. Flask permits ADMIN and HR to mutate Jobs, Candidates, Applications, and Interviews. MANAGER has read-only access for Jobs, Candidates, Applications, and Interviews (except marking an assigned interview COMPLETED). For Evaluations, all authenticated roles (`ADMIN`, `HR`, `MANAGER`) may submit evaluations; only the original evaluator or ADMIN may edit an evaluation. Unauthorized API calls return HTTP 403.
+Frontend controls improve usability but are not security controls. Flask permits ADMIN and HR to mutate Jobs, Candidates, Applications, and Interviews. MANAGER has read-only access for Jobs, Candidates, Applications, and Interviews (except marking an assigned interview COMPLETED). For Evaluations, all authenticated roles (`ADMIN`, `HR`, `MANAGER`) may submit evaluations; only the original evaluator or ADMIN may edit an evaluation. For AI services, `ADMIN`, `HR`, and `MANAGER` can generate CV summaries, interview questions, and view AI history; only `ADMIN` and `HR` may generate recruitment email drafts. Unauthorized API calls return HTTP 403.
 
 ## Migration Result
 
@@ -68,10 +74,19 @@ The equivalent React flows passed build, API, session, role, upload, MySQL integ
 | FR-009 to FR-010 | ApplicationsPage, ApplicationCreatePage, ApplicationDetailPage | `/api/applications*` | applications, candidates, jobs |
 | FR-011 | InterviewsPage, InterviewFormPage, InterviewDetailPage | `/api/interviews*` | interviews, applications, users |
 | FR-012 | EvaluationFormPage, ApplicationDetailPage, InterviewDetailPage | `/api/evaluations*` | evaluations, applications, users |
+| FR-013 | ApplicationDetailPage (AI Section) | `POST /api/ai/cv-summary` | ai_results, applications, candidates, jobs |
+| FR-014 | ApplicationDetailPage (AI Section) | `POST /api/ai/interview-questions` | ai_results, applications, candidates, jobs |
+| FR-015 | ApplicationDetailPage (AI Section) | `POST /api/ai/email` | ai_results, applications, candidates, jobs, interviews |
+| FR-016 | ApplicationDetailPage (AI History) | `GET /api/applications/{id}/ai-results` | ai_results |
 | FR-017 | DashboardPage | `/api/dashboard` | aggregate queries |
 | FR-018 | Development verification | `/api/health` | connection check |
 
-## Trust Boundaries
+## Trust & Security Boundaries
 
-Browser input is untrusted. Flask validates it before database or file operations. Uploaded filenames are untrusted and normalized. Environment secrets remain on the backend. Gemini is outside the system boundary and is not connected during this milestone.
+1. **Browser / Frontend:** Untrusted. The browser never receives or stores `GEMINI_API_KEY`. All AI interactions pass through authenticated Flask endpoints.
+2. **Backend Secrets:** `GEMINI_API_KEY` is loaded from server environment variables via `backend/config.py` and is never exposed in API responses or logs.
+3. **External Gemini Boundary:** Gemini receives only sanitized professional text (job requirements and extracted CV text). PII such as passwords, addresses, phone numbers, and internal IDs are withheld.
+4. **Prompt Injection Defense:** Prompt templates explicitly instruct Gemini that CV text is external reference data and never executable instructions.
+5. **Decoupled Decision Making:** AI results are strictly advisory. AI cannot change application statuses, assign hiring scores, or automatically send emails. All recruitment decisions remain exclusively with human recruiters.
+
 

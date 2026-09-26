@@ -866,3 +866,54 @@ def update_evaluation(evaluation_id, technical_score, communication_score, exper
             connection.close()
 
 
+def create_ai_result(application_id, result_type, content):
+    """Luu ket qua sinh tu Gemini AI vao bang ai_results."""
+    connection = None
+    cursor = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+            INSERT INTO ai_results (application_id, type, content)
+            VALUES (%s, %s, %s)
+            """,
+            (application_id, result_type, content),
+        )
+        connection.commit()
+        return cursor.lastrowid
+    except Error:
+        if connection:
+            connection.rollback()
+        raise
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+
+def get_ai_results_by_application(application_id):
+    """Lay danh sach ket qua AI da sinh cho mot ho so ung tuyen, sap xep moi nhat truoc."""
+    connection = None
+    cursor = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute(
+            """
+            SELECT id, application_id, type, content, created_at
+            FROM ai_results
+            WHERE application_id = %s
+            ORDER BY created_at DESC, id DESC
+            """,
+            (application_id,),
+        )
+        return cursor.fetchall()
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+

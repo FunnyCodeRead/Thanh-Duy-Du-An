@@ -137,4 +137,87 @@ JSON fields:
 
 Returns HTTP 200 on success.
 
+## AI Assistant API (Google Gemini)
+
+### Generate CV Summary (`POST /api/ai/cv-summary`)
+Roles: `ADMIN`, `HR`, `MANAGER`. Requires active session.
+JSON fields:
+- `application_id` (integer, required): ID of existing application.
+
+Validates that application, candidate, and non-empty `cv_text` exist. Sends sanitized job description and CV text to Gemini.
+Stores generated summary in `ai_results` with `type = 'CV_SUMMARY'`.
+Returns HTTP 200 on success:
+```json
+{
+  "success": true,
+  "data": {
+    "type": "CV_SUMMARY",
+    "content": "..."
+  }
+}
+```
+Errors:
+- HTTP 400: Missing or invalid `application_id`, or candidate CV text is empty.
+- HTTP 401: Unauthenticated request.
+- HTTP 404: Application not found.
+- HTTP 500: Gemini service or network failure (graceful error message, secrets not exposed).
+
+### Generate Interview Questions (`POST /api/ai/interview-questions`)
+Roles: `ADMIN`, `HR`, `MANAGER`. Requires active session.
+JSON fields:
+- `application_id` (integer, required): ID of existing application.
+
+Requests Gemini to generate 5 targeted interview questions (2 skill, 2 experience, 1 CV clarification).
+Stores questions in `ai_results` with `type = 'INTERVIEW_QUESTION'`.
+Returns HTTP 200 on success:
+```json
+{
+  "success": true,
+  "data": {
+    "type": "INTERVIEW_QUESTION",
+    "content": "..."
+  }
+}
+```
+
+### Generate Email Draft (`POST /api/ai/email`)
+Roles: `ADMIN`, `HR` only. (MANAGER receives HTTP 403 Forbidden).
+JSON fields:
+- `application_id` (integer, required): ID of existing application.
+- `email_type` (string, required): Either `INTERVIEW_INVITATION` or `RESULT`.
+
+Validation:
+- For `RESULT`, the application status must be in a final state (`PASSED` or `REJECTED`). Non-final status returns HTTP 400.
+Generates an email draft in Vietnamese. Does NOT send actual emails.
+Stores draft in `ai_results` with `type = 'EMAIL'`.
+Returns HTTP 200 on success:
+```json
+{
+  "success": true,
+  "data": {
+    "type": "EMAIL",
+    "content": "Tiêu đề: ...\n\nNội dung: ..."
+  }
+}
+```
+
+### List AI Results for Application (`GET /api/applications/{application_id}/ai-results`)
+Roles: `ADMIN`, `HR`, `MANAGER`. Requires active session.
+Returns all historical AI results for the specified application ordered by `created_at DESC`.
+Returns HTTP 200 on success with array of records:
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "application_id": 5,
+      "type": "CV_SUMMARY",
+      "content": "...",
+      "created_at": "2026-09-26T12:00:00"
+    }
+  ]
+}
+```
+
 

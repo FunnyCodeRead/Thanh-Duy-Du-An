@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useOutletContext, useParams } from 'react-router-dom'
 import Loading from '../components/Loading'
-import { applicationApi, cvUrl, evaluationApi, interviewApi } from '../services/api'
+import { aiApi, applicationApi, cvUrl, evaluationApi, interviewApi } from '../services/api'
 
 const nextStatusMap = {
   NEW: ['SCREENING', 'REJECTED'],
@@ -41,6 +41,19 @@ function statusBadgeClass(status) {
   }
 }
 
+function aiTypeBadge(type) {
+  switch (type) {
+    case 'CV_SUMMARY':
+      return <span className="badge bg-primary">Tóm tắt CV</span>
+    case 'INTERVIEW_QUESTION':
+      return <span className="badge bg-info text-dark">Câu hỏi phỏng vấn</span>
+    case 'EMAIL':
+      return <span className="badge bg-success">Soạn thảo Email</span>
+    default:
+      return <span className="badge bg-secondary">{type}</span>
+  }
+}
+
 export default function ApplicationDetailPage() {
   const { user } = useOutletContext()
   const { id } = useParams()
@@ -53,24 +66,87 @@ export default function ApplicationDetailPage() {
   const [updating, setUpdating] = useState(false)
   const [actionMessage, setActionMessage] = useState({ text: '', type: '' })
 
+  // AI Assistant State
+  const [aiResults, setAiResults] = useState([])
+  const [aiLoading, setAiLoading] = useState('')
+  const [aiError, setAiError] = useState('')
+  const [aiCurrentResult, setAiCurrentResult] = useState(null)
+  const [emailType, setEmailType] = useState('INTERVIEW_INVITATION')
+  const [copied, setCopied] = useState(false)
+
   const loadDetail = useCallback(() => {
     Promise.all([
       applicationApi.get(id),
       interviewApi.list(`?application_id=${id}`),
       evaluationApi.listByApplication(id),
+      aiApi.listResults(id),
     ])
-      .then(([appRes, intRes, evalRes]) => {
+      .then(([appRes, intRes, evalRes, aiRes]) => {
         setState({ loading: false, data: appRes.data, error: '' })
         const current = appRes.data?.status
         const availableNext = nextStatusMap[current] || []
         setSelectedStatus(availableNext[0] || '')
         setInterviews(intRes.data || [])
         setEvaluations(evalRes.data || [])
+        setAiResults(aiRes.data || [])
       })
       .catch((err) => {
         setState({ loading: false, data: null, error: err.message })
       })
   }, [id])
+
+  async function handleCvSummary() {
+    setAiLoading('CV_SUMMARY')
+    setAiError('')
+    try {
+      const res = await aiApi.cvSummary(id)
+      setAiCurrentResult(res.data)
+      const listRes = await aiApi.listResults(id)
+      setAiResults(listRes.data || [])
+    } catch (err) {
+      setAiError(err.message || 'Không thể sử dụng trợ lý AI lúc này.')
+    } finally {
+      setAiLoading('')
+    }
+  }
+
+  async function handleInterviewQuestions() {
+    setAiLoading('INTERVIEW_QUESTION')
+    setAiError('')
+    try {
+      const res = await aiApi.interviewQuestions(id)
+      setAiCurrentResult(res.data)
+      const listRes = await aiApi.listResults(id)
+      setAiResults(listRes.data || [])
+    } catch (err) {
+      setAiError(err.message || 'Không thể sử dụng trợ lý AI lúc này.')
+    } finally {
+      setAiLoading('')
+    }
+  }
+
+  async function handleGenerateEmail() {
+    setAiLoading('EMAIL')
+    setAiError('')
+    try {
+      const res = await aiApi.email(id, emailType)
+      setAiCurrentResult(res.data)
+      const listRes = await aiApi.listResults(id)
+      setAiResults(listRes.data || [])
+    } catch (err) {
+      setAiError(err.message || 'Không thể sử dụng trợ lý AI lúc này.')
+    } finally {
+      setAiLoading('')
+    }
+  }
+
+  function handleCopy(text) {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
 
   useEffect(() => {
     loadDetail()
@@ -412,6 +488,174 @@ export default function ApplicationDetailPage() {
                   </table>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+
+        {/* Khu vuc 6: Tro ly AI (Google Gemini) */}
+        <div className="col-12">
+          <div className="card shadow-sm border-0">
+            <div className="card-header bg-primary text-white fw-bold d-flex justify-content-between align-items-center">
+              <span>Trợ lý AI (Google Gemini)</span>
+              <span className="badge bg-light text-primary">Hỗ trợ ra quyết định</span>
+            </div>
+            <div className="card-body">
+              <div className="alert alert-info py-2 d-flex align-items-center mb-3">
+                <span className="me-2">ℹ️</span>
+                <span className="small">
+                  <strong>Lưu ý:</strong> AI chỉ hỗ trợ cung cấp thông tin tham khảo. Quyết định tuyển dụng do người phụ trách thực hiện.
+                </span>
+              </div>
+
+              {aiError && (
+                <div className="alert alert-danger alert-dismissible fade show" role="alert">
+                  {aiError}
+                  <button type="button" className="btn-close" onClick={() => setAiError('')} aria-label="Close" />
+                </div>
+              )}
+
+              {/* 3 action cards / buttons */}
+              <div className="row g-3 mb-4">
+                <div className="col-md-4">
+                  <div className="border rounded p-3 h-100 d-flex flex-column justify-content-between">
+                    <div>
+                      <h6 className="fw-semibold">Tóm tắt CV bằng AI</h6>
+                      <p className="small text-muted mb-3">
+                        Trích xuất kinh nghiệm chính, kỹ năng phù hợp và nội dung cần làm rõ từ CV.
+                      </p>
+                    </div>
+                    <button
+                      className="btn btn-outline-primary w-100"
+                      disabled={Boolean(aiLoading)}
+                      onClick={handleCvSummary}
+                    >
+                      {aiLoading === 'CV_SUMMARY' ? 'AI đang xử lý...' : '✨ Tóm tắt CV'}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="col-md-4">
+                  <div className="border rounded p-3 h-100 d-flex flex-column justify-content-between">
+                    <div>
+                      <h6 className="fw-semibold">Gợi ý câu hỏi phỏng vấn</h6>
+                      <p className="small text-muted mb-3">
+                        Đề xuất 5 câu hỏi phỏng vấn kỹ thuật và kinh nghiệm bám sát hồ sơ ứng viên.
+                      </p>
+                    </div>
+                    <button
+                      className="btn btn-outline-info w-100"
+                      disabled={Boolean(aiLoading)}
+                      onClick={handleInterviewQuestions}
+                    >
+                      {aiLoading === 'INTERVIEW_QUESTION' ? 'AI đang xử lý...' : '✨ Gợi ý câu hỏi phỏng vấn'}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="col-md-4">
+                  <div className="border rounded p-3 h-100 d-flex flex-column justify-content-between">
+                    <div>
+                      <h6 className="fw-semibold">Soạn email bằng AI</h6>
+                      <p className="small text-muted mb-2">
+                        Tự động sinh bản thảo email mời phỏng vấn hoặc thông báo kết quả.
+                      </p>
+                      {canUpdate ? (
+                        <select
+                          className="form-select form-select-sm mb-3"
+                          value={emailType}
+                          onChange={(e) => setEmailType(e.target.value)}
+                          disabled={Boolean(aiLoading)}
+                        >
+                          <option value="INTERVIEW_INVITATION">Mời phỏng vấn</option>
+                          <option value="RESULT">Thông báo kết quả ({currentStatus})</option>
+                        </select>
+                      ) : (
+                        <div className="small text-muted mb-3">(Chỉ ADMIN và HR có quyền soạn email)</div>
+                      )}
+                    </div>
+                    {canUpdate && (
+                      <button
+                        className="btn btn-outline-success w-100"
+                        disabled={Boolean(aiLoading)}
+                        onClick={handleGenerateEmail}
+                      >
+                        {aiLoading === 'EMAIL' ? 'AI đang xử lý...' : '✨ Soạn email'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Ket qua AI vua sinh */}
+              {aiCurrentResult && (
+                <div className="card border-primary mb-4 bg-light">
+                  <div className="card-header bg-light d-flex justify-content-between align-items-center">
+                    <span className="fw-semibold">
+                      Kết quả vừa sinh: {aiTypeBadge(aiCurrentResult.type)}
+                    </span>
+                    <button
+                      className="btn btn-sm btn-outline-secondary"
+                      onClick={() => handleCopy(aiCurrentResult.content)}
+                    >
+                      {copied ? '✓ Đã sao chép' : 'Sao chép'}
+                    </button>
+                  </div>
+                  <div className="card-body">
+                    <div className="p-3 bg-white rounded border" style={{ whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
+                      {aiCurrentResult.content}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Lich su ket qua AI gan day */}
+              <div className="mt-2">
+                <h6 className="fw-bold mb-3">Kết quả AI gần đây ({aiResults.length})</h6>
+                {aiResults.length === 0 ? (
+                  <p className="text-muted small mb-0">Chưa có kết quả AI nào được tạo cho hồ sơ này.</p>
+                ) : (
+                  <div className="table-responsive">
+                    <table className="table table-hover align-middle mb-0">
+                      <thead className="table-light">
+                        <tr>
+                          <th style={{ width: '60px' }}>#</th>
+                          <th style={{ width: '180px' }}>Loại kết quả</th>
+                          <th>Nội dung</th>
+                          <th style={{ width: '160px' }}>Thời gian</th>
+                          <th className="text-end" style={{ width: '100px' }}>Thao tác</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {aiResults.map((item) => (
+                          <tr key={item.id}>
+                            <td className="fw-semibold">#{item.id}</td>
+                            <td>{aiTypeBadge(item.type)}</td>
+                            <td>
+                              <div className="small text-truncate" style={{ maxWidth: '450px' }}>
+                                {item.content}
+                              </div>
+                            </td>
+                            <td className="small text-muted">
+                              {item.created_at ? new Date(item.created_at).toLocaleString('vi-VN') : '-'}
+                            </td>
+                            <td className="text-end">
+                              <button
+                                className="btn btn-sm btn-outline-primary"
+                                onClick={() => {
+                                  setAiCurrentResult(item)
+                                  window.scrollTo({ top: 300, behavior: 'smooth' })
+                                }}
+                              >
+                                Xem
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

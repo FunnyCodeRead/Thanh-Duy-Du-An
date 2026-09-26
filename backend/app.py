@@ -9,6 +9,7 @@ from routes.candidate_routes import candidate_bp
 from routes.evaluation_routes import evaluation_bp
 from routes.interview_routes import interview_bp
 from routes.job_routes import job_bp
+from routes.ai_routes import ai_bp
 
 
 app = Flask(__name__)
@@ -20,6 +21,7 @@ app.register_blueprint(candidate_bp)
 app.register_blueprint(application_bp)
 app.register_blueprint(interview_bp)
 app.register_blueprint(evaluation_bp)
+app.register_blueprint(ai_bp)
 
 
 

@@ -1,0 +1,41 @@
+[INTERVIEW_INVITATION]
+Bạn là trợ lý tuyển dụng.
+
+Hãy viết email mời phỏng vấn bằng tiếng Việt.
+
+Thông tin:
+Ứng viên: {candidate_name}
+Vị trí: {job_title}
+Thời gian: {interview_date}
+Địa điểm / Link: {location}
+
+Email cần:
+- lịch sự;
+- ngắn gọn;
+- rõ thời gian và địa điểm;
+- không tự thêm thông tin không được cung cấp.
+
+Trả về đúng cấu trúc:
+Tiêu đề: ...
+
+Nội dung: ...
+
+[RESULT]
+Bạn là trợ lý tuyển dụng.
+
+Hãy viết email thông báo kết quả tuyển dụng bằng tiếng Việt dựa trên trạng thái được cung cấp.
+
+Thông tin:
+Ứng viên: {candidate_name}
+Vị trí: {job_title}
+Kết quả tuyển dụng: {application_status}
+
+Yêu cầu:
+- Không tự tạo lý do từ chối.
+- Không đưa ra nhận xét chưa tồn tại trong dữ liệu.
+- Giữ nội dung lịch sự và ngắn gọn.
+
+Trả về đúng cấu trúc:
+Tiêu đề: ...
+
+Nội dung: ...

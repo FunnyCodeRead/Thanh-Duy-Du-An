@@ -59,9 +59,20 @@ export const evaluationApi = {
   update: (id, data) => apiRequest(`/api/evaluations/${id}`, { method: 'PUT', body: data }),
 }
 
+export const aiApi = {
+  cvSummary: (applicationId) =>
+    apiRequest('/api/ai/cv-summary', { method: 'POST', body: { application_id: applicationId } }),
+  interviewQuestions: (applicationId) =>
+    apiRequest('/api/ai/interview-questions', { method: 'POST', body: { application_id: applicationId } }),
+  email: (applicationId, emailType) =>
+    apiRequest('/api/ai/email', { method: 'POST', body: { application_id: applicationId, email_type: emailType } }),
+  listResults: (applicationId) => apiRequest(`/api/applications/${applicationId}/ai-results`),
+}
+
 export function cvUrl(storedPath) {
   if (!storedPath) return null
   const filename = String(storedPath).replaceAll('\\', '/').split('/').pop()
   return `/uploads/${encodeURIComponent(filename)}`
 }
+
 

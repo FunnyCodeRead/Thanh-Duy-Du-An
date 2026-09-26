@@ -47,6 +47,36 @@ Evaluations are linked to applications:
 - **Edit Evaluation:** The original evaluator who submitted the review or an ADMIN can edit their evaluation. Other users are restricted.
 - *Evaluation submission does NOT automatically change the application status.*
 
+## AI Recruitment Assistant (Google Gemini)
+
+Within the **Application Detail** page (`/applications/:id`), users have access to the **Trợ lý AI** section powered by Google Gemini:
+
+> **Lưu ý quan trọng:** AI chỉ hỗ trợ cung cấp thông tin tham khảo (Decision Support). Quyết định tuyển dụng cuối cùng do người phụ trách thực hiện. Hệ thống không sử dụng AI ranking hay tự động đậu/rớt ứng viên.
+
+### 1. Tóm tắt CV bằng AI (AI CV Summary)
+- Nhấn **✨ Tóm tắt CV** để AI phân tích nội dung CV văn bản đối chiếu với yêu cầu công việc.
+- Trả về 4 phần thông tin trọng tâm:
+  1. Tóm tắt kinh nghiệm chính.
+  2. Kỹ năng liên quan đến vị trí.
+  3. Bằng chứng phù hợp trích xuất từ CV.
+  4. Những nội dung cần hỏi thêm khi phỏng vấn.
+
+### 2. Gợi ý câu hỏi phỏng vấn (AI Interview Questions)
+- Nhấn **✨ Gợi ý câu hỏi phỏng vấn** để nhận danh sách đúng 5 câu hỏi phỏng vấn được thiết kế riêng:
+  - 2 câu hỏi kỹ năng / chuyên môn.
+  - 2 câu hỏi kinh nghiệm thực tế.
+  - 1 câu hỏi làm rõ các điểm nổi bật hoặc chưa rõ trong CV.
+
+### 3. Soạn email bằng AI (AI Email Draft)
+- Quyền hạn: Chỉ dành cho `ADMIN` và `HR`.
+- Lựa chọn loại email:
+  - **Mời phỏng vấn (`INTERVIEW_INVITATION`):** Tự động liên kết thời gian, địa điểm từ lịch phỏng vấn đã lên.
+  - **Thông báo kết quả (`RESULT`):** Chỉ hoạt động khi hồ sơ đã ở trạng thái kết thúc (`PASSED` hoặc `REJECTED`).
+- Nhấn **✨ Soạn email** để sinh tiêu đề và nội dung email mẫu bằng tiếng Việt chuẩn mực, lịch sự. Hỗ trợ nút **Sao chép** để dán vào trình gửi thư của doanh nghiệp (hệ thống không tự động gửi email).
+
+### 4. Lịch sử kết quả AI (AI History)
+- Xem lại toàn bộ kết quả đã sinh kèm nhãn phân loại và thời gian tạo. Nhấn **Xem** để mở lại nội dung bất kỳ lúc nào.
+
 ## Jobs
 
 Choose **Vị trí tuyển dụng** to search by title, department or skills and filter by `OPEN`/`CLOSED`. ADMIN and HR can create, view, edit and delete. MANAGER can only view. A Job already used by an Application cannot be deleted.
@@ -65,5 +95,6 @@ On Candidate create/edit, select a PDF, DOC or DOCX file up to 10 MB. PDF and DO
 - `403`: the current role cannot perform that mutation.
 - `409`: the record is referenced by an Application and cannot be deleted, or the candidate already applied for this job.
 - Upload rejected: verify the extension and 10 MB size limit.
+
 
 
