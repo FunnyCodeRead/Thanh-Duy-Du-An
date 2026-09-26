@@ -61,11 +61,11 @@ export const evaluationApi = {
 
 export const aiApi = {
   cvSummary: (applicationId) =>
-    apiRequest('/api/ai/cv-summary', { method: 'POST', body: { application_id: applicationId } }),
+    apiRequest('/api/ai/cv-summary', { method: 'POST', body: { application_id: Number(applicationId) } }),
   interviewQuestions: (applicationId) =>
-    apiRequest('/api/ai/interview-questions', { method: 'POST', body: { application_id: applicationId } }),
+    apiRequest('/api/ai/interview-questions', { method: 'POST', body: { application_id: Number(applicationId) } }),
   email: (applicationId, emailType) =>
-    apiRequest('/api/ai/email', { method: 'POST', body: { application_id: applicationId, email_type: emailType } }),
+    apiRequest('/api/ai/email', { method: 'POST', body: { application_id: Number(applicationId), email_type: emailType } }),
   listResults: (applicationId) => apiRequest(`/api/applications/${applicationId}/ai-results`),
 }
 

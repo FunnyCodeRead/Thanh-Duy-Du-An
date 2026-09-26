@@ -28,9 +28,12 @@ def api_cv_summary():
         return auth_err
 
     data = request.get_json(silent=True) or {}
-    application_id = data.get("application_id")
-
-    if not application_id or not isinstance(application_id, int) or application_id <= 0:
+    raw_app_id = data.get("application_id")
+    try:
+        application_id = int(raw_app_id)
+        if application_id <= 0:
+            raise ValueError
+    except (TypeError, ValueError):
         return jsonify(success=False, message="Mã hồ sơ ứng tuyển không hợp lệ."), 400
 
     try:
@@ -54,9 +57,12 @@ def api_interview_questions():
         return auth_err
 
     data = request.get_json(silent=True) or {}
-    application_id = data.get("application_id")
-
-    if not application_id or not isinstance(application_id, int) or application_id <= 0:
+    raw_app_id = data.get("application_id")
+    try:
+        application_id = int(raw_app_id)
+        if application_id <= 0:
+            raise ValueError
+    except (TypeError, ValueError):
         return jsonify(success=False, message="Mã hồ sơ ứng tuyển không hợp lệ."), 400
 
     try:
@@ -84,10 +90,14 @@ def api_email():
         return jsonify(success=False, message="Bạn không có quyền soạn thảo email tuyển dụng."), 403
 
     data = request.get_json(silent=True) or {}
-    application_id = data.get("application_id")
+    raw_app_id = data.get("application_id")
     email_type = data.get("email_type")
 
-    if not application_id or not isinstance(application_id, int) or application_id <= 0:
+    try:
+        application_id = int(raw_app_id)
+        if application_id <= 0:
+            raise ValueError
+    except (TypeError, ValueError):
         return jsonify(success=False, message="Mã hồ sơ ứng tuyển không hợp lệ."), 400
 
     if not email_type or email_type not in ("INTERVIEW_INVITATION", "RESULT"):

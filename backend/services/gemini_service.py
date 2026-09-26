@@ -22,10 +22,11 @@ def generate_content(prompt: str) -> str:
         logger.error("GEMINI_API_KEY chua duoc cau hinh trong bien moi truong.")
         raise GeminiServiceError("Không thể sử dụng trợ lý AI lúc này. Vui lòng thử lại sau.")
 
-    model_name = (Config.GEMINI_MODEL or "gemini-flash-latest").strip()
-    candidate_models = [model_name]
-    if "gemini-3.1-flash-lite" not in candidate_models:
-        candidate_models.append("gemini-3.1-flash-lite")
+    configured_model = (Config.GEMINI_MODEL or "gemini-3.1-flash-lite").strip()
+    candidate_models = ["gemini-3.1-flash-lite", configured_model, "gemini-flash-latest"]
+    # Deduplicate preserving order
+    seen = set()
+    candidate_models = [m for m in candidate_models if not (m in seen or seen.add(m))]
 
     try:
         from google import genai
