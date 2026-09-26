@@ -36,8 +36,16 @@ export const candidateApi = {
   remove: (id) => apiRequest(`/api/candidates/${id}`, { method: 'DELETE' }),
 }
 
+export const applicationApi = {
+  list: (params = '') => apiRequest(`/api/applications${params}`),
+  get: (id) => apiRequest(`/api/applications/${id}`),
+  create: (data) => apiRequest('/api/applications', { method: 'POST', body: data }),
+  updateStatus: (id, status) => apiRequest(`/api/applications/${id}/status`, { method: 'PUT', body: { status } }),
+}
+
 export function cvUrl(storedPath) {
   if (!storedPath) return null
   const filename = String(storedPath).replaceAll('\\', '/').split('/').pop()
   return `/uploads/${encodeURIComponent(filename)}`
 }
+

@@ -2,46 +2,50 @@
 
 ## Scope and Outcome
 
-Codex migrated the verified M1/M2 application from server-rendered Flask/Jinja to the official React + Vite, Flask REST and MySQL architecture. Existing database behavior and the fixed seven-table schema were preserved. Jinja assets were archived only after live React verification. M3 was not implemented.
+The AI agent continued the verified recruitment management system by implementing Milestone M3: Application Management & Candidate Status. Existing database behavior and the fixed seven-table schema were strictly preserved. No database migrations, additional tables, workflow engines, or Gemini integrations were introduced.
 
 ## Skills Applied
 
 - Requirements analysis: preserved traceability and unresolved human decisions.
-- Architecture design: documented React, REST, session, database and trust boundaries.
-- Database design: confirmed no schema change and exactly seven tables.
-- Implementation: built the Flask APIs and React pages incrementally.
-- Testing: added REST regression tests and collected real MySQL/browser evidence.
-- Documentation: aligned setup, architecture, API, test and user guidance with verified code.
+- Architecture design: maintained React REST, session, database and trust boundaries.
+- Database design: confirmed no schema change and exactly seven tables (`ai_results`, `applications`, `candidates`, `evaluations`, `interviews`, `jobs`, `users`).
+- Implementation: built the Flask Application APIs, database operations, and React pages incrementally.
+- Testing: added 23 new test assertions (70 total passing tests) and collected real MySQL and integration evidence.
+- Documentation: aligned setup, architecture, API, test plan/report, user guide, and AI task records with verified code.
 
 ## Generated or Updated Artifacts
 
-- `backend/` Flask application with auth, Job and Candidate API blueprints.
-- `frontend/` React application with protected routes and CRUD pages.
-- Architecture, ADR, database, API, test plan/report and user guide documents.
-- Updated M1/M2 task evidence and project state.
-- Archived `legacy/templates` and `legacy/static`.
+- `backend/routes/application_routes.py`: Flask blueprint for Application management with role boundaries and status transition validation.
+- `backend/database/db.py`: parameterized SQL functions for application operations.
+- `backend/tests/test_applications.py`: 23 test assertions covering TC-APP-01 through TC-APP-14 and edge cases.
+- `frontend/src/pages/ApplicationsPage.jsx`, `ApplicationCreatePage.jsx`, `ApplicationDetailPage.jsx`: React views for listing, creating, and inspecting applications.
+- `frontend/src/App.jsx`, `Sidebar.jsx`, `DashboardPage.jsx`, `CandidateDetailPage.jsx`: routing and navigation integration.
+- Architecture, API, user guide, test plan, test report, M3 task evidence, and AI-SDLC report documents.
 
 ## Verification Evidence
 
-- 47 backend tests pass.
-- Frontend lint passes without warnings.
-- Vite production build passes.
+- 70 backend tests pass (`70 passed in 3.24s`).
+- Frontend lint passes without warnings (`oxlint` exits 0 on 20 files).
+- Vite production build passes (42 modules transformed).
 - Direct Flask and Vite-proxied health checks pass.
-- Live MySQL flows pass for HR and MANAGER, CRUD, search/filter, CV upload/extraction/access and delete protection.
-- Manual browser verification passes for Login, Dashboard, Jobs and Candidates with no console error.
+- Live MySQL flows pass for HR and MANAGER, application creation, duplicate rejection (HTTP 409), allowed status transitions, illegal transition rejection (HTTP 400), and MANAGER mutation prevention (HTTP 403).
+- Manual browser verification passes for Login, Dashboard, Jobs, Candidates, and Applications (list, create, detail) with no console error.
+- Exactly 7 database tables verified in MySQL (`SHOW TABLES;`).
 
 ## AI-Detected Defect
 
-During manual browser verification, old `cv_file` values containing `uploads/` generated duplicated URL paths. Codex normalized stored paths on the React side, made the Flask file endpoint backward compatible and added a regression test.
+1. Legacy sample rows stored CV names with an `uploads/` prefix, producing `/uploads/uploads/...` links. The frontend emits a basename-only URL and the backend accepts both representations.
+2. Initial oxlint pass in M3 flagged fast-refresh warning for non-component exports and dependency array warning in `ApplicationDetailPage`. Refactored helpers to local scope and wrapped loader in `useCallback` to achieve 0 warnings and 0 errors.
 
 ## Tools and MCP Usage
 
-Shell and patch tools handled repository inspection, implementation, MySQL checks, automated tests and builds. The workspace dependency loader previously supported course DOCX inspection. Browser computer-use tooling verified the running React UI. No external issue tracker, hosting service or Git hosting integration was used.
+Shell, file viewing/editing, and task management tools handled repository inspection, implementation, MySQL checks, automated tests and builds. No external issue tracker, hosting service, workflow engine, or Gemini API was used.
 
 ## Human Oversight
 
-Formal Human Gate 1 remains `NEEDS CHANGES`; Human Gate 2 remains `PENDING HUMAN APPROVAL`. The student's explicit implementation requests authorized the migration work, but were not recorded as formal checklist approval. Human Gate 3 and Human Gate 4 have not started.
+Formal Human Gate 1 remains `NEEDS CHANGES`; Human Gate 2 remains `PENDING HUMAN APPROVAL`. The student's explicit prompt authorized the M3 implementation work. Human Gate 3 remains `PENDING` and will be formally reviewed after M3 and M4 (Interviews + Evaluations) are completed.
 
 ## Current Evaluation
 
-Technical M1/M2 migration criteria are satisfied with reproducible automated, integration and manual evidence. Later Application, Interview, Evaluation and Gemini work remains outside this increment.
+Technical M3 criteria are satisfied with reproducible automated, integration, and manual evidence. Next authorized milestone: M4 (Interview scheduling + Evaluation).
+

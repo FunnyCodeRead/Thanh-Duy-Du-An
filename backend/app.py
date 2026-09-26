@@ -3,6 +3,7 @@ from mysql.connector import Error
 
 from config import Config
 from database.db import get_connection, get_dashboard_counts
+from routes.application_routes import application_bp
 from routes.auth_routes import auth_bp, api_login_required
 from routes.candidate_routes import candidate_bp
 from routes.job_routes import job_bp
@@ -14,6 +15,8 @@ app.config.from_object(Config)
 app.register_blueprint(auth_bp)
 app.register_blueprint(job_bp)
 app.register_blueprint(candidate_bp)
+app.register_blueprint(application_bp)
+
 
 
 @app.get("/api/health")

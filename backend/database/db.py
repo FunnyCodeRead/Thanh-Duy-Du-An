@@ -327,3 +327,181 @@ def delete_candidate(candidate_id):
             cursor.close()
         if connection and connection.is_connected():
             connection.close()
+
+
+def get_applications(keyword=None, status=None, job_id=None):
+    connection = None
+    cursor = None
+    query = """
+        SELECT a.id, a.candidate_id, a.job_id, a.status, a.applied_at, a.note,
+               c.full_name AS candidate_name, c.email AS candidate_email,
+               j.title AS job_title, j.department AS job_department
+        FROM applications a
+        JOIN candidates c ON a.candidate_id = c.id
+        JOIN jobs j ON a.job_id = j.id
+    """
+    conditions = []
+    params = []
+
+    if keyword:
+        search_value = f"%{keyword}%"
+        conditions.append("(c.full_name LIKE %s OR c.email LIKE %s OR j.title LIKE %s)")
+        params.extend([search_value, search_value, search_value])
+    if status in ("NEW", "SCREENING", "INTERVIEW", "PASSED", "REJECTED"):
+        conditions.append("a.status = %s")
+        params.append(status)
+    if job_id is not None:
+        try:
+            job_id_int = int(job_id)
+            conditions.append("a.job_id = %s")
+            params.append(job_id_int)
+        except (ValueError, TypeError):
+            pass
+
+    if conditions:
+        query += " WHERE " + " AND ".join(conditions)
+    query += " ORDER BY a.applied_at DESC, a.id DESC"
+
+    try:
+        connection = get_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute(query, tuple(params))
+        return cursor.fetchall()
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+
+def get_application_by_id(application_id):
+    connection = None
+    cursor = None
+    query = """
+        SELECT a.id, a.candidate_id, a.job_id, a.status, a.applied_at, a.note,
+               c.full_name AS candidate_name, c.email AS candidate_email, c.phone AS candidate_phone,
+               c.skills AS candidate_skills, c.experience AS candidate_experience,
+               c.education AS candidate_education, c.source AS candidate_source, c.cv_file,
+               j.title AS job_title, j.department AS job_department, j.description AS job_description,
+               j.requirements AS job_requirements, j.skills AS job_skills, j.status AS job_status
+        FROM applications a
+        JOIN candidates c ON a.candidate_id = c.id
+        JOIN jobs j ON a.job_id = j.id
+        WHERE a.id = %s
+    """
+    try:
+        connection = get_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute(query, (application_id,))
+        row = cursor.fetchone()
+        if not row:
+            return None
+        return {
+            "id": row["id"],
+            "candidate_id": row["candidate_id"],
+            "candidate_name": row["candidate_name"],
+            "candidate_email": row["candidate_email"],
+            "job_id": row["job_id"],
+            "job_title": row["job_title"],
+            "job_department": row["job_department"],
+            "status": row["status"],
+            "applied_at": row["applied_at"],
+            "note": row["note"] or "",
+            "candidate": {
+                "id": row["candidate_id"],
+                "full_name": row["candidate_name"],
+                "email": row["candidate_email"],
+                "phone": row["candidate_phone"],
+                "skills": row["candidate_skills"],
+                "experience": row["candidate_experience"],
+                "education": row["candidate_education"],
+                "source": row["candidate_source"],
+                "cv_file": row["cv_file"],
+            },
+            "job": {
+                "id": row["job_id"],
+                "title": row["job_title"],
+                "department": row["job_department"],
+                "description": row["job_description"],
+                "requirements": row["job_requirements"],
+                "skills": row["job_skills"],
+                "status": row["job_status"],
+            },
+        }
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+
+def application_exists(candidate_id, job_id):
+    connection = None
+    cursor = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute(
+            "SELECT id FROM applications WHERE candidate_id = %s AND job_id = %s LIMIT 1",
+            (candidate_id, job_id),
+        )
+        return cursor.fetchone() is not None
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+
+def create_application(candidate_id, job_id, note=None):
+    connection = None
+    cursor = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+            INSERT INTO applications (candidate_id, job_id, status, note)
+            VALUES (%s, %s, 'NEW', %s)
+            """,
+            (candidate_id, job_id, note or ""),
+        )
+        connection.commit()
+        return cursor.lastrowid
+    except Error:
+        if connection:
+            connection.rollback()
+        raise
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+
+
+def update_application_status(application_id, status):
+    connection = None
+    cursor = None
+    try:
+        connection = get_connection()
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+            UPDATE applications
+            SET status = %s
+            WHERE id = %s
+            """,
+            (status, application_id),
+        )
+        connection.commit()
+        return cursor.rowcount > 0
+    except Error:
+        if connection:
+            connection.rollback()
+        raise
+    finally:
+        if cursor:
+            cursor.close()
+        if connection and connection.is_connected():
+            connection.close()
+

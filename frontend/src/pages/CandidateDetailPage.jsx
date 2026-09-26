@@ -6,5 +6,21 @@ export default function CandidateDetailPage() {
   const { user } = useOutletContext(); const { id } = useParams(); const [state, setState] = useState({ loading: true, data: null, error: '' })
   useEffect(() => { candidateApi.get(id).then((r) => setState({ loading: false, data: r.data, error: '' })).catch((e) => setState({ loading: false, data: null, error: e.message })) }, [id])
   if (state.loading) return <Loading />; if (state.error) return <div className="alert alert-danger">{state.error}</div>; const c = state.data
-  return <><div className="d-flex justify-content-between align-items-center mb-3"><h1 className="h3 mb-0">{c.full_name}</h1><div><Link className="btn btn-outline-secondary me-2" to="/candidates">Quay lại</Link>{['ADMIN','HR'].includes(user.role) && <Link className="btn btn-primary" to={`/candidates/${id}/edit`}>Sửa</Link>}</div></div><div className="card shadow-sm border-0"><div className="card-body"><dl className="row mb-0"><dt className="col-sm-3">Email</dt><dd className="col-sm-9">{c.email || '-'}</dd><dt className="col-sm-3">Điện thoại</dt><dd className="col-sm-9">{c.phone || '-'}</dd><dt className="col-sm-3">Kỹ năng</dt><dd className="col-sm-9">{c.skills || '-'}</dd><dt className="col-sm-3">Kinh nghiệm</dt><dd className="col-sm-9 text-preline">{c.experience || '-'}</dd><dt className="col-sm-3">Học vấn</dt><dd className="col-sm-9 text-preline">{c.education || '-'}</dd><dt className="col-sm-3">Nguồn</dt><dd className="col-sm-9">{c.source}</dd><dt className="col-sm-3">CV</dt><dd className="col-sm-9">{c.cv_file ? <a href={cvUrl(c.cv_file)} target="_blank" rel="noreferrer">Xem CV</a> : 'Chưa có CV'}</dd><dt className="col-sm-3">Ngày tạo</dt><dd className="col-sm-9">{new Date(c.created_at).toLocaleString('vi-VN')}</dd></dl><div className="alert alert-info mt-3 mb-0">Hồ sơ ứng tuyển sẽ được quản lý ở M3.</div></div></div></>
+  return <><div className="d-flex justify-content-between align-items-center mb-3"><h1 className="h3 mb-0">{c.full_name}</h1><div><Link className="btn btn-outline-secondary me-2" to="/candidates">Quay lại</Link>{['ADMIN','HR'].includes(user.role) && <Link className="btn btn-primary" to={`/candidates/${id}/edit`}>Sửa</Link>}</div></div><div className="card shadow-sm border-0"><div className="card-body"><dl className="row mb-0"><dt className="col-sm-3">Email</dt><dd className="col-sm-9">{c.email || '-'}</dd><dt className="col-sm-3">Điện thoại</dt><dd className="col-sm-9">{c.phone || '-'}</dd><dt className="col-sm-3">Kỹ năng</dt><dd className="col-sm-9">{c.skills || '-'}</dd><dt className="col-sm-3">Kinh nghiệm</dt><dd className="col-sm-9 text-preline">{c.experience || '-'}</dd><dt className="col-sm-3">Học vấn</dt><dd className="col-sm-9 text-preline">{c.education || '-'}</dd><dt className="col-sm-3">Nguồn</dt><dd className="col-sm-9">{c.source}</dd><dt className="col-sm-3">CV</dt><dd className="col-sm-9">{c.cv_file ? <a href={cvUrl(c.cv_file)} target="_blank" rel="noreferrer">Xem CV</a> : 'Chưa có CV'}</dd><dt className="col-sm-3">Ngày tạo</dt><dd className="col-sm-9">{new Date(c.created_at).toLocaleString('vi-VN')}</dd></dl>      <div className="alert alert-info mt-3 mb-0 d-flex justify-content-between align-items-center">
+        <span>Xem và quản lý các hồ sơ ứng tuyển liên quan đến ứng viên này.</span>
+        <div className="gap-2 d-flex">
+          <Link className="btn btn-sm btn-outline-primary" to={`/applications?keyword=${encodeURIComponent(c.full_name)}`}>
+            Xem hồ sơ ứng tuyển
+          </Link>
+          {['ADMIN', 'HR'].includes(user.role) && (
+            <Link className="btn btn-sm btn-primary" to="/applications/create">
+              + Nộp hồ sơ mới
+            </Link>
+          )}
+        </div>
+      </div>
+    </div>
+  </div>
+</>
+
 }

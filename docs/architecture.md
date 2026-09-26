@@ -52,7 +52,7 @@ Candidate CVs are stored under `backend/uploads` with UUID-prefixed safe filenam
 
 ## Authorization Boundary
 
-Frontend controls improve usability but are not security controls. Flask permits ADMIN and HR to mutate Jobs and Candidates. MANAGER may call only read endpoints. Unauthorized API calls return HTTP 403.
+Frontend controls improve usability but are not security controls. Flask permits ADMIN and HR to mutate Jobs, Candidates, and Applications (including status transitions). MANAGER may call only read endpoints. Unauthorized API calls return HTTP 403.
 
 ## Migration Result
 
@@ -65,9 +65,11 @@ The equivalent React flows passed build, API, session, role, upload, MySQL integ
 | FR-001 to FR-003 | LoginPage, ProtectedRoute, Layout | `/api/auth/*` | users |
 | FR-004 to FR-005 | JobsPage, JobFormPage, JobDetailPage | `/api/jobs*` | jobs, applications delete check |
 | FR-006 to FR-008 | CandidatesPage, CandidateFormPage, CandidateDetailPage | `/api/candidates*`, `/uploads/*` | candidates, applications delete check |
+| FR-009 to FR-010 | ApplicationsPage, ApplicationCreatePage, ApplicationDetailPage | `/api/applications*` | applications, candidates, jobs |
 | FR-017 | DashboardPage | `/api/dashboard` | aggregate queries |
 | FR-018 | Development verification | `/api/health` | connection check |
 
 ## Trust Boundaries
 
 Browser input is untrusted. Flask validates it before database or file operations. Uploaded filenames are untrusted and normalized. Environment secrets remain on the backend. Gemini is outside the system boundary and is not connected during this milestone.
+
