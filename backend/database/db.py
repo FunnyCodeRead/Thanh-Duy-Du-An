@@ -45,21 +45,117 @@ def get_user_by_email(email):
 def get_dashboard_counts():
     connection = None
     cursor = None
-    queries = {
-        "jobs": "SELECT COUNT(*) AS total FROM jobs",
-        "candidates": "SELECT COUNT(*) AS total FROM candidates",
-        "applications": "SELECT COUNT(*) AS total FROM applications",
-        "interviews": "SELECT COUNT(*) AS total FROM interviews",
-    }
-
     try:
         connection = get_connection()
         cursor = connection.cursor(dictionary=True)
-        result = {}
-        for name, query in queries.items():
-            cursor.execute(query)
-            result[name] = cursor.fetchone()["total"]
-        return result
+
+        # 1. Total & Open jobs
+        cursor.execute("SELECT COUNT(*) AS total, SUM(CASE WHEN status = 'OPEN' THEN 1 ELSE 0 END) AS open_total FROM jobs")
+        job_stats = cursor.fetchone() or {"total": 0, "open_total": 0}
+        total_jobs = job_stats["total"] or 0
+        open_jobs = int(job_stats["open_total"] or 0)
+
+        # 2. Total candidates
+        cursor.execute("SELECT COUNT(*) AS total FROM candidates")
+        total_candidates = (cursor.fetchone() or {})["total"] or 0
+
+        # 3. Total applications & status breakdown
+        cursor.execute("SELECT status, COUNT(*) AS cnt FROM applications GROUP BY status")
+        app_rows = cursor.fetchall()
+        app_status_counts = {
+            "NEW": 0,
+            "SCREENING": 0,
+            "INTERVIEW": 0,
+            "PASSED": 0,
+            "REJECTED": 0,
+        }
+        total_applications = 0
+        for r in app_rows:
+            st = r["status"]
+            cnt = r["cnt"]
+            total_applications += cnt
+            if st in app_status_counts:
+                app_status_counts[st] = cnt
+
+        # 4. Pass rate: PASSED / (PASSED + REJECTED)
+        passed_count = app_status_counts["PASSED"]
+        rejected_count = app_status_counts["REJECTED"]
+        finalized_count = passed_count + rejected_count
+        pass_rate = round((passed_count / finalized_count) * 100, 2) if finalized_count > 0 else 0.0
+
+        # 5. Candidate sources
+        cursor.execute("SELECT source, COUNT(*) AS count FROM candidates GROUP BY source ORDER BY count DESC")
+        candidate_sources = cursor.fetchall() or []
+
+        # 6. Total interviews & Upcoming scheduled interviews
+        cursor.execute("SELECT COUNT(*) AS total FROM interviews")
+        total_interviews = (cursor.fetchone() or {})["total"] or 0
+
+        cursor.execute("""
+            SELECT COUNT(*) AS count
+            FROM interviews
+            WHERE status = 'SCHEDULED' AND interview_date >= NOW()
+        """)
+        upcoming_count = (cursor.fetchone() or {})["count"] or 0
+
+        # 7. Upcoming interviews list (top 5 nearest)
+        cursor.execute("""
+            SELECT i.id, i.interview_date, i.location, i.status,
+                   c.full_name AS candidate_name,
+                   j.title AS job_title,
+                   u.full_name AS interviewer_name
+            FROM interviews i
+            JOIN applications a ON i.application_id = a.id
+            JOIN candidates c ON a.candidate_id = c.id
+            JOIN jobs j ON a.job_id = j.id
+            JOIN users u ON i.interviewer_id = u.id
+            WHERE i.status = 'SCHEDULED' AND i.interview_date >= NOW()
+            ORDER BY i.interview_date ASC
+            LIMIT 5
+        """)
+        upcoming_list = []
+        for r in cursor.fetchall():
+            upcoming_list.append({
+                "id": r["id"],
+                "candidate_name": r["candidate_name"],
+                "job_title": r["job_title"],
+                "interviewer_name": r["interviewer_name"],
+                "interview_date": r["interview_date"].strftime("%Y-%m-%d %H:%M:%S") if hasattr(r["interview_date"], "strftime") else str(r["interview_date"]),
+                "location": r["location"] or "",
+            })
+
+        # 8. Hiring time (strictly unavailable per schema limitation)
+        hiring_time = {
+            "available": False,
+            "average_days": None,
+            "message": "Chưa đủ dữ liệu thời điểm kết thúc hồ sơ để tính chính xác.",
+        }
+
+        return {
+            # Legacy keys for backward compatibility
+            "jobs": total_jobs,
+            "candidates": total_candidates,
+            "applications": total_applications,
+            "interviews": total_interviews,
+            # Structured M6 statistics
+            "summary": {
+                "open_jobs": open_jobs,
+                "total_jobs": total_jobs,
+                "total_candidates": total_candidates,
+                "total_applications": total_applications,
+                "upcoming_interviews": upcoming_count,
+            },
+            "application_status": app_status_counts,
+            "candidate_sources": candidate_sources,
+            "pass_rate": {
+                "passed": passed_count,
+                "rejected": rejected_count,
+                "finalized": finalized_count,
+                "rate": pass_rate,
+            },
+            "hiring_time": hiring_time,
+            "upcoming_interviews": upcoming_list,
+        }
     except Error as error:
         print(f"Loi khi doc dashboard: {error}")
         raise

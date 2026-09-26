@@ -6,7 +6,22 @@ Open `http://127.0.0.1:5173`, enter a demo account and choose **Đăng nhập**.
 
 ## Dashboard
 
-Dashboard displays live counts for Jobs, Candidates, Applications and Interviews. The Job, Candidate, and Application cards can be clicked to navigate directly to their respective management views.
+Dashboard cung cấp bức tranh tổng quan theo thời gian thực từ cơ sở dữ liệu MySQL thật:
+- **Thẻ tóm tắt chỉ số chính (Summary Cards):**
+  - *Vị trí đang tuyển:* Số lượng vị trí đang ở trạng thái `OPEN` trên tổng số vị trí việc làm.
+  - *Tổng ứng viên:* Tổng số hồ sơ ứng viên đang được quản lý trong kho dữ liệu.
+  - *Hồ sơ ứng tuyển:* Tổng số lượt nộp hồ sơ vào các vị trí tuyển dụng.
+  - *Phỏng vấn sắp tới:* Số lượng các buổi phỏng vấn đã lên lịch (`SCHEDULED`) có thời gian lớn hơn hoặc bằng thời điểm hiện tại.
+  - Mỗi thẻ hỗ trợ liên kết nhanh tới màn hình quản lý tương ứng.
+- **Phân bố trạng thái hồ sơ:** Hiển thị trực quan số lượng và tỷ lệ % của tất cả 5 trạng thái ứng tuyển (`NEW`, `SCREENING`, `INTERVIEW`, `PASSED`, `REJECTED`).
+- **Nguồn ứng viên:** Thống kê số lượng và tỷ lệ % ứng viên đến từ các kênh (`LinkedIn`, `Facebook`, `Website`, `Trang tuyển dụng`, `Giới thiệu nội bộ`, `Khác`) thông qua thanh tiến độ trực quan.
+- **Tỷ lệ trúng tuyển (Pass Rate):**
+  - Được tính theo công thức chuẩn: `PASSED / (PASSED + REJECTED) * 100%`.
+  - Chỉ tính trên các hồ sơ đã có kết quả cuối cùng (`finalized`). Nếu chưa có hồ sơ kết thúc, tỷ lệ hiển thị an toàn là `0%`.
+- **Thời gian tuyển dụng (Time-to-Hire) & Giới hạn dữ liệu:**
+  - Hệ thống thông báo rõ: *"Chưa đủ dữ liệu để tính chính xác"*.
+  - *Giải thích:* Bảng `applications` chỉ lưu mốc thời gian tạo hồ sơ (`applied_at`), không lưu mốc thời gian chuyển sang trạng thái kết thúc (`PASSED`/`REJECTED`). Hệ thống tuân thủ nguyên tắc AI-SDLC không suy đoán hay tính toán số liệu giả mạo.
+- **Lịch phỏng vấn sắp tới:** Bảng danh sách tối đa 5 lịch phỏng vấn gần nhất (Ứng viên, Vị trí, Thời gian, Người phỏng vấn, Địa điểm) kèm liên kết xem toàn bộ lịch phỏng vấn.
 
 ## Applications
 

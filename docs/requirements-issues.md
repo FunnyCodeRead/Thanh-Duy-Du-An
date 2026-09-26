@@ -19,3 +19,9 @@
 
 The original project roadmap used Jinja for M2, while the revised roadmap requires React and REST. The migration assumption above preserves working behavior until the revised frontend is verified.
 
+## Data Limitations
+
+- **REQ-ISSUE-06 (Time-to-Hire / Thời gian tuyển dụng):**
+  Exact hiring duration cannot be derived from the current database schema because the `applications` table only stores `applied_at` (creation timestamp) and lacks a completion/final-state timestamp (`completed_at`, `status_updated_at`, `updated_at`, or `hired_at`).
+  Per the AI-SDLC principle of never inventing or fabricating synthetic data (such as calculating `CURRENT_DATE - applied_at`), the system explicitly reports that data is insufficient to calculate time-to-hire accurately.
+

@@ -220,4 +220,32 @@ Returns HTTP 200 on success with array of records:
 }
 ```
 
+## Dashboard API — M6
+
+### Recruitment Dashboard Statistics (`GET /api/dashboard`)
+Roles: `ADMIN`, `HR`, `MANAGER`. Requires active session.
+Returns comprehensive recruitment metrics aggregated directly from the 7-table MySQL database.
+
+Response JSON fields:
+- `summary`:
+  - `open_jobs` (int): Number of jobs with `status = 'OPEN'`.
+  - `total_jobs` (int): Total number of job postings.
+  - `total_candidates` (int): Total number of candidate profiles.
+  - `total_applications` (int): Total number of applications submitted.
+  - `upcoming_interviews` (int): Count of scheduled interviews where `interview_date >= CURRENT_TIMESTAMP`.
+- `application_status` (object): Counts for each application status: `NEW`, `SCREENING`, `INTERVIEW`, `PASSED`, `REJECTED`.
+- `candidate_sources` (array): Array of `{"source": string, "count": int}` sorted by `count DESC`.
+- `pass_rate` (object):
+  - `passed` (int): Number of applications with status `PASSED`.
+  - `rejected` (int): Number of applications with status `REJECTED`.
+  - `finalized` (int): Total finalized applications (`passed + rejected`).
+  - `rate` (float): `passed / finalized * 100%` (or `0.0` when `finalized == 0`).
+- `hiring_time` (object):
+  - `available` (bool): `false` due to schema lacking final status timestamp.
+  - `average_days` (null): `null`.
+  - `message` (string): User-friendly limitation explanation.
+- `upcoming_interviews` (array): Top 5 nearest upcoming interviews with candidate, job, date, interviewer, and location.
+- Legacy backward-compatibility fields: `jobs`, `candidates`, `applications`, `interviews`.
+
+
 

@@ -78,8 +78,9 @@ The equivalent React flows passed build, API, session, role, upload, MySQL integ
 | FR-014 | ApplicationDetailPage (AI Section) | `POST /api/ai/interview-questions` | ai_results, applications, candidates, jobs |
 | FR-015 | ApplicationDetailPage (AI Section) | `POST /api/ai/email` | ai_results, applications, candidates, jobs, interviews |
 | FR-016 | ApplicationDetailPage (AI History) | `GET /api/applications/{id}/ai-results` | ai_results |
-| FR-017 | DashboardPage | `/api/dashboard` | aggregate queries |
-| FR-018 | Development verification | `/api/health` | connection check |
+| FR-017 (Dashboard) | DashboardPage | `GET /api/dashboard` | aggregate queries on jobs, candidates, applications, interviews |
+| FR-018 (Search/Filter) | React Search Controls on Jobs, Candidates, Applications, Interviews | `/api/jobs`, `/api/candidates`, `/api/applications`, `/api/interviews` | Parameterized SQL queries with indexed column filtering |
+| FR-019 | Development verification | `/api/health` | connection check |
 
 ## Trust & Security Boundaries
 

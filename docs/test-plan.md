@@ -53,6 +53,27 @@ Verify that the system preserves authentication, role enforcement, Job and Candi
   - TC-AI-14: Missing Gemini API key handled gracefully without secret exposure
   - TC-AI-15: AI generation NEVER modifies Application status (status preservation guarantee)
   - TC-AI-16: CV Summary prompt safety rule check (CV content is reference data, not instructions)
+- Dashboard Statistics (M6):
+  - TC-DASH-01: Authenticated HR gets Dashboard (HTTP 200)
+  - TC-DASH-02: MANAGER gets Dashboard (HTTP 200)
+  - TC-DASH-03: Unauthenticated dashboard access returns 401
+  - TC-DASH-04: Summary counts (open_jobs, total_jobs, total_candidates, total_applications, upcoming_interviews)
+  - TC-DASH-05: Application status breakdown contains all 5 keys (NEW, SCREENING, INTERVIEW, PASSED, REJECTED)
+  - TC-DASH-06: Candidate source grouping contains valid sources and counts
+  - TC-DASH-07: Pass rate formula accuracy `PASSED / (PASSED + REJECTED) * 100%`
+  - TC-DASH-08: Safe handling of zero finalized applications without division by zero
+  - TC-DASH-09: Upcoming interviews list formatted properly (top 5 nearest)
+  - TC-DASH-10: Hiring-time data limitation handling (available=False, message present, average_days=None)
+  - TC-DASH-11: Database failure returns 500
+- Search & Filter Audit (M6):
+  - TC-SRCH-01: Job combined filter (keyword + status)
+  - TC-SRCH-02: Job search special characters
+  - TC-SRCH-03: Candidate combined filter (keyword + source)
+  - TC-SRCH-04: Candidate search special characters / SQL injection safety
+  - TC-SRCH-05: Application combined filter (keyword + status + job_id)
+  - TC-SRCH-06: Application search no results returns empty array
+  - TC-SRCH-07: Interview combined filter (keyword + status)
+  - TC-SRCH-08: Empty keyword handling across all endpoints
 - Flask health and dashboard behavior.
 - Frontend static analysis and production compilation.
 
@@ -93,7 +114,7 @@ Verify that the system preserves authentication, role enforcement, Job and Candi
 
 ## Exit Criteria
 
-All pytest tests pass (117 tests), oxlint exits zero without warnings, Vite production build succeeds, live MySQL integration suite succeeds, minimal bias check documented, and manual verification confirms the flow.
+All pytest tests pass (136 tests), oxlint exits zero without warnings, Vite production build succeeds, live MySQL integration suite succeeds, minimal bias check documented, and manual verification confirms the flow.
 
 
 

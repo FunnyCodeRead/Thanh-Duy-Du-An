@@ -1,4 +1,4 @@
-# M1–M5 Test Report
+# M1–M6 Test Report
 
 Test date: 26 September 2026
 
@@ -8,7 +8,7 @@ Environment: Windows, Python 3.11, Node/Vite, MySQL Community Server 8.4, databa
 
 | Check | Result | Evidence |
 |---|---|---|
-| Backend automated tests | PASS | `117 passed in 3.22s` (101 existing + 16 new AI tests) |
+| Backend automated tests | PASS | `136 passed in 3.72s` (101 existing + 16 M5 AI tests + 11 M6 Dashboard tests + 8 M6 Search tests) |
 | Frontend lint | PASS | `npm run lint` (oxlint), exit 0, 0 warnings, 0 errors across 24 files |
 | Frontend production build | PASS | 46 modules transformed; `vite build` completed |
 | Flask direct health | PASS | `/api/health`: `ok`, database `connected` |
@@ -18,10 +18,12 @@ Environment: Windows, Python 3.11, Node/Vite, MySQL Community Server 8.4, databa
 | AI Assistant API | PASS | TC-AI-01 through TC-AI-16 verified (CV Summary, Interview Questions, Email Draft, AI Results) |
 | Status Decoupling Guarantee | PASS | TC-AI-15 confirmed: AI operations never alter application status |
 | Minimal AI Bias Check | PASS | Documented in `docs/ai-bias-check.md` with identical qualifications across genders |
+| Dashboard Statistics API | PASS | TC-DASH-01 through TC-DASH-11 verified (Summary cards, status distribution, candidate sources, pass rate, hiring time, upcoming interviews) |
+| Search & Filter Audit | PASS | TC-SRCH-01 through TC-SRCH-08 verified (Jobs, Candidates, Applications, Interviews combined filters, special characters, empty keywords) |
 | Duplicate prevention | PASS | Duplicate candidate_id + job_id returns HTTP 409 and clean message |
 | Status transition validation | PASS | Application and Interview workflows strictly enforce allowed transitions |
-| Real MySQL integration | PASS | Live creation, detail queries, interview completion, evaluation calculation, and `ai_results` verified |
-| MANAGER permissions | PASS | Read allowed for Jobs, Candidates, Applications, Interviews, AI results; unauthorized mutations denied |
+| Real MySQL integration | PASS | Live creation, detail queries, interview completion, evaluation calculation, dashboard aggregations, and `ai_results` verified |
+| MANAGER permissions | PASS | Read allowed for Jobs, Candidates, Applications, Interviews, AI results, and Dashboard; unauthorized mutations denied |
 | Manual React browser check | PASS | Login, Dashboard, Jobs, Candidates, Applications, Interviews, and AI Assistant rendered without errors |
 
 ## Defects Found and Corrected
@@ -32,6 +34,9 @@ Environment: Windows, Python 3.11, Node/Vite, MySQL Community Server 8.4, databa
 4. *Evaluation Score Boundaries*: Submitting technical score = 0 or communication score = 6 returned HTTP 400 with user-friendly Vietnamese messages.
 5. *Result Email Guard*: Generating result email on non-final application status (e.g. SCREENING) returned HTTP 400.
 6. *Missing CV Text Guard*: Generating CV summary without extracted CV text returned HTTP 400.
+7. *Missing cv_text in get_application_by_id*: Fixed query in `db.py` to retrieve `c.cv_text` from candidates for live Gemini processing.
+8. *Zero Finalized Applications Division*: Handled `finalized == 0` safely in `pass_rate` calculation to return `0.0%` instead of division-by-zero error.
+9. *Empty Application Status Handling*: Ensured all 5 status keys (`NEW`, `SCREENING`, `INTERVIEW`, `PASSED`, `REJECTED`) default to `0` when no database rows exist for that state.
 
 ## Database Integrity
 
@@ -46,12 +51,16 @@ The live schema still contains exactly 7 tables: `ai_results`, `applications`, `
 - Secrets exposed: NO (Không in, không ghi log API key hay bất kỳ secret nào)
 - Application status changed by AI: NO (Trạng thái ứng tuyển được giữ nguyên vẹn 100% trước và sau mọi tác vụ AI)
 
+## Data Limitations
+
+- **Time-to-Hire (Hiring Time):** The current MySQL database schema only stores `applied_at` in the `applications` table and does not store a final-status timestamp (`completed_at`, `status_updated_at`, `updated_at`, or `hired_at`). The system strictly adheres to the principle of not fabricating synthetic numbers and returns:
+  `{"available": false, "average_days": null, "message": "Chưa đủ dữ liệu thời điểm kết thúc hồ sơ để tính chính xác."}`.
+
 ## Conclusion
 
-- Milestone M5 Automated & Mock Verification: PASS (117 backend tests PASS, frontend lint PASS, build PASS).
-- Real Live Gemini Verification: PASS (Toàn bộ 3 bài test thực tế với Google Gemini API thành công).
-- Milestone M5 Status: PASS.
-- Human review: READY FOR HUMAN REVIEW (Human Gate 3).
+- Milestone M6 technical verification: PASS (136 automated tests PASS, frontend lint PASS, build PASS, real MySQL integration PASS).
+- Final functional testing: PASS across M1 to M6 modules.
+- Human review: READY FOR HUMAN REVIEW (Human Gate 4 deferred to M7).
 
 
 
