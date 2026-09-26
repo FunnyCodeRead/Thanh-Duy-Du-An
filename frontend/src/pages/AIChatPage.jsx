@@ -128,21 +128,45 @@ function SourceBadge({ source }) {
   )
 }
 
+const DEFAULT_WELCOME_MESSAGE = {
+  id: 'welcome',
+  role: 'assistant',
+  content:
+    'Xin chào! Tôi là **Trợ lý tuyển dụng AI**.\nTôi có thể hỗ trợ bạn tra cứu các thông tin về **ứng viên, kỹ năng, kinh nghiệm trong CV, vị trí tuyển dụng, lịch phỏng vấn và đánh giá** dựa trên dữ liệu hiện có trong hệ thống.',
+  retrievalType: null,
+  sources: [],
+  timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+}
+
+function getStoredMessages(userId) {
+  const key = userId ? `recruitment_ai_chat_user_${userId}` : 'recruitment_ai_chat_default'
+  try {
+    const raw = localStorage.getItem(key)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed
+      }
+    }
+  } catch {
+    // fallback
+  }
+  return [DEFAULT_WELCOME_MESSAGE]
+}
+
 export default function AIChatPage() {
   const { user } = useOutletContext()
   const isAdmin = user?.role === 'ADMIN'
+  const storageKey = user?.id ? `recruitment_ai_chat_user_${user.id}` : 'recruitment_ai_chat_default'
 
-  const [messages, setMessages] = useState([
-    {
-      id: 'welcome',
-      role: 'assistant',
-      content:
-        'Xin chào! Tôi là **Trợ lý tuyển dụng AI**.\nTôi có thể hỗ trợ bạn tra cứu các thông tin về **ứng viên, kỹ năng, kinh nghiệm trong CV, vị trí tuyển dụng, lịch phỏng vấn và đánh giá** dựa trên dữ liệu hiện có trong hệ thống.',
-      retrievalType: null,
-      sources: [],
-      timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
-    },
-  ])
+  const [messages, setMessages] = useState(() => getStoredMessages(user?.id))
+  const [prevUserId, setPrevUserId] = useState(user?.id)
+
+  // Sync state if authenticated user switches
+  if (prevUserId !== user?.id) {
+    setPrevUserId(user?.id)
+    setMessages(getStoredMessages(user?.id))
+  }
 
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -159,6 +183,15 @@ export default function AIChatPage() {
   useEffect(() => {
     scrollToBottom()
   }, [messages, loading])
+
+  // Persist messages to localStorage on updates
+  useEffect(() => {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(messages))
+    } catch {
+      // ignore storage quota issues
+    }
+  }, [messages, storageKey])
 
   // Load index info on mount
   useEffect(() => {
@@ -186,8 +219,14 @@ export default function AIChatPage() {
     setInput('')
     setLoading(true)
 
+    // Send recent conversation turns for contextual multi-turn dialog
+    const recentHistory = messages
+      .filter((m) => m.id !== 'welcome' && !m.id.startsWith('welcome-'))
+      .slice(-4)
+      .map((m) => ({ role: m.role, content: m.content }))
+
     try {
-      const res = await chatApi.ask(trimmed)
+      const res = await chatApi.ask(trimmed, recentHistory)
       const data = res.data || {}
 
       const aiMsg = {
@@ -236,18 +275,23 @@ export default function AIChatPage() {
   }
 
   function handleClearChat() {
-    setMessages([
-      {
-        id: 'welcome-reset',
-        role: 'assistant',
-        content:
-          'Hội thoại đã được làm mới. Hãy nhập câu hỏi tuyển dụng bạn cần tra cứu!',
-        retrievalType: null,
-        sources: [],
-        timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
-      },
-    ])
+    const resetMsg = {
+      id: `welcome-${Date.now()}`,
+      role: 'assistant',
+      content:
+        'Hội thoại đã được làm mới. Hãy nhập câu hỏi tuyển dụng bạn cần tra cứu!',
+      retrievalType: null,
+      sources: [],
+      timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+    }
+    setMessages([resetMsg])
+    try {
+      localStorage.setItem(storageKey, JSON.stringify([resetMsg]))
+    } catch {
+      // ignore
+    }
   }
+
 
   return (
     <div className="d-flex flex-column h-100" style={{ maxWidth: '1100px', margin: '0 auto' }}>

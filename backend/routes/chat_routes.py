@@ -27,6 +27,7 @@ def ask_chat():
     """Hỏi đáp với Trợ lý tuyển dụng AI dựa trên dữ liệu hệ thống."""
     payload = request.get_json(silent=True) or {}
     message = payload.get("message")
+    history = payload.get("history")
 
     if not message or not isinstance(message, str) or not message.strip():
         return jsonify(success=False, message="Vui lòng nhập câu hỏi cần tra cứu."), 400
@@ -36,8 +37,9 @@ def ask_chat():
         return jsonify(success=False, message="Câu hỏi quá dài (tối đa 1000 ký tự)."), 400
 
     current_user = getattr(g, "current_user", None)
-    result = answer_question(cleaned_msg, user=current_user)
+    result = answer_question(cleaned_msg, user=current_user, history=history)
     return jsonify(success=True, data=result), 200
+
 
 
 @chat_bp.post("/reindex")

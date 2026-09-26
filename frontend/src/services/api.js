@@ -70,10 +70,12 @@ export const aiApi = {
 }
 
 export const chatApi = {
-  ask: (message) => apiRequest('/api/chat', { method: 'POST', body: { message } }),
+  ask: (message, history = []) =>
+    apiRequest('/api/chat', { method: 'POST', body: { message, history } }),
   reindex: () => apiRequest('/api/chat/reindex', { method: 'POST' }),
   indexInfo: () => apiRequest('/api/chat/index-info'),
 }
+
 
 export function cvUrl(storedPath) {
   if (!storedPath) return null

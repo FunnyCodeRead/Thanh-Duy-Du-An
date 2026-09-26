@@ -311,3 +311,37 @@ def test_index_info_endpoint(client, monkeypatch):
     res = client.get("/api/chat/index-info")
     assert res.status_code == 200
     assert res.get_json()["data"]["documents"] == 39
+
+
+def test_chat_accepts_history_context(client, monkeypatch):
+    """CHAT-025: POST /api/chat chấp nhận danh sách history và chuyển tiếp vào answer_question."""
+    login_as(client, "HR")
+    captured = {}
+
+    def mock_answer(question, user=None, history=None):
+        captured["question"] = question
+        captured["history"] = history
+        return {
+            "answer": "Thông tin ứng viên theo ngữ cảnh trước đó.",
+            "sources": [],
+            "retrieval_type": "VECTOR_SEARCH",
+            "has_context": True,
+        }
+
+    monkeypatch.setattr("routes.chat_routes.answer_question", mock_answer)
+
+    history_payload = [
+        {"role": "user", "content": "Ai ứng tuyển vị trí Backend?"},
+        {"role": "assistant", "content": "Có ứng viên Nguyễn Văn A."},
+    ]
+    res = client.post(
+        "/api/chat",
+        json={"message": "Ứng viên này có kinh nghiệm gì?", "history": history_payload},
+    )
+    assert res.status_code == 200
+    data = res.get_json()
+    assert data["success"] is True
+    assert captured["question"] == "Ứng viên này có kinh nghiệm gì?"
+    assert len(captured["history"]) == 2
+    assert captured["history"][0]["role"] == "user"
+

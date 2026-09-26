@@ -193,12 +193,13 @@ def handle_structured_intent(router_info: dict, question: str) -> dict:
     }
 
 
-def answer_question(question: str, user: dict | None = None) -> dict:
+def answer_question(question: str, user: dict | None = None, history: list[dict] | None = None) -> dict:
     """Xu ly toan dien cau hoi tuyen dung cua nguoi dung.
     
     Args:
         question: Chuoi cau hoi.
         user: Thong tin nguoi dung da xac thuc (dict).
+        history: Danh sach cac luot hoi thoai gan nhat (list of dict).
         
     Returns:
         dict: {
@@ -301,16 +302,30 @@ def answer_question(question: str, user: dict | None = None) -> dict:
     # 8. Build Grounded Context
     context_text, sources = build_context(retrieved_docs, structured_info=structured_info)
 
-    # 9. Format Prompt and Call Gemini
+    # 9. Format Conversation History (up to 4 recent turns)
+    history_text = ""
+    if history and isinstance(history, list):
+        recent_turns = []
+        for h in history[-4:]:
+            if isinstance(h, dict) and h.get("content"):
+                role_label = "Người dùng" if h.get("role") == "user" else "Trợ lý AI"
+                content_snip = str(h.get("content")).strip()[:300]
+                recent_turns.append(f"{role_label}: {content_snip}")
+        if recent_turns:
+            history_text = "LỊCH SỬ HỘI THOẠI TRƯỚC ĐÓ:\n" + "\n".join(recent_turns) + "\n\n"
+
+    # 10. Format Prompt and Call Gemini
     system_rules = _load_prompt_template()
     prompt = (
         f"{system_rules}\n\n"
+        f"{history_text}"
         f"CÂU HỎI:\n{q}\n\n"
         f"LOẠI TRUY XUẤT:\n{intent}\n\n"
         f"CONTEXT TỪ HỆ THỐNG:\n\n{context_text}\n\n"
         f"Hãy trả lời câu hỏi trên CHỈ dựa vào CONTEXT từ hệ thống. "
         f"Tuyệt đối không bịa đặt hoặc sử dụng thông tin bên ngoài."
     )
+
 
     try:
         raw_answer = generate_content(prompt)
