@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useOutletContext, useParams } from 'react-router-dom'
 import Loading from '../components/Loading'
+import PageHeader from '../components/PageHeader'
 import { candidateApi, cvUrl } from '../services/api'
 
 const emptyCandidate = {
@@ -78,39 +79,36 @@ export default function CandidateFormPage() {
   })
 
   return (
-    <div className="form-page mx-auto" style={{ maxWidth: '850px' }}>
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h1 className="h3 fw-bold mb-1 text-dark">
-            {editing ? 'Chỉnh sửa Hồ sơ Ứng viên' : 'Thêm Ứng viên Mới'}
-          </h1>
-          <p className="text-muted mb-0 small">
-            Nhập thông tin cá nhân, kỹ năng chuyên môn và tải lên file CV đính kèm.
-          </p>
-        </div>
-        <Link to="/candidates" className="btn btn-secondary-modern btn-sm text-decoration-none">
-          <i className="bi bi-arrow-left"></i>
-          <span>Quay lại</span>
-        </Link>
-      </div>
+    <div className="form-page mx-auto" style={{ maxWidth: '860px' }}>
+      <PageHeader
+        title={editing ? 'Chỉnh sửa Hồ sơ Ứng viên' : 'Thêm Ứng viên Mới'}
+        description="Nhập thông tin cá nhân, kỹ năng chuyên môn và tải lên file CV đính kèm."
+        action={
+          <Link to="/candidates" className="btn btn-secondary-modern btn-sm text-decoration-none">
+            <i className="bi bi-arrow-left" />
+            <span>Quay lại danh sách</span>
+          </Link>
+        }
+      />
 
       {state.error && (
         <div className="alert alert-danger d-flex align-items-center gap-2 rounded-3 mb-3">
-          <i className="bi bi-exclamation-circle-fill"></i>
+          <i className="bi bi-exclamation-circle-fill" />
           <div>{state.error}</div>
         </div>
       )}
 
-      <div className="card-modern">
-        <div className="card-modern-header">
-          <div className="d-flex align-items-center gap-2">
-            <i className="bi bi-person-lines-fill text-primary"></i>
-            <span>Thông tin ứng viên</span>
+      <form onSubmit={submit} className="d-flex flex-column gap-4">
+        {/* Section 1: Thông tin cơ bản */}
+        <div className="card-modern">
+          <div className="card-modern-header">
+            <div className="d-flex align-items-center gap-2">
+              <i className="bi bi-person-fill text-primary" />
+              <span>1. Thông tin cơ bản</span>
+            </div>
+            <span className="text-muted small">* Trường bắt buộc</span>
           </div>
-          <span className="text-muted small">* Trường bắt buộc</span>
-        </div>
-        <div className="card-modern-body">
-          <form onSubmit={submit}>
+          <div className="card-modern-body">
             <div className="row g-3">
               <div className="col-md-6">
                 <label className="form-label small fw-semibold text-secondary">
@@ -153,7 +151,20 @@ export default function CandidateFormPage() {
                   ))}
                 </select>
               </div>
+            </div>
+          </div>
+        </div>
 
+        {/* Section 2: Thông tin nghề nghiệp */}
+        <div className="card-modern">
+          <div className="card-modern-header">
+            <div className="d-flex align-items-center gap-2">
+              <i className="bi bi-briefcase-fill text-primary" />
+              <span>2. Thông tin nghề nghiệp</span>
+            </div>
+          </div>
+          <div className="card-modern-body">
+            <div className="row g-3">
               <div className="col-12">
                 <label className="form-label small fw-semibold text-secondary">
                   Kỹ năng chuyên môn (cách nhau bằng dấu phẩy)
@@ -171,6 +182,7 @@ export default function CandidateFormPage() {
                   className="form-control"
                   rows="3"
                   placeholder="Mô tả các dự án, công ty đã từng làm việc..."
+                  style={{ height: 'auto' }}
                   {...field('experience')}
                 />
               </div>
@@ -180,12 +192,25 @@ export default function CandidateFormPage() {
                 <textarea
                   className="form-control"
                   rows="3"
-                  placeholder="Trường đại học, chuyên ngành, chứng chỉ..."
+                  placeholder="Trường đại học, chuyên ngành, bằng cấp..."
+                  style={{ height: 'auto' }}
                   {...field('education')}
                 />
               </div>
+            </div>
+          </div>
+        </div>
 
-              {/* CV File Upload Box */}
+        {/* Section 3: CV ứng viên */}
+        <div className="card-modern">
+          <div className="card-modern-header">
+            <div className="d-flex align-items-center gap-2">
+              <i className="bi bi-file-earmark-pdf-fill text-primary" />
+              <span>3. CV ứng viên</span>
+            </div>
+          </div>
+          <div className="card-modern-body">
+            <div className="row g-3">
               <div className="col-12">
                 <label className="form-label small fw-semibold text-secondary">
                   Tải lên tệp CV (PDF, DOC, DOCX — Tối đa 10 MB)
@@ -193,12 +218,12 @@ export default function CandidateFormPage() {
                 <div
                   className="p-3 rounded-3"
                   style={{
-                    border: '2px dashed #cbd5e1',
-                    backgroundColor: '#f8fafc',
+                    border: '2px dashed var(--border-strong)',
+                    backgroundColor: 'var(--page-bg)',
                     textAlign: 'center',
                   }}
                 >
-                  <i className="bi bi-cloud-arrow-up fs-2 text-primary d-block mb-1"></i>
+                  <i className="bi bi-cloud-arrow-up fs-2 text-primary d-block mb-1" />
                   <input
                     className="form-control form-control-sm mx-auto mb-1"
                     type="file"
@@ -211,8 +236,8 @@ export default function CandidateFormPage() {
                   </small>
                 </div>
                 {editing && form.cv_file && (
-                  <div className="small text-secondary mt-1.5">
-                    <i className="bi bi-paperclip me-1 text-primary"></i>
+                  <div className="small text-secondary mt-2">
+                    <i className="bi bi-paperclip me-1 text-primary" />
                     Tệp hiện tại:{' '}
                     <a
                       href={cvUrl(form.cv_file)}
@@ -227,32 +252,33 @@ export default function CandidateFormPage() {
                 )}
               </div>
             </div>
-
-            <div className="d-flex justify-content-end gap-2 border-top pt-3 mt-4">
-              <Link to="/candidates" className="btn btn-secondary-modern">
-                Hủy bỏ
-              </Link>
-              <button
-                type="submit"
-                className="btn btn-primary-modern"
-                disabled={state.saving}
-              >
-                {state.saving ? (
-                  <>
-                    <span className="spinner-border spinner-border-sm me-1" role="status"></span>
-                    Đang lưu...
-                  </>
-                ) : (
-                  <>
-                    <i className="bi bi-check-lg"></i>
-                    <span>{editing ? 'Cập nhật ứng viên' : 'Lưu ứng viên mới'}</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </form>
+          </div>
         </div>
-      </div>
+
+        {/* Footer Actions */}
+        <div className="d-flex justify-content-end gap-2 border-top pt-3">
+          <Link to="/candidates" className="btn btn-secondary-modern">
+            Hủy bỏ
+          </Link>
+          <button
+            type="submit"
+            className="btn btn-primary-modern"
+            disabled={state.saving}
+          >
+            {state.saving ? (
+              <>
+                <span className="spinner-border spinner-border-sm me-1" role="status" />
+                Đang lưu...
+              </>
+            ) : (
+              <>
+                <i className="bi bi-check-lg" />
+                <span>{editing ? 'Cập nhật ứng viên' : 'Lưu ứng viên mới'}</span>
+              </>
+            )}
+          </button>
+        </div>
+      </form>
     </div>
   )
 }

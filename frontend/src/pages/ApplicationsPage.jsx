@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react'
 import { Link, useOutletContext } from 'react-router-dom'
 import Loading from '../components/Loading'
+import PageHeader from '../components/PageHeader'
+import StatusBadge from '../components/StatusBadge'
+import EmptyState from '../components/EmptyState'
 import { applicationApi, jobApi } from '../services/api'
 
-const STATUS_CONFIG = {
-  NEW: { label: 'Mới nhận', badgeClass: 'soft-badge-secondary', icon: 'bi-inbox' },
-  SCREENING: { label: 'Sàng lọc hồ sơ', badgeClass: 'soft-badge-info', icon: 'bi-search' },
-  INTERVIEW: { label: 'Phỏng vấn', badgeClass: 'soft-badge-purple', icon: 'bi-calendar-event' },
-  PASSED: { label: 'Trúng tuyển', badgeClass: 'soft-badge-success', icon: 'bi-check-circle-fill' },
-  REJECTED: { label: 'Không đạt', badgeClass: 'soft-badge-danger', icon: 'bi-x-circle-fill' },
-}
+const STATUS_OPTIONS = [
+  { value: 'NEW', label: 'Mới nhận' },
+  { value: 'SCREENING', label: 'Sàng lọc hồ sơ' },
+  { value: 'INTERVIEW', label: 'Phỏng vấn' },
+  { value: 'PASSED', label: 'Trúng tuyển' },
+  { value: 'REJECTED', label: 'Không đạt' },
+]
 
 export default function ApplicationsPage() {
   const { user } = useOutletContext()
@@ -48,24 +51,22 @@ export default function ApplicationsPage() {
 
   return (
     <>
-      <div className="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4">
-        <div>
-          <h1 className="h3 fw-bold mb-1 text-dark">Hồ sơ Ứng tuyển</h1>
-          <p className="text-muted mb-0 small">
-            Theo dõi ứng viên nộp hồ sơ, quy trình xét duyệt và kết quả tuyển dụng.
-          </p>
-        </div>
-        {canCreate && (
-          <Link to="/applications/create" className="btn btn-primary-modern text-decoration-none">
-            <i className="bi bi-file-earmark-plus-fill"></i>
-            <span>Tạo hồ sơ ứng tuyển</span>
-          </Link>
-        )}
-      </div>
+      <PageHeader
+        title="Hồ sơ Ứng tuyển"
+        description="Theo dõi tiến trình xét duyệt hồ sơ ứng viên qua các giai đoạn tuyển dụng."
+        action={
+          canCreate && (
+            <Link to="/applications/create" className="btn btn-primary-modern text-decoration-none">
+              <i className="bi bi-plus-lg" />
+              <span>Tạo hồ sơ ứng tuyển</span>
+            </Link>
+          )
+        }
+      />
 
       {state.error && (
         <div className="alert alert-danger d-flex align-items-center gap-2 rounded-3 mb-3">
-          <i className="bi bi-exclamation-circle-fill"></i>
+          <i className="bi bi-exclamation-circle-fill" />
           <div>{state.error}</div>
         </div>
       )}
@@ -81,7 +82,7 @@ export default function ApplicationsPage() {
         >
           <div className="col-12 col-md-5">
             <div className="input-icon-group">
-              <i className="bi bi-search"></i>
+              <i className="bi bi-search" />
               <input
                 className="form-control"
                 value={filters.keyword}
@@ -96,7 +97,6 @@ export default function ApplicationsPage() {
               className="form-select"
               value={filters.jobId}
               onChange={(e) => setFilters({ ...filters, jobId: e.target.value })}
-              style={{ borderRadius: 'var(--radius-md)' }}
             >
               <option value="">Tất cả vị trí tuyển dụng</option>
               {jobs.map((job) => (
@@ -112,29 +112,28 @@ export default function ApplicationsPage() {
               className="form-select"
               value={filters.status}
               onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-              style={{ borderRadius: 'var(--radius-md)' }}
             >
               <option value="">Tất cả trạng thái</option>
-              {Object.entries(STATUS_CONFIG).map(([stKey, conf]) => (
-                <option key={stKey} value={stKey}>
-                  {conf.label}
+              {STATUS_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
                 </option>
               ))}
             </select>
           </div>
 
           <div className="col-12 col-md-2 d-flex gap-2">
-            <button type="submit" className="btn btn-primary-modern flex-grow-1 justify-content-center">
+            <button type="submit" className="btn btn-secondary-modern flex-grow-1 justify-content-center">
               <span>Lọc</span>
             </button>
             {(filters.keyword || filters.status || filters.jobId) && (
               <button
                 type="button"
-                className="btn btn-secondary-modern px-2.5"
+                className="btn btn-link text-muted p-2 text-decoration-none small"
                 onClick={handleReset}
-                title="Đặt lại bộ lọc"
+                title="Xóa bộ lọc"
               >
-                <i className="bi bi-arrow-counterclockwise"></i>
+                <i className="bi bi-x-circle" />
               </button>
             )}
           </div>
@@ -147,26 +146,26 @@ export default function ApplicationsPage() {
       ) : (
         <div className="card-modern">
           <div className="card-modern-header">
-            <span className="text-secondary small">
+            <span className="text-muted small">
               Hiển thị <strong>{state.rows.length}</strong> hồ sơ ứng tuyển
             </span>
           </div>
 
           {state.rows.length === 0 ? (
-            <div className="empty-state-box border-0">
-              <div className="empty-state-icon">
-                <i className="bi bi-folder2-open"></i>
-              </div>
-              <h6 className="fw-semibold text-dark">Không tìm thấy hồ sơ ứng tuyển nào</h6>
-              <p className="text-muted small mb-3">
-                Thử thay đổi điều kiện lọc hoặc liên kết ứng viên với vị trí tuyển dụng mới.
-              </p>
-              {canCreate && (
-                <Link to="/applications/create" className="btn btn-primary-modern btn-sm text-decoration-none">
-                  <i className="bi bi-plus-lg"></i>
-                  <span>Tạo hồ sơ mới ngay</span>
-                </Link>
-              )}
+            <div className="p-4">
+              <EmptyState
+                icon="bi-file-earmark-person"
+                title="Chưa có hồ sơ ứng tuyển nào"
+                description="Tạo hồ sơ ứng tuyển đầu tiên để bắt đầu theo dõi tiến trình tuyển dụng ứng viên."
+                action={
+                  canCreate && (
+                    <Link to="/applications/create" className="btn btn-primary-modern btn-sm text-decoration-none">
+                      <i className="bi bi-plus-lg" />
+                      <span>Tạo hồ sơ ứng tuyển</span>
+                    </Link>
+                  )
+                }
+              />
             </div>
           ) : (
             <div className="table-responsive">
@@ -179,7 +178,7 @@ export default function ApplicationsPage() {
                     <th>Trạng thái hiện tại</th>
                     <th>Ngày nộp</th>
                     <th>Ghi chú</th>
-                    <th style={{ width: '110px' }} className="text-end">
+                    <th style={{ width: '130px' }} className="text-end">
                       Thao tác
                     </th>
                   </tr>
@@ -194,12 +193,6 @@ export default function ApplicationsPage() {
                       .join('')
                       .toUpperCase()
 
-                    const conf = STATUS_CONFIG[app.status] || {
-                      label: app.status,
-                      badgeClass: 'soft-badge-secondary',
-                      icon: 'bi-tag',
-                    }
-
                     return (
                       <tr key={app.id}>
                         <td className="text-muted small fw-semibold">#{app.id}</td>
@@ -209,7 +202,10 @@ export default function ApplicationsPage() {
                             <div>
                               <Link
                                 to={`/applications/${app.id}`}
-                                className="fw-bold text-dark text-decoration-none hover-primary"
+                                className="fw-bold text-dark text-decoration-none"
+                                style={{ transition: 'color 0.15s ease' }}
+                                onMouseEnter={(e) => (e.target.style.color = 'var(--primary)')}
+                                onMouseLeave={(e) => (e.target.style.color = 'var(--text-primary)')}
                               >
                                 {app.candidate_name}
                               </Link>
@@ -222,15 +218,12 @@ export default function ApplicationsPage() {
                         <td>
                           <div className="fw-semibold text-dark">{app.job_title}</div>
                           <span className="text-muted small" style={{ fontSize: '0.75rem' }}>
-                            <i className="bi bi-building me-1"></i>
+                            <i className="bi bi-building me-1" />
                             {app.job_department || 'Chung'}
                           </span>
                         </td>
                         <td>
-                          <span className={`soft-badge ${conf.badgeClass}`}>
-                            <i className={`bi ${conf.icon}`}></i>
-                            {app.status}
-                          </span>
+                          <StatusBadge status={app.status} />
                         </td>
                         <td>
                           <span className="small text-secondary">
@@ -247,10 +240,10 @@ export default function ApplicationsPage() {
                         <td className="text-end text-nowrap">
                           <Link
                             to={`/applications/${app.id}`}
-                            className="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 small d-inline-flex align-items-center gap-1"
+                            className="btn btn-sm btn-secondary-modern py-1 px-3 text-decoration-none"
+                            style={{ fontSize: '0.8rem' }}
                           >
-                            <span>Chi tiết</span>
-                            <i className="bi bi-chevron-right"></i>
+                            Xem chi tiết
                           </Link>
                         </td>
                       </tr>

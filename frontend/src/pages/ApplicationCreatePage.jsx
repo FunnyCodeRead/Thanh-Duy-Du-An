@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useOutletContext } from 'react-router-dom'
 import Loading from '../components/Loading'
+import PageHeader from '../components/PageHeader'
 import { applicationApi, candidateApi, jobApi } from '../services/api'
-
 import { formatJobStatus } from '../utils/formatters'
 
 export default function ApplicationCreatePage() {
@@ -78,23 +78,21 @@ export default function ApplicationCreatePage() {
   }
 
   return (
-    <div className="form-page mx-auto" style={{ maxWidth: '800px' }}>
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h1 className="h3 fw-bold mb-1 text-dark">Tạo Hồ sơ Ứng tuyển Mới</h1>
-          <p className="text-muted mb-0 small">
-            Gán một ứng viên trong kho hồ sơ vào vị trí tuyển dụng tương ứng.
-          </p>
-        </div>
-        <Link to="/applications" className="btn btn-secondary-modern btn-sm text-decoration-none">
-          <i className="bi bi-arrow-left"></i>
-          <span>Quay lại</span>
-        </Link>
-      </div>
+    <div className="form-page mx-auto" style={{ maxWidth: '820px' }}>
+      <PageHeader
+        title="Tạo Hồ sơ Ứng tuyển Mới"
+        description="Gán một ứng viên trong kho hồ sơ vào vị trí tuyển dụng tương ứng để bắt đầu quy trình xét duyệt."
+        action={
+          <Link to="/applications" className="btn btn-secondary-modern btn-sm text-decoration-none">
+            <i className="bi bi-arrow-left" />
+            <span>Quay lại</span>
+          </Link>
+        }
+      />
 
       {error && (
         <div className="alert alert-danger d-flex align-items-center gap-2 rounded-3 mb-3">
-          <i className="bi bi-exclamation-circle-fill"></i>
+          <i className="bi bi-exclamation-circle-fill" />
           <div>{error}</div>
         </div>
       )}
@@ -102,8 +100,8 @@ export default function ApplicationCreatePage() {
       <div className="card-modern">
         <div className="card-modern-header">
           <div className="d-flex align-items-center gap-2">
-            <i className="bi bi-file-earmark-person-fill text-primary"></i>
-            <span>Thiết lập hồ sơ</span>
+            <i className="bi bi-file-earmark-person-fill text-primary" />
+            <span>Thiết lập hồ sơ ứng tuyển</span>
           </div>
           <span className="text-muted small">* Trường bắt buộc</span>
         </div>
@@ -119,7 +117,7 @@ export default function ApplicationCreatePage() {
                 onChange={(e) => setForm({ ...form, candidateId: e.target.value })}
                 required
               >
-                <option value="">-- Chọn ứng viên trong danh sách --</option>
+                <option value="">-- Chọn ứng viên trong kho hồ sơ --</option>
                 {candidates.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.full_name} ({c.email || 'Chưa có email'})
@@ -154,7 +152,8 @@ export default function ApplicationCreatePage() {
                 rows="3"
                 value={form.note}
                 onChange={(e) => setForm({ ...form, note: e.target.value })}
-                placeholder="Nhập ghi chú thêm về nguồn giới thiệu, mức lương kỳ vọng..."
+                placeholder="Nhập ghi chú thêm về nguồn giới thiệu, mức lương kỳ vọng, thời gian có thể bắt đầu..."
+                style={{ height: 'auto' }}
               />
             </div>
 
@@ -169,12 +168,12 @@ export default function ApplicationCreatePage() {
               >
                 {submitting ? (
                   <>
-                    <span className="spinner-border spinner-border-sm me-1" role="status"></span>
+                    <span className="spinner-border spinner-border-sm me-1" role="status" />
                     Đang tạo hồ sơ...
                   </>
                 ) : (
                   <>
-                    <i className="bi bi-check-lg"></i>
+                    <i className="bi bi-check-lg" />
                     <span>Tạo hồ sơ ứng tuyển</span>
                   </>
                 )}

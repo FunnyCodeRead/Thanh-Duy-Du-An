@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useOutletContext, useParams } from 'react-router-dom'
 import Loading from '../components/Loading'
+import PageHeader from '../components/PageHeader'
 import { candidateApi, cvUrl } from '../services/api'
 import { formatSource } from '../utils/formatters'
 
@@ -20,7 +21,7 @@ export default function CandidateDetailPage() {
   if (state.error) {
     return (
       <div className="alert alert-danger d-flex align-items-center gap-2 rounded-3 my-4">
-        <i className="bi bi-exclamation-triangle-fill"></i>
+        <i className="bi bi-exclamation-triangle-fill" />
         <div>{state.error}</div>
       </div>
     )
@@ -38,56 +39,51 @@ export default function CandidateDetailPage() {
 
   return (
     <>
-      <div className="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4">
-        <div>
-          <div className="d-flex align-items-center gap-2 mb-1">
-            <Link to="/candidates" className="text-secondary text-decoration-none small">
-              <i className="bi bi-arrow-left me-1"></i> Hồ sơ ứng viên
+      <PageHeader
+        title={c.full_name}
+        description={`Mã ứng viên: #${c.id} • Ngày thêm: ${new Date(c.created_at).toLocaleDateString('vi-VN')}`}
+        badge={<span className="soft-badge soft-badge-secondary">Nguồn: {formatSource(c.source)}</span>}
+        action={
+          <div className="d-flex gap-2">
+            <Link to="/candidates" className="btn btn-secondary-modern btn-sm text-decoration-none">
+              <i className="bi bi-arrow-left" />
+              <span>Quay lại</span>
             </Link>
-            <span className="text-muted small">/</span>
-            <span className="text-muted small">Ứng viên #{c.id}</span>
+            {canEdit && (
+              <Link
+                to={`/candidates/${id}/edit`}
+                className="btn btn-primary-modern btn-sm text-decoration-none"
+              >
+                <i className="bi bi-pencil" />
+                <span>Chỉnh sửa</span>
+              </Link>
+            )}
           </div>
-          <h1 className="h3 fw-bold mb-0 text-dark">{c.full_name}</h1>
-        </div>
-
-        <div className="d-flex gap-2">
-          <Link to="/candidates" className="btn btn-secondary-modern btn-sm text-decoration-none">
-            Quay lại
-          </Link>
-          {canEdit && (
-            <Link
-              to={`/candidates/${id}/edit`}
-              className="btn btn-primary-modern btn-sm text-decoration-none"
-            >
-              <i className="bi bi-pencil"></i>
-              <span>Chỉnh sửa</span>
-            </Link>
-          )}
-        </div>
-      </div>
+        }
+      />
 
       <div className="card-modern mb-4">
         <div className="card-modern-header">
           <div className="d-flex align-items-center gap-2">
-            <i className="bi bi-person-lines-fill text-primary"></i>
-            <span>Thông tin chi tiết ứng viên</span>
+            <i className="bi bi-person-lines-fill text-primary" />
+            <span>Thông tin chi tiết hồ sơ</span>
           </div>
-          <span className="soft-badge soft-badge-secondary">Nguồn: {formatSource(c.source)}</span>
+          <span className="soft-badge soft-badge-secondary">{formatSource(c.source)}</span>
         </div>
 
         <div className="card-modern-body">
           <div className="d-flex align-items-center gap-3 mb-4">
             <div
               className="table-avatar-initials"
-              style={{ width: '56px', height: '56px', fontSize: '1.35rem' }}
+              style={{ width: '52px', height: '52px', fontSize: '1.25rem' }}
             >
               {initials}
             </div>
             <div>
               <h4 className="fw-bold mb-0 text-dark">{c.full_name}</h4>
-              <div className="text-muted small">
-                <i className="bi bi-envelope me-1"></i> {c.email || '—'} &bull;{' '}
-                <i className="bi bi-telephone me-1"></i> {c.phone || '—'}
+              <div className="text-muted small mt-0.5">
+                <i className="bi bi-envelope me-1.5" /> {c.email || '—'} &bull;{' '}
+                <i className="bi bi-telephone ms-1 me-1.5" /> {c.phone || '—'}
               </div>
             </div>
           </div>
@@ -108,7 +104,7 @@ export default function CandidateDetailPage() {
               {c.skills ? (
                 <div className="d-flex flex-wrap gap-1.5">
                   {c.skills.split(',').map((sk, idx) => (
-                    <span key={idx} className="badge bg-light text-dark border small fw-normal py-1.5 px-2.5">
+                    <span key={idx} className="badge bg-light text-secondary border small fw-normal py-1.5 px-2.5">
                       {sk.trim()}
                     </span>
                   ))}
@@ -126,10 +122,12 @@ export default function CandidateDetailPage() {
                     href={cvUrl(c.cv_file)}
                     target="_blank"
                     rel="noreferrer"
-                    className="btn btn-sm btn-outline-primary rounded-pill px-3 py-1.5 small d-inline-flex align-items-center gap-1.5"
+                    className="btn btn-sm btn-light border py-1.5 px-3 small d-inline-flex align-items-center gap-1.5 text-secondary"
+                    style={{ borderRadius: 'var(--radius-md)' }}
+                    title="Tải / Mở xem tệp CV"
                   >
-                    <i className="bi bi-file-earmark-pdf-fill fs-6"></i>
-                    <span>Tải / Mở xem tệp CV</span>
+                    <i className="bi bi-file-earmark-pdf text-danger fs-6" />
+                    <span>Tải / Xem tệp CV</span>
                   </a>
                 </div>
               ) : (
@@ -140,7 +138,8 @@ export default function CandidateDetailPage() {
             {c.cv_text && (
               <div className="col-12 border-top pt-2">
                 <div className="fw-semibold text-secondary mb-1">
-                  <i className="bi bi-file-earmark-text text-primary me-1"></i>Nội dung CV trích xuất
+                  <i className="bi bi-file-earmark-text text-primary me-1" />
+                  Nội dung CV trích xuất
                 </div>
                 <div
                   className="p-3 rounded-3 bg-light border small text-dark"
@@ -150,32 +149,30 @@ export default function CandidateDetailPage() {
                 </div>
               </div>
             )}
-
-            <div className="col-12 border-top pt-2">
-              <span className="text-muted small">
-                Ngày tham gia hệ thống: {new Date(c.created_at).toLocaleString('vi-VN')}
-              </span>
-            </div>
           </div>
 
-          <div className="p-3 rounded-3 mt-4 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2" style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0' }}>
-            <span className="small text-success fw-semibold">
-              <i className="bi bi-info-circle-fill me-1.5"></i>
+          <div
+            className="p-3 rounded-3 mt-4 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2"
+            style={{ backgroundColor: 'var(--primary-soft)', border: '1px solid var(--primary-border)' }}
+          >
+            <span className="small fw-semibold" style={{ color: 'var(--primary)' }}>
+              <i className="bi bi-info-circle-fill me-1.5" />
               Xem hoặc tạo hồ sơ ứng tuyển liên kết với ứng viên này
             </span>
             <div className="d-flex gap-2">
               <Link
-                className="btn btn-sm btn-outline-success rounded-pill px-3 py-1 small"
+                className="btn btn-sm btn-secondary-modern py-1 px-3 small"
                 to={`/applications?keyword=${encodeURIComponent(c.full_name)}`}
               >
                 Xem hồ sơ ứng tuyển
               </Link>
               {canEdit && (
                 <Link
-                  className="btn btn-sm btn-success rounded-pill px-3 py-1 small text-white"
+                  className="btn btn-sm btn-primary-modern py-1 px-3 small text-white text-decoration-none"
                   to="/applications/create"
                 >
-                  + Nộp hồ sơ mới
+                  <i className="bi bi-plus-lg" />
+                  <span>Tạo hồ sơ ứng tuyển</span>
                 </Link>
               )}
             </div>

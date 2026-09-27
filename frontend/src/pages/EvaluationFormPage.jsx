@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import Loading from '../components/Loading'
+import PageHeader from '../components/PageHeader'
 import { applicationApi, evaluationApi } from '../services/api'
 
 const SCORE_LABELS = {
@@ -99,7 +100,7 @@ export default function EvaluationFormPage() {
   const tech = Number(form.technical_score) || 0
   const comm = Number(form.communication_score) || 0
   const exp = Number(form.experience_score) || 0
-  const averageScore = ((tech + comm + exp) / 3).toFixed(2)
+  const averageScore = ((tech + comm + exp) / 3).toFixed(1)
 
   let scoreFeedback = 'Khá tốt'
   let scoreBadgeClass = 'soft-badge-success'
@@ -160,31 +161,27 @@ export default function EvaluationFormPage() {
 
   return (
     <div className="form-page mx-auto" style={{ maxWidth: '850px' }}>
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h1 className="h3 fw-bold mb-1 text-dark">
-            {isEdit ? `Chỉnh sửa Đánh giá #${id}` : 'Thêm Đánh giá Ứng viên'}
-          </h1>
-          {appInfo && (
-            <p className="text-muted mb-0 small">
-              Hồ sơ #{appInfo.id} &bull; Ứng viên:{' '}
-              <strong className="text-dark">{appInfo.candidate?.full_name}</strong> &bull; Vị trí:{' '}
-              <strong className="text-dark">{appInfo.job?.title}</strong>
-            </p>
-          )}
-        </div>
-        <Link
-          to={`/applications/${targetAppId}`}
-          className="btn btn-secondary-modern btn-sm text-decoration-none"
-        >
-          <i className="bi bi-arrow-left"></i>
-          <span>Quay lại hồ sơ</span>
-        </Link>
-      </div>
+      <PageHeader
+        title={isEdit ? `Chỉnh sửa Đánh giá #${id}` : 'Thêm Đánh giá Ứng viên'}
+        description={
+          appInfo
+            ? `Hồ sơ #${appInfo.id} • Ứng viên: ${appInfo.candidate?.full_name || '—'} • Vị trí: ${appInfo.job?.title || '—'}`
+            : 'Ghi nhận điểm số năng lực và nhận xét chi tiết sau buổi phỏng vấn.'
+        }
+        action={
+          <Link
+            to={`/applications/${targetAppId}`}
+            className="btn btn-secondary-modern btn-sm text-decoration-none"
+          >
+            <i className="bi bi-arrow-left" />
+            <span>Quay lại hồ sơ</span>
+          </Link>
+        }
+      />
 
       {error && (
         <div className="alert alert-danger d-flex align-items-center gap-2 rounded-3 mb-3">
-          <i className="bi bi-exclamation-circle-fill"></i>
+          <i className="bi bi-exclamation-circle-fill" />
           <div>{error}</div>
         </div>
       )}
@@ -192,7 +189,7 @@ export default function EvaluationFormPage() {
       <div className="card-modern mb-4">
         <div className="card-modern-header">
           <div className="d-flex align-items-center gap-2">
-            <i className="bi bi-award-fill text-warning"></i>
+            <i className="bi bi-award-fill text-warning" />
             <span>Bảng chấm điểm ứng viên</span>
           </div>
           <span className="text-muted small">Thang điểm từ 1 đến 5 sao</span>
@@ -204,8 +201,8 @@ export default function EvaluationFormPage() {
             <div
               className="p-3 rounded-3 mb-4 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3"
               style={{
-                backgroundColor: '#f8fafc',
-                border: '1px solid #e2e8f0',
+                backgroundColor: 'var(--surface-subtle)',
+                border: '1px solid var(--border)',
               }}
             >
               <div>
@@ -239,7 +236,7 @@ export default function EvaluationFormPage() {
                       onClick={() => setForm({ ...form, technical_score: val })}
                       title={`Chọn ${val} sao`}
                     >
-                      <i className="bi bi-star-fill"></i>
+                      <i className="bi bi-star-fill" />
                     </button>
                   ))}
                 </div>
@@ -262,7 +259,7 @@ export default function EvaluationFormPage() {
                       onClick={() => setForm({ ...form, communication_score: val })}
                       title={`Chọn ${val} sao`}
                     >
-                      <i className="bi bi-star-fill"></i>
+                      <i className="bi bi-star-fill" />
                     </button>
                   ))}
                 </div>
@@ -285,7 +282,7 @@ export default function EvaluationFormPage() {
                       onClick={() => setForm({ ...form, experience_score: val })}
                       title={`Chọn ${val} sao`}
                     >
-                      <i className="bi bi-star-fill"></i>
+                      <i className="bi bi-star-fill" />
                     </button>
                   ))}
                 </div>
@@ -306,6 +303,7 @@ export default function EvaluationFormPage() {
                 placeholder="Ghi nhận điểm mạnh chuyên môn, thái độ, mức độ phù hợp văn hóa hoặc những điểm cần đào tạo thêm..."
                 value={form.comment}
                 onChange={(e) => setForm({ ...form, comment: e.target.value })}
+                style={{ height: 'auto' }}
               />
             </div>
 
@@ -320,13 +318,13 @@ export default function EvaluationFormPage() {
               >
                 {submitting ? (
                   <>
-                    <span className="spinner-border spinner-border-sm me-1" role="status"></span>
+                    <span className="spinner-border spinner-border-sm me-1" role="status" />
                     Đang lưu...
                   </>
                 ) : (
                   <>
-                    <i className="bi bi-check-lg"></i>
-                    <span>{isEdit ? 'Lưu thay đổi đánh giá' : 'Gửi đánh giá ứng viên'}</span>
+                    <i className="bi bi-check-lg" />
+                    <span>Lưu đánh giá</span>
                   </>
                 )}
               </button>

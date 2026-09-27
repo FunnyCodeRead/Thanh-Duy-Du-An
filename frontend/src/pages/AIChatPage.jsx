@@ -309,11 +309,11 @@ export default function AIChatPage() {
           border: '1px solid #e2e8f0',
         }}
       >
-        {/* 1. Header with Signature Emerald Green */}
+        {/* 1. Header with Signature Brand Blue */}
         <div
           className="d-flex align-items-center justify-content-between px-3 px-md-4 py-3 text-white flex-shrink-0"
           style={{
-            backgroundColor: '#009e4f',
+            backgroundColor: '#2563EB',
           }}
         >
           <div className="d-flex align-items-center gap-3">
@@ -452,7 +452,7 @@ export default function AIChatPage() {
               )
             }
 
-            // Assistant message: Green bubble styled like Floating AI Chat
+            // Assistant message: Blue bubble styled like Floating AI Chat
             return (
               <div key={key} className="d-flex flex-column align-items-start mb-1 w-100">
                 {/* Sender Name */}
@@ -470,7 +470,7 @@ export default function AIChatPage() {
                     style={{
                       width: '34px',
                       height: '34px',
-                      border: '1.5px solid #009e4f',
+                      border: '1.5px solid #2563EB',
                       backgroundColor: '#ffffff',
                     }}
                   >
@@ -481,12 +481,12 @@ export default function AIChatPage() {
                     />
                   </div>
 
-                  {/* Green Message Bubble */}
+                  {/* Blue Message Bubble */}
                   <div className="d-flex flex-column" style={{ maxWidth: '82%' }}>
                     <div
                       className="text-white shadow-2xs"
                       style={{
-                        backgroundColor: '#009e4f',
+                        backgroundColor: '#2563EB',
                         borderRadius: '4px 18px 18px 18px',
                         padding: '13px 17px',
                         lineHeight: 1.6,
@@ -523,13 +523,13 @@ export default function AIChatPage() {
             <div className="d-flex align-items-start gap-2.5">
               <div
                 className="rounded-circle overflow-hidden flex-shrink-0 mt-0.5"
-                style={{ width: '34px', height: '34px', border: '1.5px solid #009e4f' }}
+                style={{ width: '34px', height: '34px', border: '1.5px solid #2563EB' }}
               >
                 <img src="/ai-avatar.png" alt="AI" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
               <div
                 className="px-3.5 py-2 rounded-pill shadow-2xs d-inline-flex align-items-center gap-2"
-                style={{ backgroundColor: '#f1f5f9', color: '#009e4f', fontSize: '0.82rem', fontWeight: 500 }}
+                style={{ backgroundColor: '#f1f5f9', color: '#2563EB', fontSize: '0.82rem', fontWeight: 500 }}
               >
                 <span className="spinner-border spinner-border-sm" style={{ width: '12px', height: '12px' }} />
                 <span>Trợ lý AI đang tra cứu dữ liệu tuyển dụng...</span>
@@ -555,19 +555,19 @@ export default function AIChatPage() {
                 className="btn btn-sm shadow-2xs rounded-pill px-3 py-1 text-nowrap"
                 style={{
                   backgroundColor: '#ffffff',
-                  color: '#009e4f',
-                  border: '1.5px solid #009e4f',
+                  color: '#2563EB',
+                  border: '1.5px solid #2563EB',
                   fontSize: '0.8rem',
                   fontWeight: 500,
                   transition: 'all 0.15s ease',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#009e4f'
+                  e.currentTarget.style.backgroundColor = '#2563EB'
                   e.currentTarget.style.color = '#ffffff'
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = '#ffffff'
-                  e.currentTarget.style.color = '#009e4f'
+                  e.currentTarget.style.color = '#2563EB'
                 }}
                 onClick={() => handleSend(q)}
                 disabled={loading}
@@ -601,8 +601,8 @@ export default function AIChatPage() {
                 backgroundColor: '#f8fafc',
               }}
               onFocus={(e) => {
-                e.target.style.borderColor = '#009e4f'
-                e.target.style.boxShadow = '0 0 0 3px rgba(0, 158, 79, 0.15)'
+                e.target.style.borderColor = '#2563EB'
+                e.target.style.boxShadow = '0 0 0 3px rgba(37, 99, 235, 0.15)'
                 e.target.style.backgroundColor = '#ffffff'
               }}
               onBlur={(e) => {
@@ -616,7 +616,7 @@ export default function AIChatPage() {
               type="submit"
               className="btn d-inline-flex align-items-center gap-1.5 flex-shrink-0 shadow-2xs"
               style={{
-                backgroundColor: '#009e4f',
+                backgroundColor: '#2563EB',
                 color: '#ffffff',
                 borderRadius: '24px',
                 padding: '10px 22px',
@@ -626,10 +626,10 @@ export default function AIChatPage() {
               }}
               disabled={loading || !input.trim()}
               onMouseEnter={(e) => {
-                if (!loading && input.trim()) e.currentTarget.style.backgroundColor = '#008542'
+                if (!loading && input.trim()) e.currentTarget.style.backgroundColor = '#1D4ED8'
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#009e4f'
+                e.currentTarget.style.backgroundColor = '#2563EB'
               }}
             >
               {loading ? (

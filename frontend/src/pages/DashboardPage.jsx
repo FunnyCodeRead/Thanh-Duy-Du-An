@@ -2,22 +2,24 @@ import { useEffect, useState } from 'react'
 import { Link, useOutletContext } from 'react-router-dom'
 import { apiRequest } from '../services/api'
 import Loading from '../components/Loading'
+import PageHeader from '../components/PageHeader'
+import EmptyState from '../components/EmptyState'
 
 const STATUS_CONFIG = {
-  NEW: { label: 'Mới nhận', colorClass: 'soft-badge-secondary', dotColor: '#94a3b8' },
-  SCREENING: { label: 'Sàng lọc hồ sơ', colorClass: 'soft-badge-info', dotColor: '#0284c7' },
-  INTERVIEW: { label: 'Phỏng vấn', colorClass: 'soft-badge-purple', dotColor: '#7c3aed' },
-  PASSED: { label: 'Trúng tuyển', colorClass: 'soft-badge-success', dotColor: '#059669' },
-  REJECTED: { label: 'Không đạt', colorClass: 'soft-badge-danger', dotColor: '#dc2626' },
+  NEW: { label: 'Mới nhận', dotColor: '#64748B' },
+  SCREENING: { label: 'Sàng lọc hồ sơ', dotColor: '#2563EB' },
+  INTERVIEW: { label: 'Phỏng vấn', dotColor: '#3B82F6' },
+  PASSED: { label: 'Trúng tuyển', dotColor: '#16A34A' },
+  REJECTED: { label: 'Không đạt', dotColor: '#DC2626' },
 }
 
 const SOURCE_CONFIG = {
-  LINKEDIN: { label: 'LinkedIn', icon: 'bi-linkedin', color: '#0a66c2' },
-  FACEBOOK: { label: 'Facebook', icon: 'bi-facebook', color: '#1877f2' },
-  WEBSITE: { label: 'Website công ty', icon: 'bi-globe2', color: '#059669' },
-  JOB_SITE: { label: 'Trang tuyển dụng', icon: 'bi-briefcase', color: '#f59e0b' },
-  REFERRAL: { label: 'Giới thiệu nội bộ', icon: 'bi-people', color: '#8b5cf6' },
-  OTHER: { label: 'Nguồn khác', icon: 'bi-three-dots', color: '#64748b' },
+  LINKEDIN: { label: 'LinkedIn', icon: 'bi-linkedin', color: '#0A66C2' },
+  FACEBOOK: { label: 'Facebook', icon: 'bi-facebook', color: '#1877F2' },
+  WEBSITE: { label: 'Website công ty', icon: 'bi-globe2', color: '#16A34A' },
+  JOB_SITE: { label: 'Trang tuyển dụng', icon: 'bi-briefcase', color: '#D97706' },
+  REFERRAL: { label: 'Giới thiệu nội bộ', icon: 'bi-people', color: '#2563EB' },
+  OTHER: { label: 'Nguồn khác', icon: 'bi-three-dots', color: '#64748B' },
 }
 
 export default function DashboardPage() {
@@ -73,57 +75,49 @@ export default function DashboardPage() {
 
   return (
     <>
-      {/* Top Welcome Header */}
-      <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-        <div>
-          <div className="d-flex align-items-center gap-2 mb-1">
-            <h1 className="h3 fw-bold mb-0 text-dark">Tổng quan Tuyển dụng</h1>
-            <span className="soft-badge soft-badge-primary">Smart ATS</span>
-          </div>
-          <p className="text-muted mb-0 small">
-            Chào mừng trở lại, <strong>{user?.full_name}</strong>! Theo dõi tiến độ tuyển dụng và chỉ số hôm nay.
-          </p>
-        </div>
-
-        <div className="d-flex gap-2">
-          <button
-            className="btn btn-secondary-modern btn-sm"
-            onClick={fetchDashboard}
-            title="Làm mới số liệu"
-          >
-            <i className="bi bi-arrow-clockwise"></i>
-            <span>Làm mới</span>
-          </button>
-          {['ADMIN', 'HR'].includes(user?.role) && (
-            <Link to="/jobs/new" className="btn btn-primary-modern btn-sm text-decoration-none">
-              <i className="bi bi-plus-lg"></i>
-              <span>Đăng tuyển vị trí</span>
-            </Link>
-          )}
-        </div>
-      </div>
+      <PageHeader
+        title="Bảng điều khiển"
+        description={`Chào mừng trở lại, ${user?.full_name || 'Quản trị viên'}! Theo dõi tiến độ tuyển dụng và chỉ số hoạt động.`}
+        badge={<span className="soft-badge soft-badge-primary">Smart ATS</span>}
+      >
+        <button
+          type="button"
+          className="btn btn-secondary-modern btn-sm"
+          onClick={fetchDashboard}
+          title="Làm mới số liệu"
+        >
+          <i className="bi bi-arrow-clockwise" />
+          <span>Làm mới</span>
+        </button>
+        {['ADMIN', 'HR'].includes(user?.role) && (
+          <Link to="/jobs/create" className="btn btn-primary-modern btn-sm text-decoration-none">
+            <i className="bi bi-plus-lg" />
+            <span>Thêm vị trí mới</span>
+          </Link>
+        )}
+      </PageHeader>
 
       {state.error && (
         <div className="alert alert-danger d-flex align-items-center gap-2 rounded-3 mb-4">
-          <i className="bi bi-exclamation-circle-fill"></i>
+          <i className="bi bi-exclamation-circle-fill" />
           <div>{state.error}</div>
         </div>
       )}
 
-      {/* 1. Modern KPI Cards Grid */}
+      {/* 1. Modern KPI Cards Row (Volt Reference Style with blue accents) */}
       <div className="row g-3 mb-4">
         <div className="col-12 col-sm-6 col-xl-3">
           <Link to="/jobs" className="text-decoration-none">
             <div className="kpi-card h-100">
               <div>
                 <div className="kpi-label">Vị trí đang mở</div>
-                <div className="kpi-value text-primary">{summary.open_jobs}</div>
+                <div className="kpi-value" style={{ color: 'var(--primary)' }}>{summary.open_jobs}</div>
                 <div className="text-muted small mt-1">
                   Trên tổng số <strong>{summary.total_jobs}</strong> vị trí
                 </div>
               </div>
-              <div className="kpi-icon-bubble kpi-indigo">
-                <i className="bi bi-briefcase-fill"></i>
+              <div className="kpi-icon-bubble">
+                <i className="bi bi-briefcase-fill" />
               </div>
             </div>
           </Link>
@@ -134,11 +128,11 @@ export default function DashboardPage() {
             <div className="kpi-card h-100">
               <div>
                 <div className="kpi-label">Tổng ứng viên</div>
-                <div className="kpi-value text-dark">{summary.total_candidates}</div>
+                <div className="kpi-value">{summary.total_candidates}</div>
                 <div className="text-muted small mt-1">Kho dữ liệu hồ sơ CV</div>
               </div>
-              <div className="kpi-icon-bubble kpi-blue">
-                <i className="bi bi-people-fill"></i>
+              <div className="kpi-icon-bubble">
+                <i className="bi bi-people-fill" />
               </div>
             </div>
           </Link>
@@ -149,11 +143,11 @@ export default function DashboardPage() {
             <div className="kpi-card h-100">
               <div>
                 <div className="kpi-label">Hồ sơ ứng tuyển</div>
-                <div className="kpi-value text-dark">{summary.total_applications}</div>
+                <div className="kpi-value">{summary.total_applications}</div>
                 <div className="text-muted small mt-1">Đang trong quy trình</div>
               </div>
-              <div className="kpi-icon-bubble kpi-emerald">
-                <i className="bi bi-file-earmark-person-fill"></i>
+              <div className="kpi-icon-bubble">
+                <i className="bi bi-file-earmark-person-fill" />
               </div>
             </div>
           </Link>
@@ -164,13 +158,13 @@ export default function DashboardPage() {
             <div className="kpi-card h-100">
               <div>
                 <div className="kpi-label">Phỏng vấn sắp tới</div>
-                <div className="kpi-value text-warning" style={{ color: '#d97706' }}>
+                <div className="kpi-value" style={{ color: 'var(--warning)' }}>
                   {summary.upcoming_interviews}
                 </div>
                 <div className="text-muted small mt-1">Lịch hẹn đã lên kế hoạch</div>
               </div>
-              <div className="kpi-icon-bubble kpi-amber">
-                <i className="bi bi-calendar-event-fill"></i>
+              <div className="kpi-icon-bubble" style={{ backgroundColor: 'var(--warning-soft)', borderColor: 'var(--warning-border)', color: 'var(--warning)' }}>
+                <i className="bi bi-calendar-event-fill" />
               </div>
             </div>
           </Link>
@@ -184,7 +178,7 @@ export default function DashboardPage() {
           <div className="card-modern h-100">
             <div className="card-modern-header">
               <div className="d-flex align-items-center gap-2">
-                <i className="bi bi-funnel-fill text-primary"></i>
+                <i className="bi bi-funnel-fill text-primary" />
                 <span>Phân bố trạng thái hồ sơ ứng tuyển</span>
               </div>
               <span className="text-muted small fw-normal">
@@ -206,8 +200,8 @@ export default function DashboardPage() {
                         <div className="d-flex align-items-center gap-2">
                           <span
                             style={{
-                              width: 10,
-                              height: 10,
+                              width: 8,
+                              height: 8,
                               borderRadius: '50%',
                               backgroundColor: conf.dotColor,
                               display: 'inline-block',
@@ -217,12 +211,12 @@ export default function DashboardPage() {
                         </div>
                         <div className="d-flex align-items-center gap-2">
                           <span className="fw-bold small">{count} hồ sơ</span>
-                          <span className="text-muted small" style={{ minWidth: '40px', textAlign: 'right' }}>
+                          <span className="text-muted small" style={{ minWidth: '38px', textAlign: 'right' }}>
                             {pct}%
                           </span>
                         </div>
                       </div>
-                      <div className="progress" style={{ height: '7px', backgroundColor: '#f1f5f9' }}>
+                      <div className="progress" style={{ height: '6px', backgroundColor: '#f1f5f9' }}>
                         <div
                           className="progress-bar rounded-pill"
                           role="progressbar"
@@ -249,7 +243,7 @@ export default function DashboardPage() {
           <div className="card-modern h-100">
             <div className="card-modern-header">
               <div className="d-flex align-items-center gap-2">
-                <i className="bi bi-pie-chart-fill text-indigo" style={{ color: '#4f46e5' }}></i>
+                <i className="bi bi-pie-chart-fill text-primary" />
                 <span>Cơ cấu nguồn ứng viên</span>
               </div>
               <span className="text-muted small fw-normal">
@@ -258,10 +252,11 @@ export default function DashboardPage() {
             </div>
             <div className="card-modern-body">
               {candidateSources.length === 0 ? (
-                <div className="text-center py-4 text-muted small">
-                  <i className="bi bi-inbox d-block fs-3 text-secondary mb-2"></i>
-                  Chưa có dữ liệu nguồn ứng viên.
-                </div>
+                <EmptyState
+                  icon="bi-pie-chart"
+                  title="Chưa có dữ liệu nguồn"
+                  description="Khi ứng viên nộp hồ sơ, dữ liệu nguồn sẽ được phân tích tại đây."
+                />
               ) : (
                 <div className="d-flex flex-column gap-3">
                   {candidateSources.map((item) => {
@@ -280,7 +275,7 @@ export default function DashboardPage() {
                       <div key={item.source}>
                         <div className="d-flex justify-content-between align-items-center small mb-1">
                           <div className="d-flex align-items-center gap-2">
-                            <i className={`bi ${conf.icon}`} style={{ color: conf.color }}></i>
+                            <i className={`bi ${conf.icon}`} style={{ color: conf.color }} />
                             <span className="fw-semibold">{conf.label}</span>
                           </div>
                           <span className="text-muted">
@@ -307,33 +302,33 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* 3. Bottom Row: Pass Rate & Hiring Time Statement */}
+      {/* 3. Bottom Row: Pass Rate & Hiring Time */}
       <div className="row g-4 mb-4">
         {/* Pass Rate Metric */}
         <div className="col-12 col-md-6">
           <div className="card-modern h-100">
             <div className="card-modern-header">
               <div className="d-flex align-items-center gap-2">
-                <i className="bi bi-check2-circle text-success fs-5"></i>
+                <i className="bi bi-check2-circle text-success fs-5" />
                 <span>Tỷ lệ trúng tuyển (Pass Rate)</span>
               </div>
               <span className="soft-badge soft-badge-success">Đã hoàn tất</span>
             </div>
             <div className="card-modern-body">
               <div className="d-flex align-items-baseline gap-3 mb-2">
-                <div className="display-5 fw-bold text-success">{passRate.rate}%</div>
+                <div className="display-6 fw-bold text-success">{passRate.rate}%</div>
                 <div className="text-muted small">
                   ({passRate.passed} đỗ / {passRate.finalized} hồ sơ đã có kết quả)
                 </div>
               </div>
-              <div className="progress mb-3" style={{ height: '8px', backgroundColor: '#e2e8f0' }}>
+              <div className="progress mb-3" style={{ height: '7px', backgroundColor: '#e2e8f0' }}>
                 <div
                   className="progress-bar bg-success rounded-pill"
                   style={{ width: `${Math.min(passRate.rate, 100)}%` }}
                 />
               </div>
-              <p className="text-muted small mb-0">
-                <strong>Cách tính:</strong> Tỷ lệ phần trăm ứng viên Trúng tuyển trên tổng số hồ sơ đã có kết quả đánh giá cuối cùng (Trúng tuyển + Không đạt).
+              <p className="text-muted small mb-0" style={{ lineHeight: 1.5 }}>
+                Tỷ lệ phần trăm ứng viên Trúng tuyển trên tổng số hồ sơ đã hoàn tất đánh giá cuối cùng.
               </p>
             </div>
           </div>
@@ -344,24 +339,24 @@ export default function DashboardPage() {
           <div className="card-modern h-100">
             <div className="card-modern-header">
               <div className="d-flex align-items-center gap-2">
-                <i className="bi bi-clock-history text-secondary fs-5"></i>
+                <i className="bi bi-clock-history text-muted fs-5" />
                 <span>Thời gian tuyển dụng trung bình</span>
               </div>
               <span className="soft-badge soft-badge-secondary">Báo cáo dữ liệu</span>
             </div>
             <div className="card-modern-body">
               <div
-                className="d-flex align-items-start gap-2 p-2.5 rounded-3 mb-2.5 small"
+                className="d-flex align-items-start gap-2 p-3 rounded-3 mb-2.5 small"
                 style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}
               >
-                <i className="bi bi-info-circle-fill text-primary mt-0.5"></i>
+                <i className="bi bi-info-circle-fill text-primary mt-0.5" />
                 <div>
                   <strong className="text-dark">Thông tin chỉ số:</strong>{' '}
                   <span className="text-secondary">{hiringTime.message}</span>
                 </div>
               </div>
-              <p className="text-muted small mb-0">
-                Chỉ số thời gian tuyển dụng trung bình đang được cập nhật liên tục dựa trên tiến độ hoàn tất các vị trí tuyển dụng thực tế.
+              <p className="text-muted small mb-0" style={{ lineHeight: 1.5 }}>
+                Chỉ số thời gian tuyển dụng trung bình được cập nhật liên tục dựa trên tiến độ hoàn tất các vị trí tuyển dụng thực tế.
               </p>
             </div>
           </div>
@@ -372,28 +367,30 @@ export default function DashboardPage() {
       <div className="card-modern mb-4">
         <div className="card-modern-header">
           <div className="d-flex align-items-center gap-2">
-            <i className="bi bi-calendar-check-fill text-primary"></i>
+            <i className="bi bi-calendar-check-fill text-primary" />
             <span>5 buổi phỏng vấn sắp diễn ra gần nhất</span>
           </div>
           <Link to="/interviews" className="btn btn-sm btn-secondary-modern">
             <span>Xem tất cả lịch</span>
-            <i className="bi bi-arrow-right"></i>
+            <i className="bi bi-arrow-right" />
           </Link>
         </div>
         <div className="card-modern-body p-0">
           {upcomingInterviews.length === 0 ? (
-            <div className="empty-state-box border-0">
-              <div className="empty-state-icon">
-                <i className="bi bi-calendar-x"></i>
-              </div>
-              <h6 className="fw-semibold text-dark">Hiện chưa có lịch phỏng vấn nào</h6>
-              <p className="text-muted small mb-3">Tất cả các buổi phỏng vấn đã hoàn tất hoặc chưa được lên lịch mới.</p>
-              {['ADMIN', 'HR'].includes(user?.role) && (
-                <Link to="/interviews/new" className="btn btn-primary-modern btn-sm text-decoration-none">
-                  <i className="bi bi-plus-lg"></i>
-                  <span>Lên lịch phỏng vấn ngay</span>
-                </Link>
-              )}
+            <div className="p-4">
+              <EmptyState
+                icon="bi-calendar-x"
+                title="Hiện chưa có lịch phỏng vấn nào"
+                description="Tất cả các buổi phỏng vấn đã hoàn tất hoặc chưa được lên lịch mới."
+                action={
+                  ['ADMIN', 'HR'].includes(user?.role) && (
+                    <Link to="/interviews/create" className="btn btn-primary-modern btn-sm text-decoration-none">
+                      <i className="bi bi-plus-lg" />
+                      <span>Lên lịch phỏng vấn ngay</span>
+                    </Link>
+                  )
+                }
+              />
             </div>
           ) : (
             <div className="table-responsive">
@@ -405,7 +402,7 @@ export default function DashboardPage() {
                     <th>Thời gian phỏng vấn</th>
                     <th>Người phỏng vấn</th>
                     <th>Địa điểm / Hình thức</th>
-                    <th style={{ width: '80px' }}></th>
+                    <th style={{ width: '100px' }} className="text-end">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -431,7 +428,7 @@ export default function DashboardPage() {
                         </td>
                         <td>
                           <span className="text-primary fw-semibold small">
-                            <i className="bi bi-clock me-1"></i>
+                            <i className="bi bi-clock me-1" />
                             {iv.interview_date}
                           </span>
                         </td>
@@ -440,16 +437,17 @@ export default function DashboardPage() {
                         </td>
                         <td>
                           <span className="small text-dark">
-                            <i className="bi bi-geo-alt me-1 text-danger"></i>
+                            <i className="bi bi-geo-alt me-1 text-danger" />
                             {iv.location || 'Chưa cập nhật'}
                           </span>
                         </td>
                         <td className="text-end">
                           <Link
                             to={`/interviews/${iv.id}`}
-                            className="btn btn-sm btn-outline-primary rounded-pill px-2.5 py-0.5 small"
+                            className="btn btn-sm btn-secondary-modern py-1 px-2.5 text-decoration-none"
+                            style={{ fontSize: '0.8rem' }}
                           >
-                            Chi tiết
+                            Xem chi tiết
                           </Link>
                         </td>
                       </tr>

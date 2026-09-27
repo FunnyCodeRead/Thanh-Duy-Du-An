@@ -1,21 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useOutletContext, useParams } from 'react-router-dom'
 import Loading from '../components/Loading'
-import { evaluationApi, interviewApi } from '../services/api'
-import { formatInterviewStatus, formatRole } from '../utils/formatters'
-
-function statusBadgeClass(status) {
-  switch (status) {
-    case 'SCHEDULED':
-      return 'soft-badge-primary'
-    case 'COMPLETED':
-      return 'soft-badge-success'
-    case 'CANCELLED':
-      return 'soft-badge-secondary'
-    default:
-      return 'soft-badge-info'
-  }
-}
+import PageHeader from '../components/PageHeader'
+import StatusBadge from '../components/StatusBadge'
+import { interviewApi } from '../services/api'
+import { formatInterviewStatus } from '../utils/formatters'
 
 function getInitials(name) {
   if (!name) return '?'
@@ -29,7 +18,6 @@ export default function InterviewDetailPage() {
   const { user } = useOutletContext()
 
   const [interview, setInterview] = useState(null)
-  const [evaluations, setEvaluations] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [actionMsg, setActionMsg] = useState({ text: '', type: '' })
@@ -38,13 +26,7 @@ export default function InterviewDetailPage() {
   const reloadData = useCallback(async () => {
     try {
       const res = await interviewApi.get(id)
-      const data = res.data
-      setInterview(data)
-
-      if (data.application_id) {
-        const evalRes = await evaluationApi.listByApplication(data.application_id)
-        setEvaluations(evalRes.data || [])
-      }
+      setInterview(res.data)
     } catch (err) {
       setError(err.message || 'Lỗi khi tải thông tin phỏng vấn.')
     }
@@ -54,13 +36,6 @@ export default function InterviewDetailPage() {
     interviewApi.get(id)
       .then((res) => {
         setInterview(res.data)
-        if (res.data?.application_id) {
-          return evaluationApi.listByApplication(res.data.application_id)
-        }
-        return { data: [] }
-      })
-      .then((evalRes) => {
-        setEvaluations(evalRes.data || [])
         setLoading(false)
       })
       .catch((err) => {
@@ -71,14 +46,14 @@ export default function InterviewDetailPage() {
 
   async function handleStatusChange(newStatus) {
     const statusText = formatInterviewStatus(newStatus)
-    if (!window.confirm(`Bạn có chắc muốn chuyển trạng thái phỏng vấn sang ${statusText}?`)) {
+    if (!window.confirm(`Bạn có chắc muốn chuyển trạng thái phỏng vấn sang "${statusText}"?`)) {
       return
     }
     setProcessing(true)
     setActionMsg({ text: '', type: '' })
     try {
       await interviewApi.updateStatus(id, newStatus)
-      setActionMsg({ text: `Đã cập nhật trạng thái phỏng vấn thành ${statusText}.`, type: 'success' })
+      setActionMsg({ text: `Đã cập nhật trạng thái phỏng vấn thành "${statusText}".`, type: 'success' })
       reloadData()
     } catch (err) {
       setActionMsg({ text: err.message || 'Không thể cập nhật trạng thái phỏng vấn.', type: 'danger' })
@@ -87,52 +62,45 @@ export default function InterviewDetailPage() {
     }
   }
 
-  if (loading) return <Loading />
-  if (error) return <div className="alert alert-danger">{error}</div>
-  if (!interview) return <div className="alert alert-warning">Không tìm thấy buổi phỏng vấn.</div>
+  if (loading) return <Loading message="Đang tải chi tiết buổi phỏng vấn..." />
+  if (error) return <div className="alert alert-danger my-4">{error}</div>
+  if (!interview) return <div className="alert alert-warning my-4">Không tìm thấy thông tin buổi phỏng vấn.</div>
 
-  const isAdminOrHr = ['ADMIN', 'HR'].includes(user.role)
-  const isAssignedInterviewer = Number(user.id) === Number(interview.interviewer_id)
+  const isAdminOrHr = ['ADMIN', 'HR'].includes(user?.role)
+  const isAssignedInterviewer = Number(user?.id) === Number(interview.interviewer_id)
   const canComplete = (isAdminOrHr || isAssignedInterviewer) && interview.status === 'SCHEDULED'
   const canCancel = isAdminOrHr && interview.status === 'SCHEDULED'
   const canEdit = isAdminOrHr && interview.status === 'SCHEDULED'
 
   return (
-    <div>
-      {/* Top Header */}
-      <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-        <div className="d-flex align-items-center gap-3">
-          <Link to="/interviews" className="btn btn-sm btn-outline-secondary rounded-pill px-3">
-            <i className="bi bi-arrow-left me-1"></i> Quay lại
-          </Link>
-          <div>
-            <div className="d-flex align-items-center gap-2">
-              <h1 className="h4 mb-0 fw-bold">Chi tiết phỏng vấn #{interview.id}</h1>
-              <span className={`badge ${statusBadgeClass(interview.status)} px-3 py-2 rounded-pill`}>
-                {formatInterviewStatus(interview.status)}
-              </span>
-            </div>
-            <p className="text-muted small mb-0 mt-1">
-              Ứng viên: <strong className="text-dark">{interview.candidate_name}</strong> &bull; Vị trí: <strong className="text-dark">{interview.job_title}</strong>
-            </p>
-          </div>
-        </div>
-
-        <div className="d-flex gap-2">
-          {canEdit && (
-            <Link className="btn btn-outline-primary rounded-pill px-3" to={`/interviews/${interview.id}/edit`}>
-              <i className="bi bi-pencil me-1"></i> Sửa lịch
+    <>
+      <PageHeader
+        title={`Chi tiết phỏng vấn #${interview.id}`}
+        description={`Ứng viên: ${interview.candidate_name || '—'} • Vị trí: ${interview.job_title || '—'}`}
+        badge={<StatusBadge status={interview.status} />}
+        action={
+          <div className="d-flex align-items-center gap-2">
+            <Link to="/interviews" className="btn btn-secondary-modern btn-sm text-decoration-none">
+              <i className="bi bi-arrow-left" />
+              <span>Quay lại</span>
             </Link>
-          )}
-          <Link className="btn btn-primary rounded-pill px-3" to={`/applications/${interview.application_id}`}>
-            <i className="bi bi-file-earmark-person me-1"></i> Xem hồ sơ ứng tuyển
-          </Link>
-        </div>
-      </div>
+            {canEdit && (
+              <Link to={`/interviews/${interview.id}/edit`} className="btn btn-secondary-modern btn-sm text-decoration-none">
+                <i className="bi bi-pencil" />
+                <span>Sửa lịch</span>
+              </Link>
+            )}
+            <Link to={`/applications/${interview.application_id}`} className="btn btn-primary-modern btn-sm text-decoration-none">
+              <i className="bi bi-file-earmark-person" />
+              <span>Xem hồ sơ ứng tuyển</span>
+            </Link>
+          </div>
+        }
+      />
 
       {actionMsg.text && (
         <div className={`alert alert-${actionMsg.type} alert-dismissible fade show rounded-3 mb-4`} role="alert">
-          <i className={`bi ${actionMsg.type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'} me-2`}></i>
+          <i className={`bi ${actionMsg.type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'} me-2`} />
           {actionMsg.text}
           <button
             type="button"
@@ -145,106 +113,104 @@ export default function InterviewDetailPage() {
 
       <div className="row g-4 mb-4">
         {/* Thông tin chi tiết */}
-        <div className="col-lg-7">
-          <div className="card-modern h-100 p-4">
-            <div className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
-              <h6 className="fw-bold mb-0 text-dark">
-                <i className="bi bi-info-circle text-primary me-2"></i>Thông tin lịch phỏng vấn
-              </h6>
+        <div className="col-12 col-lg-7">
+          <div className="card-modern h-100">
+            <div className="card-modern-header">
+              <div className="d-flex align-items-center gap-2">
+                <i className="bi bi-info-circle text-primary" />
+                <span>Thông tin lịch phỏng vấn</span>
+              </div>
+              <StatusBadge status={interview.status} />
             </div>
 
-            <div className="row g-3">
-              <div className="col-sm-6">
-                <div className="p-3 rounded-3 bg-light">
-                  <span className="text-muted small d-block mb-1">
-                    <i className="bi bi-person me-1"></i>Ứng viên
-                  </span>
-                  <div className="d-flex align-items-center gap-2 mt-1">
-                    <div
-                      className="rounded-circle d-flex align-items-center justify-content-center bg-primary text-white fw-bold"
-                      style={{ width: '32px', height: '32px', fontSize: '0.75rem' }}
-                    >
-                      {getInitials(interview.candidate_name)}
+            <div className="card-modern-body">
+              <div className="row g-3">
+                <div className="col-sm-6">
+                  <div className="p-3 rounded-3 bg-light border">
+                    <span className="text-muted small d-block mb-1">
+                      <i className="bi bi-person me-1" />Ứng viên
+                    </span>
+                    <div className="d-flex align-items-center gap-2 mt-1">
+                      <div className="table-avatar-initials" style={{ width: '32px', height: '32px', fontSize: '0.75rem' }}>
+                        {getInitials(interview.candidate_name)}
+                      </div>
+                      <div>
+                        <div className="fw-semibold text-dark">{interview.candidate_name || '-'}</div>
+                        <div className="small text-muted" style={{ fontSize: '0.75rem' }}>{interview.candidate_email}</div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="fw-semibold text-dark">{interview.candidate_name || '-'}</div>
-                      <div className="small text-muted">{interview.candidate_email}</div>
-                    </div>
+                    {interview.candidate_id && (
+                      <Link to={`/candidates/${interview.candidate_id}`} className="small text-primary mt-2 d-inline-block text-decoration-none">
+                        Xem hồ sơ ứng viên <i className="bi bi-chevron-right" style={{ fontSize: '0.65rem' }} />
+                      </Link>
+                    )}
                   </div>
-                  {interview.candidate_id && (
-                    <Link to={`/candidates/${interview.candidate_id}`} className="small text-primary mt-2 d-inline-block text-decoration-none">
-                      Hồ sơ ứng viên <i className="bi bi-chevron-right small"></i>
+                </div>
+
+                <div className="col-sm-6">
+                  <div className="p-3 rounded-3 bg-light border">
+                    <span className="text-muted small d-block mb-1">
+                      <i className="bi bi-briefcase me-1" />Vị trí ứng tuyển
+                    </span>
+                    <div className="fw-semibold text-dark mt-1">{interview.job_title || '-'}</div>
+                    <Link to={`/applications/${interview.application_id}`} className="small text-primary mt-2 d-inline-block text-decoration-none">
+                      Hồ sơ ứng tuyển #{interview.application_id} <i className="bi bi-chevron-right" style={{ fontSize: '0.65rem' }} />
                     </Link>
-                  )}
+                  </div>
                 </div>
-              </div>
 
-              <div className="col-sm-6">
-                <div className="p-3 rounded-3 bg-light">
-                  <span className="text-muted small d-block mb-1">
-                    <i className="bi bi-briefcase me-1"></i>Vị trí ứng tuyển
-                  </span>
-                  <div className="fw-semibold text-dark mt-1">{interview.job_title || '-'}</div>
-                  <Link to={`/applications/${interview.application_id}`} className="small text-primary mt-2 d-inline-block text-decoration-none">
-                    Hồ sơ #{interview.application_id} <i className="bi bi-chevron-right small"></i>
-                  </Link>
-                </div>
-              </div>
-
-              <div className="col-sm-6">
-                <div className="p-3 rounded-3 bg-light">
-                  <span className="text-muted small d-block mb-1">
-                    <i className="bi bi-person-badge me-1"></i>Người phỏng vấn
-                  </span>
-                  <div className="d-flex align-items-center gap-2 mt-1">
-                    <div
-                      className="rounded-circle d-flex align-items-center justify-content-center bg-indigo text-white fw-bold"
-                      style={{ width: '32px', height: '32px', fontSize: '0.75rem', backgroundColor: '#6366f1' }}
-                    >
-                      {getInitials(interview.interviewer_name)}
-                    </div>
-                    <div>
-                      <div className="fw-semibold text-dark">{interview.interviewer_name || '-'}</div>
-                      <div className="small text-muted">{interview.interviewer_email}</div>
+                <div className="col-sm-6">
+                  <div className="p-3 rounded-3 bg-light border">
+                    <span className="text-muted small d-block mb-1">
+                      <i className="bi bi-person-badge me-1" />Người phỏng vấn phụ trách
+                    </span>
+                    <div className="d-flex align-items-center gap-2 mt-1">
+                      <div className="table-avatar-initials" style={{ width: '32px', height: '32px', fontSize: '0.75rem' }}>
+                        {getInitials(interview.interviewer_name)}
+                      </div>
+                      <div>
+                        <div className="fw-semibold text-dark">{interview.interviewer_name || '-'}</div>
+                        <div className="small text-muted" style={{ fontSize: '0.75rem' }}>{interview.interviewer_email}</div>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="col-sm-6">
-                <div className="p-3 rounded-3 bg-light">
-                  <span className="text-muted small d-block mb-1">
-                    <i className="bi bi-calendar-check me-1"></i>Thời gian phỏng vấn
-                  </span>
-                  <div className="fw-bold text-primary mt-1">
-                    {interview.interview_date
-                      ? new Date(interview.interview_date).toLocaleString('vi-VN', {
-                          dateStyle: 'full',
-                          timeStyle: 'short',
-                        })
-                      : '-'}
+                <div className="col-sm-6">
+                  <div className="p-3 rounded-3 bg-light border">
+                    <span className="text-muted small d-block mb-1">
+                      <i className="bi bi-calendar-check me-1" />Thời gian phỏng vấn
+                    </span>
+                    <div className="fw-bold text-primary mt-1">
+                      {interview.interview_date
+                        ? new Date(interview.interview_date).toLocaleString('vi-VN', {
+                            dateStyle: 'full',
+                            timeStyle: 'short',
+                          })
+                        : '-'}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="col-12">
-                <div className="p-3 rounded-3 bg-light">
-                  <span className="text-muted small d-block mb-1">
-                    <i className="bi bi-geo-alt me-1"></i>Địa điểm / Hình thức
-                  </span>
-                  <div className="fw-semibold text-dark">
-                    {interview.location || 'Chưa cập nhật'}
+                <div className="col-12">
+                  <div className="p-3 rounded-3 bg-light border">
+                    <span className="text-muted small d-block mb-1">
+                      <i className="bi bi-geo-alt me-1 text-danger" />Địa điểm / Hình thức
+                    </span>
+                    <div className="fw-semibold text-dark">
+                      {interview.location || 'Chưa cập nhật'}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="col-12">
-                <div className="p-3 rounded-3 bg-light">
-                  <span className="text-muted small d-block mb-1">
-                    <i className="bi bi-chat-left-text me-1"></i>Ghi chú
-                  </span>
-                  <div className="text-muted small text-preline">
-                    {interview.note || 'Không có ghi chú.'}
+                <div className="col-12">
+                  <div className="p-3 rounded-3 bg-light border">
+                    <span className="text-muted small d-block mb-1">
+                      <i className="bi bi-chat-left-text me-1" />Ghi chú buổi phỏng vấn
+                    </span>
+                    <div className="text-muted small text-preline">
+                      {interview.note || 'Không có ghi chú.'}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -252,197 +218,80 @@ export default function InterviewDetailPage() {
           </div>
         </div>
 
-        {/* Cập nhật trạng thái & Phím tắt */}
-        <div className="col-lg-5">
-          <div className="card-modern h-100 p-4 d-flex flex-column justify-content-between">
+        {/* Cập nhật trạng thái */}
+        <div className="col-12 col-lg-5">
+          <div className="card-modern h-100 d-flex flex-column justify-content-between">
             <div>
-              <div className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
-                <h6 className="fw-bold mb-0 text-dark">
-                  <i className="bi bi-sliders text-primary me-2"></i>Quy trình phỏng vấn
-                </h6>
-              </div>
-
-              <div className="p-3 rounded-3 bg-light mb-3">
-                <div className="small text-muted mb-2">
-                  <i className="bi bi-info-circle me-1"></i>Quy trình chuẩn:
-                </div>
-                <div className="d-flex align-items-center gap-2 small">
-                  <span className="badge soft-badge-primary">Đã lên lịch</span>
-                  <i className="bi bi-arrow-right text-muted"></i>
-                  <span className="badge soft-badge-success">Đã hoàn thành</span>
-                  <span className="text-muted">hoặc</span>
-                  <span className="badge soft-badge-secondary">Đã hủy</span>
+              <div className="card-modern-header">
+                <div className="d-flex align-items-center gap-2">
+                  <i className="bi bi-sliders text-primary" />
+                  <span>Xử lý trạng thái phỏng vấn</span>
                 </div>
               </div>
 
-              {interview.status === 'SCHEDULED' ? (
-                <div className="d-flex flex-column gap-2">
-                  {canComplete && (
-                    <button
-                      className="btn btn-success rounded-pill w-100 py-2 fw-semibold"
-                      disabled={processing}
-                      onClick={() => handleStatusChange('COMPLETED')}
-                    >
-                      <i className="bi bi-check-circle-fill me-2"></i>Xác nhận Hoàn thành phỏng vấn
-                    </button>
-                  )}
-                  {canCancel && (
-                    <button
-                      className="btn btn-outline-danger rounded-pill w-100 py-2 fw-semibold"
-                      disabled={processing}
-                      onClick={() => handleStatusChange('CANCELLED')}
-                    >
-                      <i className="bi bi-x-circle me-2"></i>Hủy buổi phỏng vấn
-                    </button>
-                  )}
-                  {!canComplete && !canCancel && (
-                    <div className="alert alert-secondary mb-0 small rounded-3">
-                      <i className="bi bi-lock me-1"></i>Bạn chỉ có quyền xem thông tin buổi phỏng vấn này.
-                    </div>
-                  )}
+              <div className="card-modern-body">
+                <div className="p-3 rounded-3 bg-light border mb-3">
+                  <div className="small text-muted mb-2">
+                    <i className="bi bi-info-circle me-1" />Quy trình chuyển tiếp:
+                  </div>
+                  <div className="d-flex align-items-center gap-1.5 small flex-wrap">
+                    <span className="soft-badge soft-badge-primary">Đã lên lịch</span>
+                    <i className="bi bi-arrow-right text-muted" />
+                    <span className="soft-badge soft-badge-success">Đã hoàn thành</span>
+                    <span className="text-muted">hoặc</span>
+                    <span className="soft-badge soft-badge-danger">Đã hủy</span>
+                  </div>
                 </div>
-              ) : (
-                <div className="alert alert-secondary mb-0 rounded-3">
-                  <i className="bi bi-flag-fill me-2"></i>
-                  Trạng thái hiện tại: <strong className="text-primary">{formatInterviewStatus(interview.status)}</strong>. Buổi phỏng vấn đã kết thúc chu trình.
-                </div>
-              )}
+
+                {interview.status === 'SCHEDULED' ? (
+                  <div className="d-flex flex-column gap-2">
+                    {canComplete && (
+                      <button
+                        type="button"
+                        className="btn btn-success py-2 fw-semibold w-100 d-inline-flex align-items-center justify-content-center gap-2"
+                        style={{ borderRadius: 'var(--radius-md)' }}
+                        disabled={processing}
+                        onClick={() => handleStatusChange('COMPLETED')}
+                      >
+                        <i className="bi bi-check-circle-fill" />
+                        <span>Xác nhận hoàn thành phỏng vấn</span>
+                      </button>
+                    )}
+                    {canCancel && (
+                      <button
+                        type="button"
+                        className="btn btn-outline-danger py-2 fw-semibold w-100 d-inline-flex align-items-center justify-content-center gap-2"
+                        style={{ borderRadius: 'var(--radius-md)' }}
+                        disabled={processing}
+                        onClick={() => handleStatusChange('CANCELLED')}
+                      >
+                        <i className="bi bi-x-circle" />
+                        <span>Hủy buổi phỏng vấn</span>
+                      </button>
+                    )}
+                    {!canComplete && !canCancel && (
+                      <div className="alert alert-secondary mb-0 small rounded-3">
+                        <i className="bi bi-lock me-1" />Bạn chỉ có quyền xem thông tin buổi phỏng vấn này.
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="alert alert-secondary mb-0 small rounded-3">
+                    <i className="bi bi-info-circle me-1" />
+                    Buổi phỏng vấn đang ở trạng thái <strong>{formatInterviewStatus(interview.status)}</strong> và không thể thay đổi thêm.
+                  </div>
+                )}
+              </div>
             </div>
 
-            <div className="mt-4 pt-3 border-top">
-              <div className="d-flex justify-content-between align-items-center">
-                <div>
-                  <div className="fw-semibold text-dark small">Đánh giá ứng viên</div>
-                  <div className="text-muted" style={{ fontSize: '0.75rem' }}>Chấm điểm chuyên môn & kinh nghiệm</div>
-                </div>
-                <Link
-                  to={`/applications/${interview.application_id}/evaluations/create`}
-                  className="btn btn-sm btn-outline-success rounded-pill px-3"
-                >
-                  <i className="bi bi-star-fill me-1 text-warning"></i> + Viết đánh giá
-                </Link>
-              </div>
+            <div className="card-modern-header border-top border-bottom-0 bg-light">
+              <span className="text-muted small">
+                Cập nhật lần cuối: {new Date(interview.updated_at || interview.created_at).toLocaleString('vi-VN')}
+              </span>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Danh sách đánh giá của hồ sơ */}
-      <div className="card-modern p-4">
-        <div className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom flex-wrap gap-2">
-          <div>
-            <h6 className="fw-bold mb-0 text-dark">
-              <i className="bi bi-clipboard-check text-primary me-2"></i>
-              Bảng đánh giá ứng viên (Hồ sơ #{interview.application_id})
-            </h6>
-            <span className="text-muted small">
-              Tổng số {evaluations.length} lượt đánh giá từ hội đồng tuyển dụng
-            </span>
-          </div>
-          <Link
-            to={`/applications/${interview.application_id}/evaluations/create`}
-            className="btn btn-sm btn-primary rounded-pill px-3"
-          >
-            <i className="bi bi-plus-lg me-1"></i> Thêm đánh giá
-          </Link>
-        </div>
-
-        {evaluations.length === 0 ? (
-          <div className="text-center py-5">
-            <i className="bi bi-chat-square-quote text-muted opacity-50 fs-1 d-block mb-2"></i>
-            <p className="text-muted mb-3">Chưa có đánh giá nào cho ứng viên này. Hãy gửi đánh giá sau buổi phỏng vấn!</p>
-            <Link
-              to={`/applications/${interview.application_id}/evaluations/create`}
-              className="btn btn-sm btn-outline-primary rounded-pill px-3"
-            >
-              <i className="bi bi-star me-1"></i> Đánh giá ngay
-            </Link>
-          </div>
-        ) : (
-          <div className="table-responsive">
-            <table className="table table-modern align-middle mb-0">
-              <thead>
-                <tr>
-                  <th style={{ width: '60px' }}>#</th>
-                  <th>Người đánh giá</th>
-                  <th className="text-center">Chuyên môn</th>
-                  <th className="text-center">Giao tiếp</th>
-                  <th className="text-center">Kinh nghiệm</th>
-                  <th className="text-center">Điểm TB</th>
-                  <th>Nhận xét</th>
-                  <th style={{ width: '130px' }}>Thời gian</th>
-                  <th className="text-end" style={{ width: '90px' }}>Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {evaluations.map((ev) => {
-                  const canEditEval = user.role === 'ADMIN' || Number(ev.evaluator_id) === Number(user.id)
-                  return (
-                    <tr key={ev.id}>
-                      <td className="fw-semibold text-muted">#{ev.id}</td>
-                      <td>
-                        <div className="d-flex align-items-center gap-2">
-                          <div
-                            className="rounded-circle d-flex align-items-center justify-content-center bg-light text-primary fw-bold border"
-                            style={{ width: '32px', height: '32px', fontSize: '0.75rem' }}
-                          >
-                            {getInitials(ev.evaluator_name)}
-                          </div>
-                          <div>
-                            <div className="fw-semibold text-dark">{ev.evaluator_name || '-'}</div>
-                            <div className="text-muted" style={{ fontSize: '0.75rem' }}>{formatRole(ev.evaluator_role)}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="text-center">
-                        <span className="badge soft-badge-secondary px-2 py-1">
-                          <i className="bi bi-star-fill text-warning me-1"></i>{ev.technical_score}/5
-                        </span>
-                      </td>
-                      <td className="text-center">
-                        <span className="badge soft-badge-secondary px-2 py-1">
-                          <i className="bi bi-star-fill text-warning me-1"></i>{ev.communication_score}/5
-                        </span>
-                      </td>
-                      <td className="text-center">
-                        <span className="badge soft-badge-secondary px-2 py-1">
-                          <i className="bi bi-star-fill text-warning me-1"></i>{ev.experience_score}/5
-                        </span>
-                      </td>
-                      <td className="text-center">
-                        <span className="badge bg-success px-2 py-1 rounded-pill fw-bold">
-                          {ev.average_score?.toFixed(2)}
-                        </span>
-                      </td>
-                      <td>
-                        <div className="small text-break" style={{ maxHeight: '60px', overflowY: 'auto' }}>
-                          {ev.comment ? (
-                            <span>{ev.comment}</span>
-                          ) : (
-                            <span className="text-muted fst-italic">Không có nhận xét</span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="small text-muted">
-                        <i className="bi bi-clock me-1"></i>
-                        {ev.created_at ? new Date(ev.created_at).toLocaleDateString('vi-VN') : '-'}
-                      </td>
-                      <td className="text-end">
-                        {canEditEval && (
-                          <Link to={`/evaluations/${ev.id}/edit`} className="btn btn-sm btn-outline-secondary rounded-pill px-2">
-                            <i className="bi bi-pencil me-1"></i>Sửa
-                          </Link>
-                        )}
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    </div>
+    </>
   )
 }
-

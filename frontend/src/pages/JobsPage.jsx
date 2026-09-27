@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link, useOutletContext } from 'react-router-dom'
 import Loading from '../components/Loading'
+import PageHeader from '../components/PageHeader'
+import StatusBadge from '../components/StatusBadge'
+import EmptyState from '../components/EmptyState'
 import { jobApi } from '../services/api'
 
 export default function JobsPage() {
@@ -8,6 +11,8 @@ export default function JobsPage() {
   const canEdit = ['ADMIN', 'HR'].includes(user?.role)
   const [filters, setFilters] = useState({ keyword: '', status: '' })
   const [state, setState] = useState({ loading: true, rows: [], error: '' })
+  const [deleteTarget, setDeleteTarget] = useState(null)
+  const [deleting, setDeleting] = useState(false)
 
   function loadJobs(query = filters) {
     setState((current) => ({ ...current, loading: true, error: '' }))
@@ -32,41 +37,43 @@ export default function JobsPage() {
     loadJobs(emptyFilters)
   }
 
-  async function remove(id) {
-    if (!window.confirm('Bạn có chắc chắn muốn xóa vị trí tuyển dụng này?')) return
+  async function confirmDelete() {
+    if (!deleteTarget) return
+    setDeleting(true)
     try {
-      await jobApi.remove(id)
+      await jobApi.remove(deleteTarget.id)
+      setDeleteTarget(null)
       loadJobs()
     } catch (error) {
       setState((current) => ({ ...current, error: error.message }))
+    } finally {
+      setDeleting(false)
     }
   }
 
   return (
     <>
-      <div className="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4">
-        <div>
-          <h1 className="h3 fw-bold mb-1 text-dark">Vị trí Tuyển dụng</h1>
-          <p className="text-muted mb-0 small">
-            Quản lý danh sách các cơ hội việc làm, yêu cầu kỹ năng và chỉ tiêu tuyển dụng.
-          </p>
-        </div>
-        {canEdit && (
-          <Link to="/jobs/create" className="btn btn-primary-modern text-decoration-none">
-            <i className="bi bi-plus-lg"></i>
-            <span>Thêm vị trí mới</span>
-          </Link>
-        )}
-      </div>
+      <PageHeader
+        title="Vị trí Tuyển dụng"
+        description="Quản lý danh sách các cơ hội việc làm, yêu cầu kỹ năng và chỉ tiêu tuyển dụng."
+        action={
+          canEdit && (
+            <Link to="/jobs/create" className="btn btn-primary-modern text-decoration-none">
+              <i className="bi bi-plus-lg" />
+              <span>Thêm vị trí mới</span>
+            </Link>
+          )
+        }
+      />
 
       {state.error && (
         <div className="alert alert-danger d-flex align-items-center gap-2 rounded-3 mb-3">
-          <i className="bi bi-exclamation-circle-fill"></i>
+          <i className="bi bi-exclamation-circle-fill" />
           <div>{state.error}</div>
         </div>
       )}
 
-      {/* Filter Bar */}
+      {/* Filter Bar (Tabler inspired) */}
       <div className="filter-bar-card">
         <form
           className="row g-2 align-items-center"
@@ -75,9 +82,9 @@ export default function JobsPage() {
             loadJobs()
           }}
         >
-          <div className="col-12 col-md-6 col-lg-7">
+          <div className="col-12 col-md-7">
             <div className="input-icon-group">
-              <i className="bi bi-search"></i>
+              <i className="bi bi-search" />
               <input
                 className="form-control"
                 value={filters.keyword}
@@ -87,12 +94,11 @@ export default function JobsPage() {
             </div>
           </div>
 
-          <div className="col-12 col-sm-6 col-md-3 col-lg-3">
+          <div className="col-12 col-sm-6 col-md-3">
             <select
               className="form-select"
               value={filters.status}
               onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-              style={{ borderRadius: 'var(--radius-md)' }}
             >
               <option value="">Tất cả trạng thái</option>
               <option value="OPEN">Đang mở tuyển</option>
@@ -100,18 +106,18 @@ export default function JobsPage() {
             </select>
           </div>
 
-          <div className="col-12 col-sm-6 col-md-3 col-lg-2 d-flex gap-2">
-            <button type="submit" className="btn btn-primary-modern flex-grow-1 justify-content-center">
-              <span>Tìm</span>
+          <div className="col-12 col-sm-6 col-md-2 d-flex gap-2">
+            <button type="submit" className="btn btn-secondary-modern flex-grow-1 justify-content-center">
+              <span>Lọc</span>
             </button>
             {(filters.keyword || filters.status) && (
               <button
                 type="button"
-                className="btn btn-secondary-modern px-2.5"
+                className="btn btn-link text-muted p-2 text-decoration-none small"
                 onClick={handleReset}
-                title="Đặt lại bộ lọc"
+                title="Xóa bộ lọc"
               >
-                <i className="bi bi-arrow-counterclockwise"></i>
+                <i className="bi bi-x-circle" />
               </button>
             )}
           </div>
@@ -120,42 +126,42 @@ export default function JobsPage() {
 
       {/* Results Table */}
       {state.loading ? (
-        <Loading message="Đang tải danh sách vị trí..." />
+        <Loading message="Đang tải danh sách vị trí tuyển dụng..." />
       ) : (
         <div className="card-modern">
           <div className="card-modern-header">
-            <span className="text-secondary small">
+            <span className="text-muted small">
               Hiển thị <strong>{state.rows.length}</strong> vị trí tuyển dụng
             </span>
           </div>
 
           {state.rows.length === 0 ? (
-            <div className="empty-state-box border-0">
-              <div className="empty-state-icon">
-                <i className="bi bi-briefcase"></i>
-              </div>
-              <h6 className="fw-semibold text-dark">Không tìm thấy vị trí tuyển dụng</h6>
-              <p className="text-muted small mb-3">
-                Thử thay đổi từ khóa tìm kiếm hoặc tạo thêm vị trí tuyển dụng mới.
-              </p>
-              {canEdit && (
-                <Link to="/jobs/create" className="btn btn-primary-modern btn-sm text-decoration-none">
-                  <i className="bi bi-plus-lg"></i>
-                  <span>Tạo vị trí ngay</span>
-                </Link>
-              )}
+            <div className="p-4">
+              <EmptyState
+                icon="bi-briefcase"
+                title="Chưa có vị trí tuyển dụng nào"
+                description="Tạo vị trí tuyển dụng đầu tiên để bắt đầu đăng tin và tiếp nhận hồ sơ ứng viên."
+                action={
+                  canEdit && (
+                    <Link to="/jobs/create" className="btn btn-primary-modern btn-sm text-decoration-none">
+                      <i className="bi bi-plus-lg" />
+                      <span>Thêm vị trí mới</span>
+                    </Link>
+                  )
+                }
+              />
             </div>
           ) : (
             <div className="table-responsive">
               <table className="table-modern">
                 <thead>
                   <tr>
-                    <th style={{ width: '60px' }}>#ID</th>
+                    <th style={{ width: '70px' }}>#ID</th>
                     <th>Tên vị trí</th>
                     <th>Phòng ban</th>
                     <th>Kỹ năng yêu cầu</th>
-                    <th style={{ width: '100px' }}>Chỉ tiêu</th>
-                    <th style={{ width: '130px' }}>Trạng thái</th>
+                    <th style={{ width: '110px' }}>Chỉ tiêu</th>
+                    <th style={{ width: '140px' }}>Trạng thái</th>
                     <th style={{ width: '160px' }} className="text-end">
                       Thao tác
                     </th>
@@ -168,14 +174,17 @@ export default function JobsPage() {
                       <td>
                         <Link
                           to={`/jobs/${job.id}`}
-                          className="fw-bold text-dark text-decoration-none hover-primary"
+                          className="fw-bold text-dark text-decoration-none"
+                          style={{ transition: 'color 0.15s ease' }}
+                          onMouseEnter={(e) => (e.target.style.color = 'var(--primary)')}
+                          onMouseLeave={(e) => (e.target.style.color = 'var(--text-primary)')}
                         >
                           {job.title}
                         </Link>
                       </td>
                       <td>
                         <span className="text-secondary small">
-                          <i className="bi bi-building me-1"></i>
+                          <i className="bi bi-building me-1 text-muted" />
                           {job.department || 'Chung'}
                         </span>
                       </td>
@@ -188,7 +197,7 @@ export default function JobsPage() {
                               .map((sk, idx) => (
                                 <span
                                   key={idx}
-                                  className="badge bg-light text-dark border small fw-normal"
+                                  className="badge bg-light text-secondary border small fw-normal"
                                 >
                                   {sk.trim()}
                                 </span>
@@ -203,42 +212,34 @@ export default function JobsPage() {
                         <span className="text-muted small">người</span>
                       </td>
                       <td>
-                        <span
-                          className={`soft-badge ${
-                            job.status === 'OPEN' ? 'soft-badge-success' : 'soft-badge-secondary'
-                          }`}
-                        >
-                          <i
-                            className={`bi ${
-                              job.status === 'OPEN' ? 'bi-check-circle-fill' : 'bi-dash-circle'
-                            }`}
-                          ></i>
-                          {job.status === 'OPEN' ? 'Đang mở' : 'Đã đóng'}
-                        </span>
+                        <StatusBadge status={job.status} />
                       </td>
                       <td className="text-end text-nowrap">
                         <Link
                           to={`/jobs/${job.id}`}
-                          className="btn btn-sm btn-outline-primary rounded-pill px-2.5 py-0.5 me-1 small"
-                          title="Xem chi tiết"
+                          className="btn btn-sm btn-secondary-modern py-1 px-2.5 me-1 text-decoration-none"
+                          style={{ fontSize: '0.8rem' }}
                         >
-                          <i className="bi bi-eye"></i>
+                          Xem chi tiết
                         </Link>
                         {canEdit && (
                           <>
                             <Link
                               to={`/jobs/${job.id}/edit`}
-                              className="btn btn-sm btn-outline-secondary rounded-pill px-2.5 py-0.5 me-1 small"
+                              className="btn btn-sm btn-light border py-1 px-2 me-1 text-muted"
                               title="Chỉnh sửa"
+                              style={{ borderRadius: 'var(--radius-md)' }}
                             >
-                              <i className="bi bi-pencil"></i>
+                              <i className="bi bi-pencil" />
                             </Link>
                             <button
-                              className="btn btn-sm btn-outline-danger rounded-pill px-2.5 py-0.5 small"
-                              onClick={() => remove(job.id)}
+                              type="button"
+                              className="btn btn-sm btn-outline-danger py-1 px-2"
+                              onClick={() => setDeleteTarget(job)}
                               title="Xóa vị trí"
+                              style={{ borderRadius: 'var(--radius-md)' }}
                             >
-                              <i className="bi bi-trash3"></i>
+                              <i className="bi bi-trash3" />
                             </button>
                           </>
                         )}
@@ -249,6 +250,56 @@ export default function JobsPage() {
               </table>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Confirmation Modal for Delete */}
+      {deleteTarget && (
+        <div
+          className="modal show d-block"
+          tabIndex="-1"
+          style={{ backgroundColor: 'rgba(15, 23, 42, 0.5)' }}
+        >
+          <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: '440px' }}>
+            <div className="modal-content border-0 shadow-lg" style={{ borderRadius: 'var(--radius-lg)' }}>
+              <div className="modal-header border-bottom px-4 py-3">
+                <h5 className="modal-title fw-bold text-dark h6 mb-0">Xác nhận xóa vị trí tuyển dụng</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setDeleteTarget(null)}
+                  disabled={deleting}
+                />
+              </div>
+              <div className="modal-body px-4 py-3">
+                <p className="text-secondary small mb-2">
+                  Bạn có chắc chắn muốn xóa vị trí <strong>{deleteTarget.title}</strong> (ID: #{deleteTarget.id})?
+                </p>
+                <div className="text-muted small">
+                  Lưu ý: Hành động này không thể hoàn tác nếu vị trí đã được liên kết với hồ sơ ứng tuyển.
+                </div>
+              </div>
+              <div className="modal-footer border-top px-4 py-2.5 d-flex justify-content-end gap-2">
+                <button
+                  type="button"
+                  className="btn btn-secondary-modern btn-sm"
+                  onClick={() => setDeleteTarget(null)}
+                  disabled={deleting}
+                >
+                  Hủy
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-danger btn-sm px-3 fw-semibold"
+                  style={{ borderRadius: 'var(--radius-md)' }}
+                  onClick={confirmDelete}
+                  disabled={deleting}
+                >
+                  {deleting ? 'Đang xóa...' : 'Xác nhận xóa'}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </>

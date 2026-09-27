@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react'
 import { Link, useOutletContext } from 'react-router-dom'
 import Loading from '../components/Loading'
+import PageHeader from '../components/PageHeader'
+import StatusBadge from '../components/StatusBadge'
+import EmptyState from '../components/EmptyState'
 import { interviewApi } from '../services/api'
 
-const STATUS_CONFIG = {
-  SCHEDULED: { label: 'Đã lên lịch', badgeClass: 'soft-badge-primary', icon: 'bi-clock-fill' },
-  COMPLETED: { label: 'Đã hoàn thành', badgeClass: 'soft-badge-success', icon: 'bi-check-circle-fill' },
-  CANCELLED: { label: 'Đã hủy', badgeClass: 'soft-badge-secondary', icon: 'bi-x-circle' },
-}
+const STATUS_OPTIONS = [
+  { value: 'SCHEDULED', label: 'Đã lên lịch' },
+  { value: 'COMPLETED', label: 'Đã hoàn thành' },
+  { value: 'CANCELLED', label: 'Đã hủy' },
+]
 
 export default function InterviewsPage() {
   const { user } = useOutletContext()
@@ -39,24 +42,22 @@ export default function InterviewsPage() {
 
   return (
     <>
-      <div className="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4">
-        <div>
-          <h1 className="h3 fw-bold mb-1 text-dark">Lịch Phỏng vấn</h1>
-          <p className="text-muted mb-0 small">
-            Theo dõi kế hoạch phỏng vấn, phân công người phỏng vấn và trạng thái buổi gặp.
-          </p>
-        </div>
-        {canSchedule && (
-          <Link to="/interviews/create" className="btn btn-primary-modern text-decoration-none">
-            <i className="bi bi-calendar-plus-fill"></i>
-            <span>Lên lịch phỏng vấn</span>
-          </Link>
-        )}
-      </div>
+      <PageHeader
+        title="Lịch Phỏng vấn"
+        description="Theo dõi kế hoạch phỏng vấn, phân công người phỏng vấn và trạng thái buổi gặp."
+        action={
+          canSchedule && (
+            <Link to="/interviews/create" className="btn btn-primary-modern text-decoration-none">
+              <i className="bi bi-plus-lg" />
+              <span>Lên lịch phỏng vấn</span>
+            </Link>
+          )
+        }
+      />
 
       {state.error && (
         <div className="alert alert-danger d-flex align-items-center gap-2 rounded-3 mb-3">
-          <i className="bi bi-exclamation-circle-fill"></i>
+          <i className="bi bi-exclamation-circle-fill" />
           <div>{state.error}</div>
         </div>
       )}
@@ -72,7 +73,7 @@ export default function InterviewsPage() {
         >
           <div className="col-12 col-md-7">
             <div className="input-icon-group">
-              <i className="bi bi-search"></i>
+              <i className="bi bi-search" />
               <input
                 className="form-control"
                 value={filters.keyword}
@@ -87,29 +88,28 @@ export default function InterviewsPage() {
               className="form-select"
               value={filters.status}
               onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-              style={{ borderRadius: 'var(--radius-md)' }}
             >
               <option value="">Tất cả trạng thái</option>
-              {Object.entries(STATUS_CONFIG).map(([stKey, conf]) => (
-                <option key={stKey} value={stKey}>
-                  {conf.label}
+              {STATUS_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
                 </option>
               ))}
             </select>
           </div>
 
           <div className="col-12 col-sm-6 col-md-2 d-flex gap-2">
-            <button type="submit" className="btn btn-primary-modern flex-grow-1 justify-content-center">
+            <button type="submit" className="btn btn-secondary-modern flex-grow-1 justify-content-center">
               <span>Lọc</span>
             </button>
             {(filters.keyword || filters.status) && (
               <button
                 type="button"
-                className="btn btn-secondary-modern px-2.5"
+                className="btn btn-link text-muted p-2 text-decoration-none small"
                 onClick={handleReset}
-                title="Đặt lại bộ lọc"
+                title="Xóa bộ lọc"
               >
-                <i className="bi bi-arrow-counterclockwise"></i>
+                <i className="bi bi-x-circle" />
               </button>
             )}
           </div>
@@ -122,26 +122,26 @@ export default function InterviewsPage() {
       ) : (
         <div className="card-modern">
           <div className="card-modern-header">
-            <span className="text-secondary small">
+            <span className="text-muted small">
               Hiển thị <strong>{state.rows.length}</strong> buổi phỏng vấn
             </span>
           </div>
 
           {state.rows.length === 0 ? (
-            <div className="empty-state-box border-0">
-              <div className="empty-state-icon">
-                <i className="bi bi-calendar-x"></i>
-              </div>
-              <h6 className="fw-semibold text-dark">Chưa có lịch phỏng vấn phù hợp</h6>
-              <p className="text-muted small mb-3">
-                Thử thay đổi điều kiện lọc hoặc lên lịch phỏng vấn mới cho ứng viên.
-              </p>
-              {canSchedule && (
-                <Link to="/interviews/create" className="btn btn-primary-modern btn-sm text-decoration-none">
-                  <i className="bi bi-plus-lg"></i>
-                  <span>Lên lịch ngay</span>
-                </Link>
-              )}
+            <div className="p-4">
+              <EmptyState
+                icon="bi-calendar-x"
+                title="Chưa có lịch phỏng vấn nào"
+                description="Lên kế hoạch buổi phỏng vấn đầu tiên để phối hợp với hội đồng tuyển dụng."
+                action={
+                  canSchedule && (
+                    <Link to="/interviews/create" className="btn btn-primary-modern btn-sm text-decoration-none">
+                      <i className="bi bi-plus-lg" />
+                      <span>Lên lịch phỏng vấn</span>
+                    </Link>
+                  )
+                }
+              />
             </div>
           ) : (
             <div className="table-responsive">
@@ -155,7 +155,7 @@ export default function InterviewsPage() {
                     <th>Thời gian phỏng vấn</th>
                     <th>Địa điểm / Link họp</th>
                     <th>Trạng thái</th>
-                    <th style={{ width: '130px' }} className="text-end">
+                    <th style={{ width: '150px' }} className="text-end">
                       Thao tác
                     </th>
                   </tr>
@@ -169,12 +169,6 @@ export default function InterviewsPage() {
                       .slice(0, 2)
                       .join('')
                       .toUpperCase()
-
-                    const conf = STATUS_CONFIG[item.status] || {
-                      label: item.status,
-                      badgeClass: 'soft-badge-secondary',
-                      icon: 'bi-tag',
-                    }
 
                     return (
                       <tr key={item.id}>
@@ -204,8 +198,8 @@ export default function InterviewsPage() {
                           </div>
                         </td>
                         <td>
-                          <span className="text-primary fw-semibold small">
-                            <i className="bi bi-calendar2-event me-1"></i>
+                          <span className="small fw-semibold" style={{ color: 'var(--primary)' }}>
+                            <i className="bi bi-calendar2-event me-1.5" />
                             {item.interview_date
                               ? new Date(item.interview_date).toLocaleString('vi-VN', {
                                   dateStyle: 'short',
@@ -216,31 +210,29 @@ export default function InterviewsPage() {
                         </td>
                         <td>
                           <span className="small text-secondary">
-                            <i className="bi bi-geo-alt me-1 text-danger"></i>
+                            <i className="bi bi-geo-alt me-1 text-danger" />
                             {item.location || 'Chưa cập nhật'}
                           </span>
                         </td>
                         <td>
-                          <span className={`soft-badge ${conf.badgeClass}`}>
-                            <i className={`bi ${conf.icon}`}></i>
-                            {conf.label}
-                          </span>
+                          <StatusBadge status={item.status} />
                         </td>
                         <td className="text-end text-nowrap">
                           <Link
                             to={`/interviews/${item.id}`}
-                            className="btn btn-sm btn-outline-primary rounded-pill px-2.5 py-0.5 me-1 small"
-                            title="Chi tiết phỏng vấn"
+                            className="btn btn-sm btn-secondary-modern py-1 px-2.5 me-1 text-decoration-none"
+                            style={{ fontSize: '0.8rem' }}
                           >
-                            <i className="bi bi-eye"></i>
+                            Xem chi tiết
                           </Link>
                           {canSchedule && item.status === 'SCHEDULED' && (
                             <Link
                               to={`/interviews/${item.id}/edit`}
-                              className="btn btn-sm btn-outline-secondary rounded-pill px-2.5 py-0.5 small"
+                              className="btn btn-sm btn-light border py-1 px-2 text-muted"
                               title="Chỉnh sửa lịch"
+                              style={{ borderRadius: 'var(--radius-md)' }}
                             >
-                              <i className="bi bi-pencil"></i>
+                              <i className="bi bi-pencil" />
                             </Link>
                           )}
                         </td>

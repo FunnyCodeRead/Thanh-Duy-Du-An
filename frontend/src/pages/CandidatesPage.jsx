@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, useOutletContext } from 'react-router-dom'
 import Loading from '../components/Loading'
+import PageHeader from '../components/PageHeader'
+import EmptyState from '../components/EmptyState'
 import { candidateApi, cvUrl } from '../services/api'
 
 const SOURCES = [
@@ -17,6 +19,8 @@ export default function CandidatesPage() {
   const canEdit = ['ADMIN', 'HR'].includes(user?.role)
   const [filters, setFilters] = useState({ keyword: '', source: '' })
   const [state, setState] = useState({ loading: true, rows: [], error: '' })
+  const [deleteTarget, setDeleteTarget] = useState(null)
+  const [deleting, setDeleting] = useState(false)
 
   function load(query = filters) {
     setState((s) => ({ ...s, loading: true, error: '' }))
@@ -41,36 +45,38 @@ export default function CandidatesPage() {
     load(emptyFilters)
   }
 
-  async function remove(id) {
-    if (!window.confirm('Bạn có chắc chắn muốn xóa ứng viên này khỏi hệ thống?')) return
+  async function confirmDelete() {
+    if (!deleteTarget) return
+    setDeleting(true)
     try {
-      await candidateApi.remove(id)
+      await candidateApi.remove(deleteTarget.id)
+      setDeleteTarget(null)
       load()
     } catch (error) {
       setState((s) => ({ ...s, error: error.message }))
+    } finally {
+      setDeleting(false)
     }
   }
 
   return (
     <>
-      <div className="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4">
-        <div>
-          <h1 className="h3 fw-bold mb-1 text-dark">Hồ sơ Ứng viên</h1>
-          <p className="text-muted mb-0 small">
-            Quản lý thông tin liên hệ, hồ sơ CV đính kèm và lịch sử ứng tuyển.
-          </p>
-        </div>
-        {canEdit && (
-          <Link to="/candidates/create" className="btn btn-primary-modern text-decoration-none">
-            <i className="bi bi-person-plus-fill"></i>
-            <span>Thêm ứng viên mới</span>
-          </Link>
-        )}
-      </div>
+      <PageHeader
+        title="Hồ sơ Ứng viên"
+        description="Quản lý kho dữ liệu ứng viên, lịch sử nộp đơn và hồ sơ năng lực CV."
+        action={
+          canEdit && (
+            <Link to="/candidates/create" className="btn btn-primary-modern text-decoration-none">
+              <i className="bi bi-plus-lg" />
+              <span>Thêm ứng viên</span>
+            </Link>
+          )
+        }
+      />
 
       {state.error && (
         <div className="alert alert-danger d-flex align-items-center gap-2 rounded-3 mb-3">
-          <i className="bi bi-exclamation-circle-fill"></i>
+          <i className="bi bi-exclamation-circle-fill" />
           <div>{state.error}</div>
         </div>
       )}
@@ -84,26 +90,25 @@ export default function CandidatesPage() {
             load()
           }}
         >
-          <div className="col-12 col-md-6 col-lg-7">
+          <div className="col-12 col-md-7">
             <div className="input-icon-group">
-              <i className="bi bi-search"></i>
+              <i className="bi bi-search" />
               <input
                 className="form-control"
                 value={filters.keyword}
                 onChange={(e) => setFilters({ ...filters, keyword: e.target.value })}
-                placeholder="Tìm theo họ tên, email, số điện thoại hoặc kỹ năng..."
+                placeholder="Tìm theo tên ứng viên, kỹ năng hoặc email..."
               />
             </div>
           </div>
 
-          <div className="col-12 col-sm-6 col-md-3 col-lg-3">
+          <div className="col-12 col-sm-6 col-md-3">
             <select
               className="form-select"
               value={filters.source}
               onChange={(e) => setFilters({ ...filters, source: e.target.value })}
-              style={{ borderRadius: 'var(--radius-md)' }}
             >
-              <option value="">Tất cả nguồn</option>
+              <option value="">Tất cả nguồn ứng viên</option>
               {SOURCES.map((s) => (
                 <option key={s.value} value={s.value}>
                   {s.label}
@@ -112,18 +117,18 @@ export default function CandidatesPage() {
             </select>
           </div>
 
-          <div className="col-12 col-sm-6 col-md-3 col-lg-2 d-flex gap-2">
-            <button type="submit" className="btn btn-primary-modern flex-grow-1 justify-content-center">
-              <span>Tìm</span>
+          <div className="col-12 col-sm-6 col-md-2 d-flex gap-2">
+            <button type="submit" className="btn btn-secondary-modern flex-grow-1 justify-content-center">
+              <span>Lọc</span>
             </button>
             {(filters.keyword || filters.source) && (
               <button
                 type="button"
-                className="btn btn-secondary-modern px-2.5"
+                className="btn btn-link text-muted p-2 text-decoration-none small"
                 onClick={handleReset}
-                title="Đặt lại bộ lọc"
+                title="Xóa bộ lọc"
               >
-                <i className="bi bi-arrow-counterclockwise"></i>
+                <i className="bi bi-x-circle" />
               </button>
             )}
           </div>
@@ -132,30 +137,30 @@ export default function CandidatesPage() {
 
       {/* Results Table */}
       {state.loading ? (
-        <Loading message="Đang tải danh sách ứng viên..." />
+        <Loading message="Đang tải danh sách hồ sơ ứng viên..." />
       ) : (
         <div className="card-modern">
           <div className="card-modern-header">
-            <span className="text-secondary small">
+            <span className="text-muted small">
               Hiển thị <strong>{state.rows.length}</strong> ứng viên
             </span>
           </div>
 
           {state.rows.length === 0 ? (
-            <div className="empty-state-box border-0">
-              <div className="empty-state-icon">
-                <i className="bi bi-people"></i>
-              </div>
-              <h6 className="fw-semibold text-dark">Không tìm thấy ứng viên phù hợp</h6>
-              <p className="text-muted small mb-3">
-                Thử thay đổi từ khóa hoặc thêm ứng viên mới vào hệ thống.
-              </p>
-              {canEdit && (
-                <Link to="/candidates/create" className="btn btn-primary-modern btn-sm text-decoration-none">
-                  <i className="bi bi-plus-lg"></i>
-                  <span>Thêm ứng viên ngay</span>
-                </Link>
-              )}
+            <div className="p-4">
+              <EmptyState
+                icon="bi-people"
+                title="Chưa có ứng viên nào"
+                description="Thêm ứng viên đầu tiên để bắt đầu quản lý quy trình tuyển dụng."
+                action={
+                  canEdit && (
+                    <Link to="/candidates/create" className="btn btn-primary-modern btn-sm text-decoration-none">
+                      <i className="bi bi-plus-lg" />
+                      <span>Thêm ứng viên</span>
+                    </Link>
+                  )
+                }
+              />
             </div>
           ) : (
             <div className="table-responsive">
@@ -167,7 +172,7 @@ export default function CandidatesPage() {
                     <th>Kỹ năng chuyên môn</th>
                     <th>Nguồn</th>
                     <th>Hồ sơ CV</th>
-                    <th style={{ width: '150px' }} className="text-end">
+                    <th style={{ width: '160px' }} className="text-end">
                       Thao tác
                     </th>
                   </tr>
@@ -195,7 +200,10 @@ export default function CandidatesPage() {
                             <div>
                               <Link
                                 to={`/candidates/${c.id}`}
-                                className="fw-bold text-dark text-decoration-none hover-primary"
+                                className="fw-bold text-dark text-decoration-none"
+                                style={{ transition: 'color 0.15s ease' }}
+                                onMouseEnter={(e) => (e.target.style.color = 'var(--primary)')}
+                                onMouseLeave={(e) => (e.target.style.color = 'var(--text-primary)')}
                               >
                                 {c.full_name}
                               </Link>
@@ -208,12 +216,12 @@ export default function CandidatesPage() {
                         <td>
                           <div>
                             <span className="small text-dark d-block">
-                              <i className="bi bi-envelope me-1.5 text-secondary"></i>
+                              <i className="bi bi-envelope me-1.5 text-muted" />
                               {c.email || '—'}
                             </span>
                             {c.phone && (
                               <span className="small text-muted">
-                                <i className="bi bi-telephone me-1.5 text-secondary"></i>
+                                <i className="bi bi-telephone me-1.5 text-muted" />
                                 {c.phone}
                               </span>
                             )}
@@ -226,7 +234,7 @@ export default function CandidatesPage() {
                                 .split(',')
                                 .slice(0, 3)
                                 .map((sk, idx) => (
-                                  <span key={idx} className="badge bg-light text-dark border small fw-normal">
+                                  <span key={idx} className="badge bg-light text-secondary border small fw-normal">
                                     {sk.trim()}
                                   </span>
                                 ))}
@@ -237,7 +245,7 @@ export default function CandidatesPage() {
                         </td>
                         <td>
                           <span className="soft-badge soft-badge-secondary">
-                            <i className={`bi ${sourceItem.icon}`}></i>
+                            <i className={`bi ${sourceItem.icon}`} />
                             {sourceItem.label}
                           </span>
                         </td>
@@ -247,10 +255,11 @@ export default function CandidatesPage() {
                               href={cvUrl(c.cv_file)}
                               target="_blank"
                               rel="noreferrer"
-                              className="btn btn-sm btn-outline-primary rounded-pill px-2.5 py-0.5 small d-inline-flex align-items-center gap-1"
+                              className="btn btn-sm btn-light border py-1 px-2.5 small d-inline-flex align-items-center gap-1.5 text-secondary"
+                              style={{ borderRadius: 'var(--radius-md)' }}
                               title="Tải / Xem file CV"
                             >
-                              <i className="bi bi-file-earmark-pdf"></i>
+                              <i className="bi bi-file-earmark-pdf text-danger" />
                               <span>Xem CV</span>
                             </a>
                           ) : (
@@ -260,26 +269,29 @@ export default function CandidatesPage() {
                         <td className="text-end text-nowrap">
                           <Link
                             to={`/candidates/${c.id}`}
-                            className="btn btn-sm btn-outline-primary rounded-pill px-2.5 py-0.5 me-1 small"
-                            title="Xem chi tiết"
+                            className="btn btn-sm btn-secondary-modern py-1 px-2.5 me-1 text-decoration-none"
+                            style={{ fontSize: '0.8rem' }}
                           >
-                            <i className="bi bi-eye"></i>
+                            Xem chi tiết
                           </Link>
                           {canEdit && (
                             <>
                               <Link
                                 to={`/candidates/${c.id}/edit`}
-                                className="btn btn-sm btn-outline-secondary rounded-pill px-2.5 py-0.5 me-1 small"
+                                className="btn btn-sm btn-light border py-1 px-2 me-1 text-muted"
                                 title="Chỉnh sửa"
+                                style={{ borderRadius: 'var(--radius-md)' }}
                               >
-                                <i className="bi bi-pencil"></i>
+                                <i className="bi bi-pencil" />
                               </Link>
                               <button
-                                className="btn btn-sm btn-outline-danger rounded-pill px-2.5 py-0.5 small"
-                                onClick={() => remove(c.id)}
+                                type="button"
+                                className="btn btn-sm btn-outline-danger py-1 px-2"
+                                onClick={() => setDeleteTarget(c)}
                                 title="Xóa ứng viên"
+                                style={{ borderRadius: 'var(--radius-md)' }}
                               >
-                                <i className="bi bi-trash3"></i>
+                                <i className="bi bi-trash3" />
                               </button>
                             </>
                           )}
@@ -291,6 +303,56 @@ export default function CandidatesPage() {
               </table>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteTarget && (
+        <div
+          className="modal show d-block"
+          tabIndex="-1"
+          style={{ backgroundColor: 'rgba(15, 23, 42, 0.5)' }}
+        >
+          <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: '440px' }}>
+            <div className="modal-content border-0 shadow-lg" style={{ borderRadius: 'var(--radius-lg)' }}>
+              <div className="modal-header border-bottom px-4 py-3">
+                <h5 className="modal-title fw-bold text-dark h6 mb-0">Xác nhận xóa ứng viên</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setDeleteTarget(null)}
+                  disabled={deleting}
+                />
+              </div>
+              <div className="modal-body px-4 py-3">
+                <p className="text-secondary small mb-2">
+                  Bạn có chắc chắn muốn xóa hồ sơ ứng viên <strong>{deleteTarget.full_name}</strong> (ID: #{deleteTarget.id})?
+                </p>
+                <div className="text-muted small">
+                  Lưu ý: Hành động này sẽ xóa dữ liệu ứng viên và không thể hoàn tác nếu đã liên kết với hồ sơ ứng tuyển.
+                </div>
+              </div>
+              <div className="modal-footer border-top px-4 py-2.5 d-flex justify-content-end gap-2">
+                <button
+                  type="button"
+                  className="btn btn-secondary-modern btn-sm"
+                  onClick={() => setDeleteTarget(null)}
+                  disabled={deleting}
+                >
+                  Hủy
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-danger btn-sm px-3 fw-semibold"
+                  style={{ borderRadius: 'var(--radius-md)' }}
+                  onClick={confirmDelete}
+                  disabled={deleting}
+                >
+                  {deleting ? 'Đang xóa...' : 'Xác nhận xóa'}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </>

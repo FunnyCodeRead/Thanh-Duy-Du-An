@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, useOutletContext, useParams } from 'react-router-dom'
 import Loading from '../components/Loading'
+import PageHeader from '../components/PageHeader'
+import StatusBadge from '../components/StatusBadge'
 import { jobApi } from '../services/api'
 
 export default function JobDetailPage() {
@@ -19,7 +21,7 @@ export default function JobDetailPage() {
   if (state.error) {
     return (
       <div className="alert alert-danger d-flex align-items-center gap-2 rounded-3 my-4">
-        <i className="bi bi-exclamation-triangle-fill"></i>
+        <i className="bi bi-exclamation-triangle-fill" />
         <div>{state.error}</div>
       </div>
     )
@@ -30,44 +32,33 @@ export default function JobDetailPage() {
 
   return (
     <>
-      <div className="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4">
-        <div>
-          <div className="d-flex align-items-center gap-2 mb-1">
-            <Link to="/jobs" className="text-secondary text-decoration-none small">
-              <i className="bi bi-arrow-left me-1"></i> Vị trí tuyển dụng
+      <PageHeader
+        title={job.title}
+        description={`Mã vị trí: #${job.id} • Tạo ngày ${new Date(job.created_at).toLocaleDateString('vi-VN')}`}
+        badge={<StatusBadge status={job.status} />}
+        action={
+          <div className="d-flex gap-2">
+            <Link to="/jobs" className="btn btn-secondary-modern btn-sm text-decoration-none">
+              <i className="bi bi-arrow-left" />
+              <span>Quay lại</span>
             </Link>
-            <span className="text-muted small">/</span>
-            <span className="text-muted small">Vị trí #{job.id}</span>
+            {canEdit && (
+              <Link to={`/jobs/${id}/edit`} className="btn btn-primary-modern btn-sm text-decoration-none">
+                <i className="bi bi-pencil" />
+                <span>Chỉnh sửa</span>
+              </Link>
+            )}
           </div>
-          <h1 className="h3 fw-bold mb-0 text-dark">{job.title}</h1>
-        </div>
-
-        <div className="d-flex gap-2">
-          <Link to="/jobs" className="btn btn-secondary-modern btn-sm text-decoration-none">
-            Quay lại
-          </Link>
-          {canEdit && (
-            <Link to={`/jobs/${id}/edit`} className="btn btn-primary-modern btn-sm text-decoration-none">
-              <i className="bi bi-pencil"></i>
-              <span>Chỉnh sửa</span>
-            </Link>
-          )}
-        </div>
-      </div>
+        }
+      />
 
       <div className="card-modern">
         <div className="card-modern-header">
           <div className="d-flex align-items-center gap-2">
-            <i className="bi bi-briefcase-fill text-primary"></i>
+            <i className="bi bi-briefcase-fill text-primary" />
             <span>Chi tiết vị trí tuyển dụng</span>
           </div>
-          <span
-            className={`soft-badge ${
-              job.status === 'OPEN' ? 'soft-badge-success' : 'soft-badge-secondary'
-            }`}
-          >
-            {job.status === 'OPEN' ? 'Đang mở tuyển' : 'Đã đóng tuyển'}
-          </span>
+          <StatusBadge status={job.status} />
         </div>
 
         <div className="card-modern-body">
@@ -76,7 +67,7 @@ export default function JobDetailPage() {
               <div className="p-3 rounded-3 bg-light border">
                 <div className="text-muted small fw-semibold mb-1">Phòng ban phụ trách</div>
                 <div className="fw-bold text-dark fs-6">
-                  <i className="bi bi-building me-1.5 text-primary"></i>
+                  <i className="bi bi-building me-1.5 text-primary" />
                   {job.department || 'Chung'}
                 </div>
               </div>
@@ -92,16 +83,18 @@ export default function JobDetailPage() {
             <div className="col-12 col-md-3">
               <div className="p-3 rounded-3 bg-light border">
                 <div className="text-muted small fw-semibold mb-1">Số hồ sơ ứng tuyển</div>
-                <div className="fw-bold text-primary fs-6">{job.application_count ?? 0} hồ sơ</div>
+                <div className="fw-bold fs-6" style={{ color: 'var(--primary)' }}>
+                  {job.application_count ?? 0} hồ sơ
+                </div>
               </div>
             </div>
 
             <div className="col-12">
-              <div className="fw-semibold text-secondary small mb-1">Kỹ năng chuyên môn yêu cầu</div>
+              <div className="fw-semibold text-secondary small mb-1.5">Kỹ năng chuyên môn yêu cầu</div>
               {job.skills ? (
                 <div className="d-flex flex-wrap gap-1.5">
                   {job.skills.split(',').map((sk, idx) => (
-                    <span key={idx} className="badge bg-light text-dark border small fw-normal py-1.5 px-2.5">
+                    <span key={idx} className="badge bg-light text-secondary border small fw-normal py-1.5 px-2.5">
                       {sk.trim()}
                     </span>
                   ))}
@@ -123,12 +116,6 @@ export default function JobDetailPage() {
               <div className="text-secondary small text-preline" style={{ lineHeight: 1.7 }}>
                 {job.requirements || 'Chưa cập nhật nội dung.'}
               </div>
-            </div>
-
-            <div className="col-12 border-top pt-2">
-              <span className="text-muted small">
-                Ngày tạo vị trí: {new Date(job.created_at).toLocaleString('vi-VN')}
-              </span>
             </div>
           </div>
         </div>

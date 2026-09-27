@@ -309,10 +309,10 @@ export default function FloatingAIChat({ user }) {
             animation: 'fadeInUp 0.18s ease-out',
           }}
         >
-          {/* 1. Header (Emerald Green styled like reference screenshot) */}
+          {/* 1. Header (Brand Blue styled like SaaS theme) */}
           <div
             className="d-flex align-items-center justify-content-between px-3 py-2.5 text-white position-relative flex-shrink-0"
-            style={{ backgroundColor: '#009e4f', borderTopLeftRadius: '16px', borderTopRightRadius: '16px' }}
+            style={{ backgroundColor: '#2563EB', borderTopLeftRadius: '16px', borderTopRightRadius: '16px' }}
           >
             <div className="d-flex align-items-center gap-2">
               <button
@@ -413,7 +413,7 @@ export default function FloatingAIChat({ user }) {
                 )
               }
 
-              // Assistant message (Green bubble with sender name above & avatar on the left, matching screenshot)
+              // Assistant message (Brand blue bubble with sender name above & avatar on the left)
               return (
                 <div key={key} className="d-flex flex-column align-items-start mb-1 w-100">
                   {/* Sender Name */}
@@ -431,7 +431,7 @@ export default function FloatingAIChat({ user }) {
                       style={{
                         width: '32px',
                         height: '32px',
-                        border: '1.5px solid #009e4f',
+                        border: '1.5px solid #2563EB',
                         backgroundColor: '#f1f5f9',
                       }}
                     >
@@ -442,12 +442,12 @@ export default function FloatingAIChat({ user }) {
                       />
                     </div>
 
-                    {/* Green Message Bubble */}
+                    {/* Blue Message Bubble */}
                     <div
                       className="text-white shadow-2xs"
                       style={{
                         maxWidth: '85%',
-                        backgroundColor: '#009e4f',
+                        backgroundColor: '#2563EB',
                         borderRadius: '4px 16px 16px 16px',
                         padding: '11px 14px',
                         lineHeight: 1.55,
@@ -472,7 +472,7 @@ export default function FloatingAIChat({ user }) {
               )
             })}
 
-            {/* Quick Actions (Right-aligned outlined green pills, as in screenshot) */}
+            {/* Quick Actions (Right-aligned outlined blue pills) */}
             <div className="d-flex flex-column align-items-end gap-1.5 mt-1 mb-2">
               {QUICK_ACTIONS.map((item, idx) => (
                 <button
@@ -482,8 +482,8 @@ export default function FloatingAIChat({ user }) {
                   className="btn btn-sm text-end shadow-2xs"
                   style={{
                     backgroundColor: '#ffffff',
-                    color: '#009e4f',
-                    border: '1.5px solid #009e4f',
+                    color: '#2563EB',
+                    border: '1.5px solid #2563EB',
                     borderRadius: '8px',
                     padding: '6px 14px',
                     fontSize: '0.81rem',
@@ -494,12 +494,12 @@ export default function FloatingAIChat({ user }) {
                     transition: 'all 0.15s ease',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#009e4f'
+                    e.currentTarget.style.backgroundColor = '#2563EB'
                     e.currentTarget.style.color = '#ffffff'
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.backgroundColor = '#ffffff'
-                    e.currentTarget.style.color = '#009e4f'
+                    e.currentTarget.style.color = '#2563EB'
                   }}
                 >
                   {item}
@@ -512,7 +512,7 @@ export default function FloatingAIChat({ user }) {
               <div className="d-flex align-items-center gap-2 ps-5 py-1">
                 <div
                   className="px-2.5 py-1.5 rounded-pill shadow-2xs d-inline-flex align-items-center gap-1.5"
-                  style={{ backgroundColor: '#f1f5f9', color: '#009e4f', fontSize: '0.75rem' }}
+                  style={{ backgroundColor: '#f1f5f9', color: '#2563EB', fontSize: '0.75rem' }}
                 >
                   <span className="spinner-border spinner-border-sm" style={{ width: '10px', height: '10px' }} />
                   <span>Đang tra cứu dữ liệu...</span>
@@ -547,7 +547,7 @@ export default function FloatingAIChat({ user }) {
                 <button
                   type="submit"
                   className="btn btn-sm btn-link p-0 text-decoration-none"
-                  style={{ color: input.trim() ? '#009e4f' : '#94a3b8' }}
+                  style={{ color: input.trim() ? '#2563EB' : '#94a3b8' }}
                   disabled={!input.trim() || loading}
                   title="Gửi"
                 >
@@ -569,7 +569,7 @@ export default function FloatingAIChat({ user }) {
 
       {/* ================= BOTTOM LAUNCHER / COLLAPSE BUTTON ================= */}
       {isOpen ? (
-        /* Down Arrow Button when open (Matches screenshot 1) */
+        /* Down Arrow Button when open */
         <button
           type="button"
           onClick={() => setIsOpen(false)}
@@ -577,7 +577,7 @@ export default function FloatingAIChat({ user }) {
           style={{
             width: '52px',
             height: '52px',
-            backgroundColor: '#009e4f',
+            backgroundColor: '#2563EB',
             cursor: 'pointer',
             transition: 'transform 0.15s ease',
           }}
@@ -587,7 +587,7 @@ export default function FloatingAIChat({ user }) {
           <i className="bi bi-chevron-down fw-bold" style={{ fontSize: '1.3rem' }} />
         </button>
       ) : (
-        /* Closed Launcher with "We Are Here! 👋" Callout (Matches screenshot 2) */
+        /* Closed Launcher with "Hỏi AI ngay! 👋" Callout */
         <div className="position-relative d-flex align-items-center justify-content-end">
           {/* Curved Callout Sticker "Hỏi AI ngay! 👋" */}
           {showSticker && (
@@ -598,7 +598,7 @@ export default function FloatingAIChat({ user }) {
                 right: '4px',
                 whiteSpace: 'nowrap',
                 fontSize: '0.78rem',
-                color: '#009e4f',
+                color: '#2563EB',
                 fontWeight: 600,
                 transform: 'rotate(-4deg)',
                 boxShadow: '0 4px 12px rgba(0, 0, 0, 0.12)',
@@ -631,7 +631,7 @@ export default function FloatingAIChat({ user }) {
             style={{
               width: '56px',
               height: '56px',
-              backgroundColor: '#009e4f',
+              backgroundColor: '#2563EB',
               cursor: 'pointer',
               transition: 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
             }}

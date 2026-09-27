@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useOutletContext, useParams } from 'react-router-dom'
 import Loading from '../components/Loading'
+import PageHeader from '../components/PageHeader'
 import { jobApi } from '../services/api'
 
 const emptyJob = {
@@ -61,25 +62,21 @@ export default function JobFormPage() {
   })
 
   return (
-    <div className="form-page mx-auto" style={{ maxWidth: '850px' }}>
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h1 className="h3 fw-bold mb-1 text-dark">
-            {editing ? 'Chỉnh sửa Vị trí Tuyển dụng' : 'Tạo Vị trí Tuyển dụng Mới'}
-          </h1>
-          <p className="text-muted mb-0 small">
-            Điền thông tin chi tiết về vị trí, mô tả công việc và yêu cầu tuyển dụng.
-          </p>
-        </div>
-        <Link to="/jobs" className="btn btn-secondary-modern btn-sm text-decoration-none">
-          <i className="bi bi-arrow-left"></i>
-          <span>Quay lại</span>
-        </Link>
-      </div>
+    <div className="form-page mx-auto" style={{ maxWidth: '860px' }}>
+      <PageHeader
+        title={editing ? 'Chỉnh sửa Vị trí Tuyển dụng' : 'Thêm Vị trí Tuyển dụng Mới'}
+        description="Điền thông tin chi tiết về vị trí, mô tả công việc và yêu cầu kỹ năng tuyển dụng."
+        action={
+          <Link to="/jobs" className="btn btn-secondary-modern btn-sm text-decoration-none">
+            <i className="bi bi-arrow-left" />
+            <span>Quay lại danh sách</span>
+          </Link>
+        }
+      />
 
       {state.error && (
         <div className="alert alert-danger d-flex align-items-center gap-2 rounded-3 mb-3">
-          <i className="bi bi-exclamation-circle-fill"></i>
+          <i className="bi bi-exclamation-circle-fill" />
           <div>{state.error}</div>
         </div>
       )}
@@ -87,8 +84,8 @@ export default function JobFormPage() {
       <div className="card-modern">
         <div className="card-modern-header">
           <div className="d-flex align-items-center gap-2">
-            <i className="bi bi-briefcase-fill text-primary"></i>
-            <span>Thông tin vị trí</span>
+            <i className="bi bi-briefcase-fill text-primary" />
+            <span>Thông tin vị trí tuyển dụng</span>
           </div>
           <span className="text-muted small">* Trường bắt buộc</span>
         </div>
@@ -125,6 +122,7 @@ export default function JobFormPage() {
                   rows="4"
                   placeholder="Mô tả trách nhiệm công việc, nhiệm vụ hàng ngày..."
                   required
+                  style={{ height: 'auto' }}
                   {...field('description')}
                 />
               </div>
@@ -137,13 +135,14 @@ export default function JobFormPage() {
                   className="form-control"
                   rows="3"
                   placeholder="Kinh nghiệm, kiến thức chuyên môn, học vấn..."
+                  style={{ height: 'auto' }}
                   {...field('requirements')}
                 />
               </div>
 
               <div className="col-md-6">
                 <label className="form-label small fw-semibold text-secondary">
-                  Kỹ năng (cách nhau bằng dấu phẩy)
+                  Kỹ năng yêu cầu (cách nhau bằng dấu phẩy)
                 </label>
                 <input
                   className="form-control"
@@ -165,7 +164,7 @@ export default function JobFormPage() {
               </div>
 
               <div className="col-md-3">
-                <label className="form-label small fw-semibold text-secondary">Trạng thái</label>
+                <label className="form-label small fw-semibold text-secondary">Trạng thái tuyển</label>
                 <select className="form-select" {...field('status')}>
                   <option value="OPEN">Đang mở tuyển</option>
                   <option value="CLOSED">Đã đóng tuyển</option>
@@ -184,13 +183,13 @@ export default function JobFormPage() {
               >
                 {state.saving ? (
                   <>
-                    <span className="spinner-border spinner-border-sm me-1" role="status"></span>
+                    <span className="spinner-border spinner-border-sm me-1" role="status" />
                     Đang lưu...
                   </>
                 ) : (
                   <>
-                    <i className="bi bi-check-lg"></i>
-                    <span>{editing ? 'Cập nhật vị trí' : 'Lưu vị trí mới'}</span>
+                    <i className="bi bi-check-lg" />
+                    <span>{editing ? 'Cập nhật thay đổi' : 'Lưu vị trí mới'}</span>
                   </>
                 )}
               </button>
