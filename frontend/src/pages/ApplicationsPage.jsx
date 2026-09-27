@@ -123,17 +123,18 @@ export default function ApplicationsPage() {
           </div>
 
           <div className="col-12 col-md-2 d-flex gap-2">
-            <button type="submit" className="btn btn-secondary-modern flex-grow-1 justify-content-center">
+            <button type="submit" className="btn btn-filter-submit flex-grow-1 justify-content-center">
+              <i className="bi bi-funnel-fill" />
               <span>Lọc</span>
             </button>
             {(filters.keyword || filters.status || filters.jobId) && (
               <button
                 type="button"
-                className="btn btn-link text-muted p-2 text-decoration-none small"
+                className="btn btn-link text-muted p-2 text-decoration-none small flex-shrink-0"
                 onClick={handleReset}
                 title="Xóa bộ lọc"
               >
-                <i className="bi bi-x-circle" />
+                <i className="bi bi-x-circle fs-6" />
               </button>
             )}
           </div>
@@ -240,10 +241,10 @@ export default function ApplicationsPage() {
                         <td className="text-end text-nowrap">
                           <Link
                             to={`/applications/${app.id}`}
-                            className="btn btn-sm btn-secondary-modern py-1 px-3 text-decoration-none"
-                            style={{ fontSize: '0.8rem' }}
+                            className="btn btn-table-action text-decoration-none"
                           >
-                            Xem chi tiết
+                            <i className="bi bi-eye" />
+                            <span>Xem chi tiết</span>
                           </Link>
                         </td>
                       </tr>

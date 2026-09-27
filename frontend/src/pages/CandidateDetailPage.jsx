@@ -159,16 +159,16 @@ export default function CandidateDetailPage() {
               <i className="bi bi-info-circle-fill me-1.5" />
               Xem hoặc tạo hồ sơ ứng tuyển liên kết với ứng viên này
             </span>
-            <div className="d-flex gap-2">
+            <div className="d-flex gap-2 flex-wrap">
               <Link
-                className="btn btn-sm btn-secondary-modern py-1 px-3 small"
+                className="btn btn-secondary-modern btn-sm text-decoration-none"
                 to={`/applications?keyword=${encodeURIComponent(c.full_name)}`}
               >
-                Xem hồ sơ ứng tuyển
+                <span>Xem hồ sơ ứng tuyển</span>
               </Link>
               {canEdit && (
                 <Link
-                  className="btn btn-sm btn-primary-modern py-1 px-3 small text-white text-decoration-none"
+                  className="btn btn-primary-modern btn-sm text-decoration-none"
                   to="/applications/create"
                 >
                   <i className="bi bi-plus-lg" />

@@ -308,9 +308,10 @@ export default function ApplicationDetailPage() {
               </div>
               <Link
                 to={`/candidates/${candidate.id}`}
-                className="btn btn-sm btn-secondary-modern py-0.5 px-2.5 small"
+                className="btn btn-table-action"
               >
-                Xem chi tiết hồ sơ
+                <i className="bi bi-eye" />
+                <span>Xem chi tiết hồ sơ</span>
               </Link>
             </div>
             <div className="card-modern-body">
@@ -366,10 +367,10 @@ export default function ApplicationDetailPage() {
                       href={cvUrl(candidate.cv_file)}
                       target="_blank"
                       rel="noreferrer"
-                      className="btn btn-sm btn-light border py-1 px-2.5 small d-inline-flex align-items-center gap-1.5 text-secondary"
+                      className="btn btn-sm btn-outline-danger py-1 px-2.5 small d-inline-flex align-items-center gap-1.5"
                       style={{ borderRadius: 'var(--radius-md)' }}
                     >
-                      <i className="bi bi-file-earmark-pdf text-danger" />
+                      <i className="bi bi-file-earmark-pdf-fill text-danger" />
                       <span>Xem file CV đính kèm</span>
                     </a>
                   ) : (
@@ -391,9 +392,10 @@ export default function ApplicationDetailPage() {
               </div>
               <Link
                 to={`/jobs/${job.id}`}
-                className="btn btn-sm btn-secondary-modern py-0.5 px-2.5 small"
+                className="btn btn-table-action"
               >
-                Xem vị trí
+                <i className="bi bi-eye" />
+                <span>Xem vị trí</span>
               </Link>
             </div>
             <div className="card-modern-body">
@@ -521,12 +523,12 @@ export default function ApplicationDetailPage() {
                   </select>
                   <button
                     type="button"
-                    className="btn btn-sm btn-primary-modern py-1 px-3 flex-shrink-0"
+                    className="btn btn-primary-modern btn-sm flex-shrink-0"
                     onClick={handleGenerateEmail}
                     disabled={Boolean(aiLoading)}
-                    style={{ fontSize: '0.8rem' }}
                   >
-                    Tạo email
+                    <i className="bi bi-sparkles" />
+                    <span>Tạo email</span>
                   </button>
                 </div>
               </div>
@@ -606,21 +608,20 @@ export default function ApplicationDetailPage() {
                         </span>
                         <button
                           type="button"
-                          className="btn btn-sm btn-secondary-modern py-0.5 px-2.5"
-                          style={{ fontSize: '0.75rem' }}
+                          className="btn btn-table-action"
                           onClick={() => setAiCurrentResult(item)}
                         >
-                          <i className="bi bi-eye me-1" />
-                          Xem chi tiết
+                          <i className="bi bi-eye" />
+                          <span>Xem chi tiết</span>
                         </button>
                         <button
                           type="button"
-                          className="btn btn-sm btn-light border py-0.5 px-2.5 text-secondary"
-                          style={{ fontSize: '0.75rem', borderRadius: 'var(--radius-md)' }}
+                          className="btn btn-table-edit"
                           onClick={() => handleCopy(item.content)}
+                          title="Sao chép nội dung"
                         >
-                          <i className="bi bi-clipboard me-1" />
-                          Sao chép
+                          <i className="bi bi-clipboard" />
+                          <span>Sao chép</span>
                         </button>
                       </div>
                     </div>
@@ -661,8 +662,7 @@ export default function ApplicationDetailPage() {
               {canUpdate && (
                 <Link
                   to={`/interviews/create?application_id=${app.id}`}
-                  className="btn btn-sm btn-primary-modern py-1 px-2.5 text-decoration-none"
-                  style={{ fontSize: '0.8rem' }}
+                  className="btn btn-primary-modern btn-sm text-decoration-none"
                 >
                   <i className="bi bi-plus-lg" />
                   <span>Lên lịch</span>
@@ -711,12 +711,13 @@ export default function ApplicationDetailPage() {
                           <td>
                             <StatusBadge status={iv.status} />
                           </td>
-                          <td className="text-end">
+                          <td className="text-end text-nowrap">
                             <Link
                               to={`/interviews/${iv.id}`}
-                              className="btn btn-sm btn-secondary-modern py-0.5 px-2.5 small"
+                              className="btn btn-table-action text-decoration-none"
                             >
-                              Chi tiết
+                              <i className="bi bi-eye" />
+                              <span>Chi tiết</span>
                             </Link>
                           </td>
                         </tr>
@@ -739,8 +740,7 @@ export default function ApplicationDetailPage() {
               </div>
               <Link
                 to={`/evaluations/create?application_id=${app.id}`}
-                className="btn btn-sm btn-primary-modern py-1 px-2.5 text-decoration-none"
-                style={{ fontSize: '0.8rem' }}
+                className="btn btn-primary-modern btn-sm text-decoration-none"
               >
                 <i className="bi bi-plus-lg" />
                 <span>Thêm đánh giá</span>
@@ -804,12 +804,13 @@ export default function ApplicationDetailPage() {
                                 ⭐ {avg}
                               </span>
                             </td>
-                            <td className="text-end">
+                            <td className="text-end text-nowrap">
                               <Link
                                 to={`/evaluations/${ev.id}/edit`}
-                                className="btn btn-sm btn-secondary-modern py-0.5 px-2.5 small"
+                                className="btn btn-table-action text-decoration-none"
                               >
-                                Sửa
+                                <i className="bi bi-pencil" />
+                                <span>Sửa</span>
                               </Link>
                             </td>
                           </tr>

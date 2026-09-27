@@ -118,17 +118,18 @@ export default function CandidatesPage() {
           </div>
 
           <div className="col-12 col-sm-6 col-md-2 d-flex gap-2">
-            <button type="submit" className="btn btn-secondary-modern flex-grow-1 justify-content-center">
+            <button type="submit" className="btn btn-filter-submit flex-grow-1 justify-content-center">
+              <i className="bi bi-funnel-fill" />
               <span>Lọc</span>
             </button>
             {(filters.keyword || filters.source) && (
               <button
                 type="button"
-                className="btn btn-link text-muted p-2 text-decoration-none small"
+                className="btn btn-link text-muted p-2 text-decoration-none small flex-shrink-0"
                 onClick={handleReset}
                 title="Xóa bộ lọc"
               >
-                <i className="bi bi-x-circle" />
+                <i className="bi bi-x-circle fs-6" />
               </button>
             )}
           </div>
@@ -255,11 +256,11 @@ export default function CandidatesPage() {
                               href={cvUrl(c.cv_file)}
                               target="_blank"
                               rel="noreferrer"
-                              className="btn btn-sm btn-light border py-1 px-2.5 small d-inline-flex align-items-center gap-1.5 text-secondary"
-                              style={{ borderRadius: 'var(--radius-md)' }}
+                              className="btn btn-sm btn-outline-danger py-1 px-2.5 small d-inline-flex align-items-center gap-1.5"
+                              style={{ borderRadius: 'var(--radius-md)', fontSize: '0.8rem' }}
                               title="Tải / Xem file CV"
                             >
-                              <i className="bi bi-file-earmark-pdf text-danger" />
+                              <i className="bi bi-file-earmark-pdf-fill text-danger" />
                               <span>Xem CV</span>
                             </a>
                           ) : (
@@ -269,27 +270,25 @@ export default function CandidatesPage() {
                         <td className="text-end text-nowrap">
                           <Link
                             to={`/candidates/${c.id}`}
-                            className="btn btn-sm btn-secondary-modern py-1 px-2.5 me-1 text-decoration-none"
-                            style={{ fontSize: '0.8rem' }}
+                            className="btn btn-table-action me-1 text-decoration-none"
                           >
-                            Xem chi tiết
+                            <i className="bi bi-eye" />
+                            <span>Xem chi tiết</span>
                           </Link>
                           {canEdit && (
                             <>
                               <Link
                                 to={`/candidates/${c.id}/edit`}
-                                className="btn btn-sm btn-light border py-1 px-2 me-1 text-muted"
-                                title="Chỉnh sửa"
-                                style={{ borderRadius: 'var(--radius-md)' }}
+                                className="btn btn-table-edit me-1 text-decoration-none"
+                                title="Chỉnh sửa hồ sơ ứng viên"
                               >
                                 <i className="bi bi-pencil" />
                               </Link>
                               <button
                                 type="button"
-                                className="btn btn-sm btn-outline-danger py-1 px-2"
+                                className="btn btn-table-delete"
                                 onClick={() => setDeleteTarget(c)}
                                 title="Xóa ứng viên"
-                                style={{ borderRadius: 'var(--radius-md)' }}
                               >
                                 <i className="bi bi-trash3" />
                               </button>

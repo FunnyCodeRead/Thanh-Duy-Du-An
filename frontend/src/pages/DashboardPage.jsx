@@ -444,10 +444,10 @@ export default function DashboardPage() {
                         <td className="text-end">
                           <Link
                             to={`/interviews/${iv.id}`}
-                            className="btn btn-sm btn-secondary-modern py-1 px-2.5 text-decoration-none"
-                            style={{ fontSize: '0.8rem' }}
+                            className="btn btn-table-action text-decoration-none"
                           >
-                            Xem chi tiết
+                            <i className="bi bi-eye" />
+                            <span>Xem chi tiết</span>
                           </Link>
                         </td>
                       </tr>

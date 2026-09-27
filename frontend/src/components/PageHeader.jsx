@@ -19,7 +19,7 @@ export default function PageHeader({ title, description, action, badge, children
       </div>
 
       {(action || children) && (
-        <div className="d-flex align-items-center gap-2 flex-wrap">
+        <div className="d-flex align-items-center gap-2.5 flex-wrap flex-shrink-0">
           {action}
           {children}
         </div>

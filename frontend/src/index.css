@@ -347,55 +347,278 @@ body {
 .soft-badge-secondary { background-color: var(--surface-subtle); color: var(--text-muted); border: 1px solid var(--border); }
 .soft-badge-info { background-color: var(--primary-soft); color: var(--primary); border: 1px solid var(--primary-border); }
 
-/* Buttons - Strong CTA Hierarchy */
-.btn-primary-modern {
-  background-color: var(--primary);
-  color: #ffffff;
-  border: 1px solid var(--primary);
-  font-weight: 600;
-  font-size: 0.895rem;
-  border-radius: var(--radius-md);
-  padding: 0.52rem 1.15rem;
-  min-height: 40px;
+/* Buttons - Strong Crystal-Clear CTA Hierarchy & Anti-Squash */
+.btn {
+  white-space: nowrap !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+  line-height: 1.4 !important;
+  vertical-align: middle;
+  flex-shrink: 0;
+  text-decoration: none !important;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out !important;
+}
+
+.btn span {
+  display: inline-block;
+  line-height: 1.4 !important;
+  white-space: nowrap !important;
+}
+
+.btn i {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  transition: all 0.15s ease;
-  box-shadow: var(--shadow-xs);
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1.05em;
+  line-height: 1;
+}
+
+/* Primary CTA: Solid Brand Royal Blue - Unmissable & Bold */
+.btn-primary-modern {
+  background-color: var(--primary) !important;
+  color: #ffffff !important;
+  border: 1.5px solid var(--primary-hover) !important;
+  font-weight: 600 !important;
+  font-size: 0.915rem !important;
+  border-radius: var(--radius-md) !important;
+  padding: 0.58rem 1.35rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+  white-space: nowrap !important;
+  line-height: 1.4 !important;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.25), 0 1px 2px rgba(37, 99, 235, 0.15) !important;
+  flex-shrink: 0;
+  letter-spacing: 0.01em;
 }
 
 .btn-primary-modern:hover {
-  background-color: var(--primary-hover);
-  border-color: var(--primary-hover);
-  color: #ffffff;
+  background-color: var(--primary-hover) !important;
+  border-color: var(--primary-active) !important;
+  color: #ffffff !important;
   transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35) !important;
 }
 
 .btn-primary-modern:active {
-  background-color: var(--primary-active);
+  background-color: var(--primary-active) !important;
+  border-color: var(--primary-active) !important;
+  color: #ffffff !important;
   transform: translateY(0);
 }
 
+.btn-primary-modern:disabled,
+.btn-primary-modern.disabled {
+  background-color: #93c5fd !important;
+  border-color: #93c5fd !important;
+  color: #ffffff !important;
+  opacity: 0.75;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.btn-primary-modern.btn-sm,
+.btn-sm.btn-primary-modern {
+  padding: 0.4rem 0.95rem !important;
+  font-size: 0.835rem !important;
+  font-weight: 600 !important;
+  border-radius: 6px !important;
+  gap: 0.35rem !important;
+}
+
+/* Secondary CTA: Crisp Pure White with Solid Slate Border */
 .btn-secondary-modern {
-  background-color: var(--surface);
-  color: var(--text-secondary);
-  border: 1px solid var(--border);
-  font-weight: 500;
-  font-size: 0.895rem;
-  border-radius: var(--radius-md);
-  padding: 0.52rem 1.15rem;
-  min-height: 40px;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: all 0.15s ease;
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+  border: 1.5px solid #cbd5e1 !important;
+  font-weight: 600 !important;
+  font-size: 0.915rem !important;
+  border-radius: var(--radius-md) !important;
+  padding: 0.58rem 1.35rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+  white-space: nowrap !important;
+  line-height: 1.4 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  flex-shrink: 0;
 }
 
 .btn-secondary-modern:hover {
-  background-color: var(--surface-subtle);
-  color: var(--text-primary);
-  border-color: var(--border-strong);
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+  border-color: #94a3b8 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+}
+
+.btn-secondary-modern:active {
+  background-color: #f1f5f9 !important;
+  transform: translateY(0);
+}
+
+.btn-secondary-modern.btn-sm,
+.btn-sm.btn-secondary-modern {
+  padding: 0.4rem 0.95rem !important;
+  font-size: 0.835rem !important;
+  font-weight: 600 !important;
+  border-radius: 6px !important;
+  gap: 0.35rem !important;
+}
+
+/* High-Contrast Table Actions: Crisp Blue Pill */
+.btn-table-action {
+  background-color: #eff6ff !important;
+  color: #2563eb !important;
+  border: 1.5px solid #bfdbfe !important;
+  font-weight: 600 !important;
+  font-size: 0.825rem !important;
+  padding: 0.36rem 0.85rem !important;
+  border-radius: 6px !important;
+  white-space: nowrap !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.35rem !important;
+  line-height: 1.4 !important;
+  text-decoration: none !important;
+  transition: all 0.15s ease-in-out !important;
+}
+
+.btn-table-action:hover {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+  border-color: #1d4ed8 !important;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25) !important;
+  transform: translateY(-1px);
+}
+
+/* Table Edit Button: Clear Slate Border */
+.btn-table-edit {
+  background-color: #ffffff !important;
+  color: #475569 !important;
+  border: 1.5px solid #cbd5e1 !important;
+  padding: 0.36rem 0.65rem !important;
+  border-radius: 6px !important;
+  font-size: 0.85rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.15s ease-in-out !important;
+  line-height: 1 !important;
+}
+
+.btn-table-edit:hover {
+  background-color: #eff6ff !important;
+  color: #2563eb !important;
+  border-color: #93c5fd !important;
+  transform: translateY(-1px);
+}
+
+/* Table Delete Button: Clear Red Border */
+.btn-table-delete {
+  background-color: #ffffff !important;
+  color: #dc2626 !important;
+  border: 1.5px solid #fecaca !important;
+  padding: 0.36rem 0.65rem !important;
+  border-radius: 6px !important;
+  font-size: 0.85rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.15s ease-in-out !important;
+  line-height: 1 !important;
+}
+
+.btn-table-delete:hover {
+  background-color: #fef2f2 !important;
+  color: #b91c1c !important;
+  border-color: #dc2626 !important;
+  transform: translateY(-1px);
+}
+
+/* Filter Submit Button: Solid Dark Slate */
+.btn-filter-submit {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+  border: 1.5px solid #0f172a !important;
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+  padding: 0.55rem 1.25rem !important;
+  border-radius: var(--radius-md) !important;
+  white-space: nowrap !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.45rem !important;
+  line-height: 1.4 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08) !important;
+  transition: all 0.15s ease-in-out !important;
+}
+
+.btn-filter-submit:hover {
+  background-color: #1e293b !important;
+  border-color: #1e293b !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(15, 23, 42, 0.25) !important;
+}
+
+/* Success CTA (e.g., Confirm Complete Interview) */
+.btn-success {
+  background-color: #16a34a !important;
+  border-color: #15803d !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  white-space: nowrap !important;
+  box-shadow: 0 2px 4px rgba(22, 163, 74, 0.25) !important;
+}
+
+.btn-success:hover {
+  background-color: #15803d !important;
+  border-color: #166534 !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(22, 163, 74, 0.35) !important;
+}
+
+/* Danger CTA (e.g., Delete Modal Confirm) */
+.btn-danger {
+  background-color: #dc2626 !important;
+  border-color: #b91c1c !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  white-space: nowrap !important;
+  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.25) !important;
+}
+
+.btn-danger:hover {
+  background-color: #b91c1c !important;
+  border-color: #991b1b !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(220, 38, 38, 0.35) !important;
+}
+
+/* Outline Danger CTA (e.g., Cancel Interview) */
+.btn-outline-danger {
+  background-color: #ffffff !important;
+  border: 1.5px solid #dc2626 !important;
+  color: #dc2626 !important;
+  font-weight: 600 !important;
+  white-space: nowrap !important;
+}
+
+.btn-outline-danger:hover {
+  background-color: #dc2626 !important;
+  border-color: #dc2626 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25) !important;
 }
 
 /* Forms & Inputs */
