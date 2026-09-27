@@ -14,6 +14,19 @@ const emptyJob = {
   status: 'OPEN',
 }
 
+const DEPARTMENTS = [
+  'Công nghệ thông tin / IT',
+  'Phát triển Phần mềm (Software Engineering)',
+  'Sản phẩm & Thiết kế (Product & Design)',
+  'Kinh doanh & Bán hàng (Sales / BD)',
+  'Marketing & Truyền thông',
+  'Nhân sự & Tuyển dụng (HR)',
+  'Tài chính & Kế toán (Finance & Accounting)',
+  'Vận hành & Chăm sóc khách hàng (Operations)',
+  'Hành chính & Quản trị',
+  'Chung / Khác',
+]
+
 export default function JobFormPage() {
   const { user } = useOutletContext()
   const { id } = useParams()
@@ -66,6 +79,13 @@ export default function JobFormPage() {
     .map((s) => s.trim())
     .filter(Boolean)
 
+  const departmentOptions = Array.from(
+    new Set([
+      ...(form.department ? [form.department] : []),
+      ...DEPARTMENTS,
+    ])
+  )
+
   return (
     <div className="form-page mx-auto" style={{ maxWidth: '920px' }}>
       <PageHeader
@@ -116,12 +136,14 @@ export default function JobFormPage() {
               {/* Phòng ban */}
               <div className="col-12 col-md-4">
                 <label className="form-label small fw-semibold text-secondary">Phòng ban</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Ví dụ: Kỹ thuật / Công nghệ"
-                  {...field('department')}
-                />
+                <select className="form-select" {...field('department')}>
+                  <option value="">-- Chọn phòng ban --</option>
+                  {departmentOptions.map((dept) => (
+                    <option key={dept} value={dept}>
+                      {dept}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Mô tả công việc */}
