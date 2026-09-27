@@ -3,6 +3,7 @@ import { Link, useOutletContext } from 'react-router-dom'
 import Loading from '../components/Loading'
 import PageHeader from '../components/PageHeader'
 import EmptyState from '../components/EmptyState'
+import Pagination from '../components/Pagination'
 import { candidateApi, cvUrl } from '../services/api'
 
 const SOURCES = [
@@ -21,6 +22,8 @@ export default function CandidatesPage() {
   const [state, setState] = useState({ loading: true, rows: [], error: '' })
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [deleting, setDeleting] = useState(false)
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
 
   function load(query = filters) {
     setState((s) => ({ ...s, loading: true, error: '' }))
@@ -58,6 +61,9 @@ export default function CandidatesPage() {
       setDeleting(false)
     }
   }
+
+  const totalItems = state.rows.length
+  const paginatedCandidates = state.rows.slice((page - 1) * pageSize, page * pageSize)
 
   return (
     <>
@@ -164,7 +170,8 @@ export default function CandidatesPage() {
               />
             </div>
           ) : (
-            <div className="table-responsive">
+            <>
+              <div className="table-responsive">
               <table className="table-modern">
                 <thead>
                   <tr>
@@ -179,7 +186,7 @@ export default function CandidatesPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {state.rows.map((c) => {
+                  {paginatedCandidates.map((c) => {
                     const initials = (c.full_name || 'U')
                       .split(' ')
                       .filter(Boolean)
@@ -340,6 +347,17 @@ export default function CandidatesPage() {
                 </tbody>
               </table>
             </div>
+            <Pagination
+              currentPage={page}
+              totalItems={totalItems}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={(sz) => {
+                setPageSize(sz)
+                setPage(1)
+              }}
+            />
+          </>
           )}
         </div>
       )}

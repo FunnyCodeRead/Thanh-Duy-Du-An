@@ -4,6 +4,7 @@ import Loading from '../components/Loading'
 import PageHeader from '../components/PageHeader'
 import StatusBadge from '../components/StatusBadge'
 import EmptyState from '../components/EmptyState'
+import Pagination from '../components/Pagination'
 import { jobApi } from '../services/api'
 
 export default function JobsPage() {
@@ -13,6 +14,8 @@ export default function JobsPage() {
   const [state, setState] = useState({ loading: true, rows: [], error: '' })
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [deleting, setDeleting] = useState(false)
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
 
   function loadJobs(query = filters) {
     setState((current) => ({ ...current, loading: true, error: '' }))
@@ -50,6 +53,9 @@ export default function JobsPage() {
       setDeleting(false)
     }
   }
+
+  const totalItems = state.rows.length
+  const paginatedJobs = state.rows.slice((page - 1) * pageSize, page * pageSize)
 
   return (
     <>
@@ -153,7 +159,8 @@ export default function JobsPage() {
               />
             </div>
           ) : (
-            <div className="table-responsive">
+            <>
+              <div className="table-responsive">
               <table className="table-modern">
                 <thead>
                   <tr>
@@ -169,7 +176,7 @@ export default function JobsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {state.rows.map((job) => (
+                  {paginatedJobs.map((job) => (
                     <tr key={job.id}>
                       <td className="text-muted small fw-semibold">#{job.id}</td>
                       <td>
@@ -248,6 +255,17 @@ export default function JobsPage() {
                 </tbody>
               </table>
             </div>
+            <Pagination
+              currentPage={page}
+              totalItems={totalItems}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={(sz) => {
+                setPageSize(sz)
+                setPage(1)
+              }}
+            />
+          </>
           )}
         </div>
       )}

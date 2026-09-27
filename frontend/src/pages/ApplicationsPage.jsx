@@ -4,6 +4,7 @@ import Loading from '../components/Loading'
 import PageHeader from '../components/PageHeader'
 import StatusBadge from '../components/StatusBadge'
 import EmptyState from '../components/EmptyState'
+import Pagination from '../components/Pagination'
 import { applicationApi, jobApi } from '../services/api'
 
 const STATUS_OPTIONS = [
@@ -20,6 +21,8 @@ export default function ApplicationsPage() {
   const [filters, setFilters] = useState({ keyword: '', status: '', jobId: '' })
   const [jobs, setJobs] = useState([])
   const [state, setState] = useState({ loading: true, rows: [], error: '' })
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
 
   function loadApplications(query = filters) {
     setState((s) => ({ ...s, loading: true, error: '' }))
@@ -49,6 +52,9 @@ export default function ApplicationsPage() {
     loadApplications(emptyFilters)
   }
 
+  const totalItems = state.rows.length
+  const paginatedApplications = state.rows.slice((page - 1) * pageSize, page * pageSize)
+
   return (
     <>
       <PageHeader
@@ -77,6 +83,7 @@ export default function ApplicationsPage() {
           className="row g-2 align-items-center"
           onSubmit={(e) => {
             e.preventDefault()
+            setPage(1)
             loadApplications()
           }}
         >
@@ -169,7 +176,8 @@ export default function ApplicationsPage() {
               />
             </div>
           ) : (
-            <div className="table-responsive">
+            <>
+              <div className="table-responsive">
               <table className="table-modern">
                 <thead>
                   <tr>
@@ -185,7 +193,7 @@ export default function ApplicationsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {state.rows.map((app) => {
+                  {paginatedApplications.map((app) => {
                     const initials = (app.candidate_name || 'U')
                       .split(' ')
                       .filter(Boolean)
@@ -253,6 +261,17 @@ export default function ApplicationsPage() {
                 </tbody>
               </table>
             </div>
+            <Pagination
+              currentPage={page}
+              totalItems={totalItems}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={(sz) => {
+                setPageSize(sz)
+                setPage(1)
+              }}
+            />
+          </>
           )}
         </div>
       )}

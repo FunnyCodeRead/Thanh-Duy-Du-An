@@ -4,6 +4,7 @@ import Loading from '../components/Loading'
 import PageHeader from '../components/PageHeader'
 import StatusBadge from '../components/StatusBadge'
 import EmptyState from '../components/EmptyState'
+import Pagination from '../components/Pagination'
 import { interviewApi } from '../services/api'
 
 const STATUS_OPTIONS = [
@@ -17,6 +18,8 @@ export default function InterviewsPage() {
   const canSchedule = ['ADMIN', 'HR'].includes(user?.role)
   const [filters, setFilters] = useState({ keyword: '', status: '' })
   const [state, setState] = useState({ loading: true, rows: [], error: '' })
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
 
   function loadInterviews(query = filters) {
     setState((s) => ({ ...s, loading: true, error: '' }))
@@ -39,6 +42,9 @@ export default function InterviewsPage() {
     setFilters(emptyFilters)
     loadInterviews(emptyFilters)
   }
+
+  const totalItems = state.rows.length
+  const paginatedInterviews = state.rows.slice((page - 1) * pageSize, page * pageSize)
 
   return (
     <>
@@ -68,6 +74,7 @@ export default function InterviewsPage() {
           className="row g-2 align-items-center"
           onSubmit={(e) => {
             e.preventDefault()
+            setPage(1)
             loadInterviews()
           }}
         >
@@ -145,7 +152,8 @@ export default function InterviewsPage() {
               />
             </div>
           ) : (
-            <div className="table-responsive">
+            <>
+              <div className="table-responsive">
               <table className="table-modern">
                 <thead>
                   <tr>
@@ -162,7 +170,7 @@ export default function InterviewsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {state.rows.map((item) => {
+                  {paginatedInterviews.map((item) => {
                     const initials = (item.candidate_name || 'U')
                       .split(' ')
                       .filter(Boolean)
@@ -242,6 +250,17 @@ export default function InterviewsPage() {
                 </tbody>
               </table>
             </div>
+            <Pagination
+              currentPage={page}
+              totalItems={totalItems}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={(sz) => {
+                setPageSize(sz)
+                setPage(1)
+              }}
+            />
+          </>
           )}
         </div>
       )}
