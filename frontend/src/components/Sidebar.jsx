@@ -73,15 +73,6 @@ export default function Sidebar({ user }) {
             <i className="bi bi-calendar2-week-fill"></i>
             <span>Lịch phỏng vấn</span>
           </NavLink>
-
-          <div className="nav-section-title mt-2">Trợ lý thông minh</div>
-          <NavLink
-            to="/ai-chat"
-            className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
-          >
-            <i className="bi bi-robot text-primary"></i>
-            <span>✨ Trợ lý AI</span>
-          </NavLink>
         </nav>
       </div>
 
