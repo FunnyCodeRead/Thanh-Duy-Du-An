@@ -137,10 +137,8 @@ function SourcePill({ source, onNavigate }) {
   )
 }
 
-let msgSeq = 0
 function nextId(prefix) {
-  msgSeq += 1
-  return `${prefix}-${msgSeq}`
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
 }
 
 export default function FloatingAIChat({ user }) {
@@ -389,12 +387,13 @@ export default function FloatingAIChat({ user }) {
             }}
           >
             <div style={{ height: '2px', flexShrink: 0 }} />
-            {messages.map((m) => {
+            {messages.map((m, idx) => {
               const isUser = m.role === 'user'
+              const key = m.id ? `${m.id}-${idx}` : `msg-${idx}`
 
               if (isUser) {
                 return (
-                  <div key={m.id} className="d-flex justify-content-end mb-1">
+                  <div key={key} className="d-flex justify-content-end mb-1">
                     <div
                       className="text-white shadow-2xs"
                       style={{
@@ -416,7 +415,7 @@ export default function FloatingAIChat({ user }) {
 
               // Assistant message (Green bubble with sender name above & avatar on the left, matching screenshot)
               return (
-                <div key={m.id} className="d-flex flex-column align-items-start mb-1 w-100">
+                <div key={key} className="d-flex flex-column align-items-start mb-1 w-100">
                   {/* Sender Name */}
                   <div
                     className="text-secondary fw-medium mb-1"
