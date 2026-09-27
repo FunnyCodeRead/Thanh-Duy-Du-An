@@ -9,14 +9,12 @@ const QUICK_QUESTIONS = [
   'Ứng viên nào có kỹ năng Python và Flask?',
   'Tóm tắt kinh nghiệm của Phạm Gia Dũng',
   'Ai là ứng viên tốt nhất?',
-  'Thời tiết hôm nay thế nào?',
 ]
 
-function parseFormattedText(text) {
+function formatMessageText(text, isGreenBubble = false) {
   if (!text) return null
   const lines = text.split('\n')
   return lines.map((line, lIdx) => {
-    // Check bullet points
     const trimmed = line.trim()
     const isBullet = trimmed.startsWith('•') || trimmed.startsWith('- ') || trimmed.startsWith('* ')
     const content = isBullet ? trimmed.replace(/^[•\-*]\s*/, '') : line
@@ -37,7 +35,7 @@ function parseFormattedText(text) {
         parts.push(<span key={key++}>{remaining.slice(0, idx)}</span>)
       }
       parts.push(
-        <strong key={key++} className="fw-semibold text-dark">
+        <strong key={key++} className={isGreenBubble ? 'fw-bold text-white' : 'fw-bold text-dark'}>
           {boldMatch[1]}
         </strong>
       )
@@ -46,8 +44,8 @@ function parseFormattedText(text) {
 
     if (isBullet) {
       return (
-        <div key={lIdx} className="d-flex align-items-start gap-2 my-1">
-          <i className="bi bi-dot text-primary fs-5 mt-n1 flex-shrink-0"></i>
+        <div key={lIdx} className="d-flex align-items-start gap-1.5 my-1" style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}>
+          <span className="flex-shrink-0" style={{ lineHeight: 1.4 }}>•</span>
           <div className="flex-grow-1" style={{ overflowWrap: 'break-word', wordBreak: 'break-word' }}>
             {parts}
           </div>
@@ -56,7 +54,7 @@ function parseFormattedText(text) {
     }
 
     if (trimmed === '') {
-      return <div key={lIdx} className="my-1.5" />
+      return <div key={lIdx} style={{ height: '6px' }} />
     }
 
     return (
@@ -67,7 +65,7 @@ function parseFormattedText(text) {
   })
 }
 
-function SourceBadge({ source }) {
+function SourcePill({ source }) {
   const { entity_type, entity_id, display_name } = source
   let targetPath = null
   let icon = 'bi-file-earmark'
@@ -90,22 +88,29 @@ function SourceBadge({ source }) {
     return (
       <Link
         to={targetPath}
-        className="badge bg-light text-primary border border-primary-subtle text-decoration-none px-2.5 py-1.5 rounded-pill d-inline-flex align-items-center gap-1.5 small fw-normal shadow-2xs"
-        style={{ fontSize: '0.785rem', transition: 'all 0.15s ease' }}
+        className="badge bg-white bg-opacity-25 text-white border border-white border-opacity-40 text-decoration-none px-2.5 py-1 rounded-pill d-inline-flex align-items-center gap-1.5 fw-normal"
+        style={{
+          fontSize: '0.75rem',
+          transition: 'all 0.15s ease',
+          whiteSpace: 'normal',
+          textAlign: 'left',
+          wordBreak: 'break-word',
+          maxWidth: '100%',
+        }}
       >
-        <i className={`bi ${icon} text-primary`}></i>
+        <i className={`bi ${icon} flex-shrink-0`} />
         <span>{display_name}</span>
-        <i className="bi bi-box-arrow-up-right text-muted" style={{ fontSize: '0.65rem' }}></i>
+        <i className="bi bi-arrow-up-right flex-shrink-0" style={{ fontSize: '0.6rem' }} />
       </Link>
     )
   }
 
   return (
     <span
-      className="badge bg-light text-secondary border px-2.5 py-1.5 rounded-pill d-inline-flex align-items-center gap-1.5 small fw-normal"
-      style={{ fontSize: '0.785rem' }}
+      className="badge bg-white bg-opacity-20 text-white border border-white border-opacity-25 px-2.5 py-1 rounded-pill d-inline-flex align-items-center gap-1.5 fw-normal"
+      style={{ fontSize: '0.75rem', whiteSpace: 'normal', textAlign: 'left', wordBreak: 'break-word', maxWidth: '100%' }}
     >
-      <i className={`bi ${icon}`}></i>
+      <i className={`bi ${icon} flex-shrink-0`} />
       <span>{display_name}</span>
     </span>
   )
@@ -115,7 +120,7 @@ const DEFAULT_WELCOME_MESSAGE = {
   id: 'welcome',
   role: 'assistant',
   content:
-    'Xin chào! Tôi là **Trợ lý tuyển dụng AI**.\nTôi có thể hỗ trợ bạn tra cứu các thông tin về **ứng viên, kỹ năng, kinh nghiệm trong CV, vị trí tuyển dụng, lịch phỏng vấn và đánh giá** dựa trên dữ liệu hiện có trong hệ thống.',
+    'Xin chào! Tôi là trợ lý AI tuyển dụng. Bạn cần tra cứu thông tin ứng viên, kỹ năng, tin tuyển dụng hay lịch phỏng vấn nào?',
   retrievalType: null,
   sources: [],
   timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
@@ -135,6 +140,12 @@ function getStoredMessages(userId) {
     // fallback
   }
   return [DEFAULT_WELCOME_MESSAGE]
+}
+
+let msgSeq = 0
+function nextId(prefix) {
+  msgSeq += 1
+  return `${prefix}-${msgSeq}`
 }
 
 export default function AIChatPage() {
@@ -176,6 +187,22 @@ export default function AIChatPage() {
     }
   }, [messages, storageKey])
 
+  // Sync across tabs/windows
+  useEffect(() => {
+    function handleStorage(e) {
+      if (e.key === storageKey && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue)
+          if (Array.isArray(parsed)) setMessages(parsed)
+        } catch {
+          // ignore
+        }
+      }
+    }
+    window.addEventListener('storage', handleStorage)
+    return () => window.removeEventListener('storage', handleStorage)
+  }, [storageKey])
+
   // Load index info on mount
   useEffect(() => {
     chatApi
@@ -186,16 +213,17 @@ export default function AIChatPage() {
       .catch(() => {})
   }, [])
 
-  async function handleSend(e) {
-    if (e) e.preventDefault()
-    const trimmed = input.trim()
+  async function handleSend(customText) {
+    const raw = customText !== undefined ? customText : input
+    const trimmed = String(raw || '').trim()
     if (!trimmed || loading) return
 
+    const nowStr = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
     const userMsg = {
-      id: String(Date.now()),
+      id: nextId('u'),
       role: 'user',
       content: trimmed,
-      timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
+      timestamp: nowStr,
     }
 
     setMessages((prev) => [...prev, userMsg])
@@ -213,17 +241,17 @@ export default function AIChatPage() {
       const data = res.data || {}
 
       const aiMsg = {
-        id: String(Date.now() + 1),
+        id: nextId('a'),
         role: 'assistant',
-        content: data.answer || 'Không nhận được câu trả lời từ hệ thống.',
+        content: data.answer || 'Xin lỗi, không tìm thấy thông tin phù hợp trong dữ liệu tuyển dụng.',
         retrievalType: data.retrieval_type,
-        sources: data.sources || [],
+        sources: Array.isArray(data.sources) ? data.sources : [],
         timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
       }
       setMessages((prev) => [...prev, aiMsg])
     } catch (err) {
       const errorMsg = {
-        id: String(Date.now() + 1),
+        id: nextId('err'),
         role: 'assistant',
         content: `Đã xảy ra lỗi khi tra cứu: ${err.message || 'Không thể kết nối đến máy chủ.'}`,
         retrievalType: 'OUT_OF_SCOPE',
@@ -253,16 +281,12 @@ export default function AIChatPage() {
     }
   }
 
-  function handleQuickQuestion(q) {
-    setInput(q)
-  }
-
   function handleClearChat() {
     const resetMsg = {
-      id: `welcome-${Date.now()}`,
+      id: nextId('welcome'),
       role: 'assistant',
       content:
-        'Hội thoại đã được làm mới. Hãy nhập câu hỏi tuyển dụng bạn cần tra cứu!',
+        'Hội thoại đã được làm mới. Hãy nhập câu hỏi bạn cần tra cứu!',
       retrievalType: null,
       sources: [],
       timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
@@ -275,215 +299,352 @@ export default function AIChatPage() {
     }
   }
 
-
   return (
-    <div className="d-flex flex-column h-100" style={{ maxWidth: '1100px', margin: '0 auto' }}>
-      {/* 1. Header */}
-      <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
-        <div className="d-flex align-items-center gap-3">
-          <img
-            src="/ai-avatar.png"
-            alt="AI Assistant"
-            className="rounded-circle border border-2 border-primary-subtle shadow-sm"
-            style={{ width: '46px', height: '46px', objectFit: 'cover' }}
-          />
-          <div>
-            <h1 className="h4 fw-bold mb-0.5 text-dark d-flex align-items-center gap-2">
-              <span>Trợ lý Tuyển dụng AI</span>
-              <span className="badge bg-success-subtle text-success border border-success-subtle rounded-pill small fw-medium" style={{ fontSize: '0.72rem' }}>
-                ● Trực tuyến
-              </span>
-            </h1>
-            <p className="text-muted small mb-0">
-              Tra cứu nhanh hồ sơ ứng viên, kỹ năng CV, vị trí tuyển dụng và lịch phỏng vấn.
-              {indexInfo?.documents ? ` (Đã đồng bộ ${indexInfo.documents} mục dữ liệu)` : ''}
-            </p>
+    <div className="d-flex flex-column" style={{ maxWidth: '1060px', margin: '0 auto', height: 'calc(100vh - 140px)', minHeight: '620px' }}>
+      {/* Outer Card Styled Like The Floating AI Chat Widget */}
+      <div
+        className="card d-flex flex-column flex-grow-1 border-0 shadow-sm"
+        style={{
+          borderRadius: '18px',
+          overflow: 'hidden',
+          backgroundColor: '#ffffff',
+          border: '1px solid #e2e8f0',
+        }}
+      >
+        {/* 1. Header with Signature Emerald Green */}
+        <div
+          className="d-flex align-items-center justify-content-between px-3 px-md-4 py-3 text-white flex-shrink-0"
+          style={{
+            backgroundColor: '#009e4f',
+          }}
+        >
+          <div className="d-flex align-items-center gap-3">
+            <div
+              className="rounded-circle overflow-hidden flex-shrink-0 shadow-sm"
+              style={{
+                width: '42px',
+                height: '42px',
+                border: '2px solid rgba(255,255,255,0.9)',
+                backgroundColor: '#ffffff',
+              }}
+            >
+              <img
+                src="/ai-avatar.png"
+                alt="AI Assistant"
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            </div>
+            <div>
+              <div className="d-flex align-items-center gap-2">
+                <h1 className="h6 fw-bold mb-0 text-white" style={{ fontSize: '1.05rem', letterSpacing: '-0.01em' }}>
+                  Trợ lý Tuyển dụng AI
+                </h1>
+                <span
+                  className="badge rounded-pill fw-medium d-inline-flex align-items-center gap-1.5"
+                  style={{ backgroundColor: 'rgba(255,255,255,0.22)', fontSize: '0.72rem', color: '#ffffff' }}
+                >
+                  <span className="rounded-circle" style={{ width: '6px', height: '6px', backgroundColor: '#4ade80' }} />
+                  Trực tuyến
+                </span>
+              </div>
+              <div className="text-white text-opacity-90 small mt-0.5" style={{ fontSize: '0.8rem' }}>
+                Tra cứu nhanh hồ sơ ứng viên, kỹ năng CV, vị trí tuyển dụng và lịch phỏng vấn
+                {indexInfo?.documents ? ` • Đã đồng bộ ${indexInfo.documents} mục dữ liệu` : ''}
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons in Header */}
+          <div className="d-flex align-items-center gap-2">
+            {isAdmin && (
+              <button
+                type="button"
+                className="btn btn-sm text-white rounded-pill px-3 py-1.5 d-inline-flex align-items-center gap-1.5 shadow-2xs"
+                style={{
+                  backgroundColor: 'rgba(255,255,255,0.18)',
+                  border: '1px solid rgba(255,255,255,0.35)',
+                  fontSize: '0.8rem',
+                  fontWeight: 500,
+                  transition: 'all 0.15s ease',
+                }}
+                onClick={handleReindex}
+                disabled={reindexing}
+                title="Đồng bộ lại dữ liệu hệ thống vào chỉ mục tìm kiếm"
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.3)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.18)'
+                }}
+              >
+                <i className={`bi ${reindexing ? 'spinner-border spinner-border-sm' : 'bi-arrow-repeat'}`} />
+                <span>{reindexing ? 'Đang cập nhật...' : 'Cập nhật dữ liệu'}</span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              className="btn btn-sm text-white rounded-pill px-3 py-1.5 d-inline-flex align-items-center gap-1.5 shadow-2xs"
+              style={{
+                backgroundColor: 'rgba(255,255,255,0.18)',
+                border: '1px solid rgba(255,255,255,0.35)',
+                fontSize: '0.8rem',
+                fontWeight: 500,
+                transition: 'all 0.15s ease',
+              }}
+              onClick={handleClearChat}
+              title="Làm mới toàn bộ cuộc trò chuyện"
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.3)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.18)'
+              }}
+            >
+              <i className="bi bi-arrow-clockwise" />
+              <span>Làm mới đoạn chat</span>
+            </button>
           </div>
         </div>
 
-        <div className="d-flex align-items-center gap-2 flex-wrap">
-          {isAdmin && (
-            <button
-              type="button"
-              className="btn btn-sm btn-outline-primary rounded-pill px-3 py-1.5 d-inline-flex align-items-center gap-1.5"
-              onClick={handleReindex}
-              disabled={reindexing}
-              title="Đồng bộ lại dữ liệu hệ thống vào chỉ mục tìm kiếm"
-            >
-              <i className={`bi ${reindexing ? 'spinner-border spinner-border-sm' : 'bi-arrow-repeat'}`}></i>
-              <span>{reindexing ? 'Đang cập nhật...' : 'Cập nhật dữ liệu'}</span>
-            </button>
-          )}
+        {reindexMsg && (
+          <div className="alert alert-info py-2 px-3 small rounded-0 mb-0 border-0 border-bottom d-flex align-items-center gap-2">
+            <i className="bi bi-check-circle-fill text-info" />
+            <span>{reindexMsg}</span>
+          </div>
+        )}
 
-          <button
-            type="button"
-            className="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1.5 d-inline-flex align-items-center gap-1.5"
-            onClick={handleClearChat}
-            title="Làm mới toàn bộ cuộc trò chuyện"
-          >
-            <i className="bi bi-arrow-clockwise"></i>
-            <span>Làm mới đoạn chat</span>
-          </button>
-        </div>
-      </div>
+        {/* 2. Messages Body */}
+        <div
+          className="flex-grow-1 p-3 p-md-4 overflow-y-auto d-flex flex-column gap-3"
+          style={{
+            backgroundColor: '#ffffff',
+            scrollPaddingTop: '12px',
+          }}
+        >
+          {messages.map((m) => {
+            const isUser = m.role === 'user'
 
-      {reindexMsg && (
-        <div className="alert alert-info py-2 px-3 small rounded-3 mb-3 d-flex align-items-center gap-2">
-          <i className="bi bi-check-circle-fill text-info"></i>
-          <span>{reindexMsg}</span>
-        </div>
-      )}
+            if (isUser) {
+              return (
+                <div key={m.id} className="d-flex flex-column align-items-end mb-1">
+                  <div
+                    className="text-white shadow-2xs"
+                    style={{
+                      maxWidth: '78%',
+                      backgroundColor: '#1e293b',
+                      borderRadius: '16px 16px 4px 16px',
+                      padding: '11px 16px',
+                      lineHeight: 1.55,
+                      fontSize: '0.915rem',
+                      overflowWrap: 'break-word',
+                      wordBreak: 'break-word',
+                      whiteSpace: 'pre-wrap',
+                    }}
+                  >
+                    {m.content}
+                  </div>
+                  {m.timestamp && (
+                    <span className="text-muted mt-1 px-1" style={{ fontSize: '0.72rem' }}>
+                      {m.timestamp}
+                    </span>
+                  )}
+                </div>
+              )
+            }
 
-      {/* 2. Chat Messages Container */}
-      <div
-        className="card-modern flex-grow-1 d-flex flex-column mb-3"
-        style={{ height: 'calc(100vh - 360px)', minHeight: '380px', overflow: 'hidden' }}
-      >
-        <div className="p-3.5 flex-grow-1 overflow-y-auto d-flex flex-column gap-3.5" style={{ background: '#f8fafc' }}>
-          {messages.map((msg) => {
-            const isUser = msg.role === 'user'
-
+            // Assistant message: Green bubble styled like Floating AI Chat
             return (
-              <div
-                key={msg.id}
-                className={`d-flex gap-2.5 ${isUser ? 'justify-content-end' : 'justify-content-start'}`}
-              >
-                {!isUser && (
-                  <img
-                    src="/ai-avatar.png"
-                    alt="AI"
-                    className="rounded-circle flex-shrink-0 shadow-xs mt-0.5"
+              <div key={m.id} className="d-flex flex-column align-items-start mb-1 w-100">
+                {/* Sender Name */}
+                <div
+                  className="text-secondary fw-medium mb-1"
+                  style={{ fontSize: '0.75rem', color: '#64748B', marginLeft: '44px' }}
+                >
+                  Trợ lý Tuyển dụng AI
+                </div>
+
+                <div className="d-flex align-items-start gap-2.5 w-100">
+                  {/* Model AI Avatar */}
+                  <div
+                    className="rounded-circle overflow-hidden flex-shrink-0 shadow-2xs mt-0.5"
                     style={{
                       width: '34px',
                       height: '34px',
-                      objectFit: 'cover',
-                      border: '1px solid #cbd5e1',
+                      border: '1.5px solid #009e4f',
+                      backgroundColor: '#ffffff',
                     }}
-                  />
-                )}
-
-                <div
-                  className="d-flex flex-column"
-                  style={{ maxWidth: isUser ? '75%' : '85%' }}
-                >
-                  <div
-                    className={`p-3 rounded-3 shadow-2xs ${
-                      isUser
-                        ? 'bg-primary text-white rounded-bottom-end-0'
-                        : 'bg-white border text-dark rounded-bottom-start-0'
-                    }`}
-                    style={{ fontSize: '0.925rem', lineHeight: 1.6 }}
                   >
-                    {isUser ? (
-                      <div style={{ whiteSpace: 'pre-wrap', overflowWrap: 'break-word', wordBreak: 'break-word' }}>
-                        {msg.content}
-                      </div>
-                    ) : (
-                      parseFormattedText(msg.content)
-                    )}
+                    <img
+                      src="/ai-avatar.png"
+                      alt="AI"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  </div>
 
-                    {/* Sources Attribution */}
-                    {!isUser && msg.sources && msg.sources.length > 0 && (
-                      <div className="mt-2.5 pt-2 border-top border-light-subtle">
-                        <div className="d-flex flex-wrap gap-1.5">
-                          {msg.sources.map((s, idx) => (
-                            <SourceBadge key={idx} source={s} />
+                  {/* Green Message Bubble */}
+                  <div className="d-flex flex-column" style={{ maxWidth: '82%' }}>
+                    <div
+                      className="text-white shadow-2xs"
+                      style={{
+                        backgroundColor: '#009e4f',
+                        borderRadius: '4px 18px 18px 18px',
+                        padding: '13px 17px',
+                        lineHeight: 1.6,
+                        fontSize: '0.915rem',
+                        overflowWrap: 'break-word',
+                        wordBreak: 'break-word',
+                      }}
+                    >
+                      {formatMessageText(m.content, true)}
+
+                      {/* Source attribution pills */}
+                      {Array.isArray(m.sources) && m.sources.length > 0 && (
+                        <div className="mt-2.5 pt-2 border-top border-white border-opacity-25 d-flex flex-wrap gap-1.5">
+                          {m.sources.map((s, idx) => (
+                            <SourcePill key={idx} source={s} />
                           ))}
                         </div>
-                      </div>
+                      )}
+                    </div>
+
+                    {m.timestamp && (
+                      <span className="text-muted mt-1 px-1" style={{ fontSize: '0.72rem' }}>
+                        {m.timestamp}
+                      </span>
                     )}
                   </div>
-
-                  <div
-                    className={`d-flex align-items-center gap-2 mt-1 px-1 small ${
-                      isUser ? 'justify-content-end text-muted' : 'justify-content-start text-muted'
-                    }`}
-                    style={{ fontSize: '0.72rem' }}
-                  >
-                    <span>{msg.timestamp}</span>
-                  </div>
                 </div>
-
-                {isUser && (
-                  <div
-                    className="user-avatar-circle flex-shrink-0"
-                    style={{ width: '34px', height: '34px', fontSize: '0.8rem' }}
-                  >
-                    {(user?.full_name || 'U').split(' ').filter(Boolean).map(w => w[0]).slice(0, 2).join('').toUpperCase()}
-                  </div>
-                )}
               </div>
             )
           })}
 
+          {/* Loading Indicator */}
           {loading && (
-            <div className="d-flex gap-2.5 align-items-center">
+            <div className="d-flex align-items-start gap-2.5">
               <div
-                className="brand-icon flex-shrink-0"
-                style={{ width: '34px', height: '34px', fontSize: '0.95rem' }}
+                className="rounded-circle overflow-hidden flex-shrink-0 mt-0.5"
+                style={{ width: '34px', height: '34px', border: '1.5px solid #009e4f' }}
               >
-                <i className="bi bi-stars"></i>
+                <img src="/ai-avatar.png" alt="AI" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
-              <div className="p-3 rounded-3 bg-white border d-inline-flex align-items-center gap-2 text-secondary small">
-                <span className="spinner-border spinner-border-sm text-primary" role="status"></span>
-                <span>Trợ lý AI đang truy xuất dữ liệu tuyển dụng và tổng hợp câu trả lời...</span>
+              <div
+                className="px-3.5 py-2 rounded-pill shadow-2xs d-inline-flex align-items-center gap-2"
+                style={{ backgroundColor: '#f1f5f9', color: '#009e4f', fontSize: '0.82rem', fontWeight: 500 }}
+              >
+                <span className="spinner-border spinner-border-sm" style={{ width: '12px', height: '12px' }} />
+                <span>Trợ lý AI đang tra cứu dữ liệu tuyển dụng...</span>
               </div>
             </div>
           )}
 
           <div ref={messagesEndRef} />
         </div>
-      </div>
 
-      {/* 4. Quick Suggestion Pills */}
-      <div className="d-flex align-items-center gap-1.5 mb-2.5 overflow-x-auto pb-1">
-        <span className="small text-muted flex-shrink-0 me-1" style={{ fontSize: '0.785rem' }}>
-          <i className="bi bi-lightbulb-fill text-warning me-1"></i>Gợi ý câu hỏi:
-        </span>
-        {QUICK_QUESTIONS.map((q, idx) => (
-          <button
-            key={idx}
-            type="button"
-            className="btn btn-sm btn-light border rounded-pill px-2.5 py-1 text-nowrap text-secondary small"
-            style={{ fontSize: '0.785rem' }}
-            onClick={() => handleQuickQuestion(q)}
-            disabled={loading}
+        {/* 3. Bottom Area: Quick Suggestions & Input Bar */}
+        <div className="border-top px-3 px-md-4 py-3 bg-white flex-shrink-0">
+          {/* Quick Suggestions (Green Outlined Pills) */}
+          <div className="d-flex align-items-center gap-1.5 mb-2.5 overflow-x-auto pb-1">
+            <span className="small text-muted flex-shrink-0 me-1" style={{ fontSize: '0.785rem' }}>
+              <i className="bi bi-lightbulb-fill text-warning me-1" />
+              Gợi ý:
+            </span>
+            {QUICK_QUESTIONS.map((q, idx) => (
+              <button
+                key={idx}
+                type="button"
+                className="btn btn-sm shadow-2xs rounded-pill px-3 py-1 text-nowrap"
+                style={{
+                  backgroundColor: '#ffffff',
+                  color: '#009e4f',
+                  border: '1.5px solid #009e4f',
+                  fontSize: '0.8rem',
+                  fontWeight: 500,
+                  transition: 'all 0.15s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#009e4f'
+                  e.currentTarget.style.color = '#ffffff'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#ffffff'
+                  e.currentTarget.style.color = '#009e4f'
+                }}
+                onClick={() => handleSend(q)}
+                disabled={loading}
+              >
+                {q}
+              </button>
+            ))}
+          </div>
+
+          {/* Input Form */}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              handleSend()
+            }}
+            className="d-flex align-items-center gap-2"
           >
-            {q}
-          </button>
-        ))}
-      </div>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Gõ câu hỏi tuyển dụng vào đây và nhấn Enter... (VD: Ứng viên nào có kinh nghiệm Flask?)"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              disabled={loading}
+              maxLength={1000}
+              style={{
+                borderRadius: '24px',
+                padding: '10px 18px',
+                fontSize: '0.92rem',
+                borderColor: '#cbd5e1',
+                backgroundColor: '#f8fafc',
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#009e4f'
+                e.target.style.boxShadow = '0 0 0 3px rgba(0, 158, 79, 0.15)'
+                e.target.style.backgroundColor = '#ffffff'
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#cbd5e1'
+                e.target.style.boxShadow = 'none'
+                e.target.style.backgroundColor = '#f8fafc'
+              }}
+            />
 
-      {/* 5. Input Bar */}
-      <form onSubmit={handleSend} className="card-modern p-2">
-        <div className="d-flex align-items-center gap-2">
-          <input
-            type="text"
-            className="form-control border-0 shadow-none"
-            placeholder="Nhập câu hỏi tuyển dụng (VD: Ứng viên nào có kinh nghiệm Flask?)..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            disabled={loading}
-            maxLength={1000}
-            style={{ fontSize: '0.925rem' }}
-          />
-
-          <button
-            type="submit"
-            className="btn btn-primary-modern px-3.5 py-2 d-inline-flex align-items-center gap-1.5 flex-shrink-0 rounded-pill"
-            disabled={loading || !input.trim()}
-          >
-            {loading ? (
-              <span className="spinner-border spinner-border-sm" role="status"></span>
-            ) : (
-              <>
-                <span>Gửi</span>
-                <i className="bi bi-send-fill"></i>
-              </>
-            )}
-          </button>
+            <button
+              type="submit"
+              className="btn d-inline-flex align-items-center gap-1.5 flex-shrink-0 shadow-2xs"
+              style={{
+                backgroundColor: '#009e4f',
+                color: '#ffffff',
+                borderRadius: '24px',
+                padding: '10px 22px',
+                fontWeight: 500,
+                fontSize: '0.92rem',
+                transition: 'all 0.15s ease',
+              }}
+              disabled={loading || !input.trim()}
+              onMouseEnter={(e) => {
+                if (!loading && input.trim()) e.currentTarget.style.backgroundColor = '#008542'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#009e4f'
+              }}
+            >
+              {loading ? (
+                <span className="spinner-border spinner-border-sm" role="status" />
+              ) : (
+                <>
+                  <span>Gửi</span>
+                  <i className="bi bi-send-fill" style={{ fontSize: '0.85rem' }} />
+                </>
+              )}
+            </button>
+          </form>
         </div>
-      </form>
+      </div>
     </div>
   )
 }
