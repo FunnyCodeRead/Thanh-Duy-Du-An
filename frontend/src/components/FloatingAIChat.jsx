@@ -55,7 +55,7 @@ function formatMessageText(text, isGreenBubble = false) {
         parts.push(<span key={key++}>{remaining.slice(0, idx)}</span>)
       }
       parts.push(
-        <strong key={key++} className={isGreenBubble ? 'fw-bold text-white text-decoration-underline' : 'fw-bold'}>
+        <strong key={key++} className={isGreenBubble ? 'fw-bold text-white' : 'fw-bold text-dark'}>
           {boldMatch[1]}
         </strong>
       )
@@ -64,8 +64,8 @@ function formatMessageText(text, isGreenBubble = false) {
 
     if (isBullet) {
       return (
-        <div key={lIdx} className="d-flex align-items-start gap-1 my-0.5">
-          <span className="flex-shrink-0">•</span>
+        <div key={lIdx} className="d-flex align-items-start gap-1.5 my-1" style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}>
+          <span className="flex-shrink-0" style={{ lineHeight: 1.4 }}>•</span>
           <div className="flex-grow-1" style={{ overflowWrap: 'break-word', wordBreak: 'break-word' }}>
             {parts}
           </div>
@@ -109,22 +109,29 @@ function SourcePill({ source, onNavigate }) {
       <Link
         to={targetPath}
         onClick={onNavigate}
-        className="badge bg-white bg-opacity-25 text-white border border-white border-opacity-50 text-decoration-none px-2 py-0.5 rounded-pill d-inline-flex align-items-center gap-1 fw-normal"
-        style={{ fontSize: '0.68rem', transition: 'all 0.15s ease' }}
+        className="badge bg-white bg-opacity-25 text-white border border-white border-opacity-40 text-decoration-none px-2.5 py-1 rounded-pill d-inline-flex align-items-center gap-1.5 fw-normal"
+        style={{
+          fontSize: '0.72rem',
+          transition: 'all 0.15s ease',
+          whiteSpace: 'normal',
+          textAlign: 'left',
+          wordBreak: 'break-word',
+          maxWidth: '100%',
+        }}
       >
-        <i className={`bi ${icon}`} />
+        <i className={`bi ${icon} flex-shrink-0`} />
         <span>{display_name}</span>
-        <i className="bi bi-arrow-up-right" style={{ fontSize: '0.55rem' }} />
+        <i className="bi bi-arrow-up-right flex-shrink-0" style={{ fontSize: '0.55rem' }} />
       </Link>
     )
   }
 
   return (
     <span
-      className="badge bg-white bg-opacity-20 text-white border border-white border-opacity-25 px-2 py-0.5 rounded-pill d-inline-flex align-items-center gap-1 fw-normal"
-      style={{ fontSize: '0.68rem' }}
+      className="badge bg-white bg-opacity-20 text-white border border-white border-opacity-25 px-2.5 py-1 rounded-pill d-inline-flex align-items-center gap-1.5 fw-normal"
+      style={{ fontSize: '0.72rem', whiteSpace: 'normal', textAlign: 'left', wordBreak: 'break-word', maxWidth: '100%' }}
     >
-      <i className={`bi ${icon}`} />
+      <i className={`bi ${icon} flex-shrink-0`} />
       <span>{display_name}</span>
     </span>
   )
@@ -293,9 +300,9 @@ export default function FloatingAIChat({ user }) {
             position: 'absolute',
             bottom: '72px',
             right: '0',
-            width: '350px',
+            width: '380px',
             maxWidth: 'calc(100vw - 28px)',
-            height: '520px',
+            height: '535px',
             maxHeight: 'calc(100vh - 100px)',
             borderRadius: '16px',
             overflow: 'hidden',
@@ -306,7 +313,7 @@ export default function FloatingAIChat({ user }) {
         >
           {/* 1. Header (Emerald Green styled like reference screenshot) */}
           <div
-            className="d-flex align-items-center justify-content-between px-3 py-2.5 text-white position-relative"
+            className="d-flex align-items-center justify-content-between px-3 py-2.5 text-white position-relative flex-shrink-0"
             style={{ backgroundColor: '#009e4f', borderTopLeftRadius: '16px', borderTopRightRadius: '16px' }}
           >
             <div className="d-flex align-items-center gap-2">
@@ -373,9 +380,15 @@ export default function FloatingAIChat({ user }) {
 
           {/* 2. Messages Body */}
           <div
-            className="flex-grow-1 p-3 overflow-y-auto d-flex flex-column gap-2.5"
-            style={{ backgroundColor: '#ffffff', fontSize: '0.86rem' }}
+            className="flex-grow-1 overflow-y-auto d-flex flex-column gap-2.5"
+            style={{
+              backgroundColor: '#ffffff',
+              fontSize: '0.86rem',
+              padding: '14px 14px 10px',
+              scrollPaddingTop: '8px',
+            }}
           >
+            <div style={{ height: '2px', flexShrink: 0 }} />
             {messages.map((m) => {
               const isUser = m.role === 'user'
 
@@ -383,13 +396,14 @@ export default function FloatingAIChat({ user }) {
                 return (
                   <div key={m.id} className="d-flex justify-content-end mb-1">
                     <div
-                      className="text-white p-2.5 shadow-2xs"
+                      className="text-white shadow-2xs"
                       style={{
                         maxWidth: '82%',
                         backgroundColor: '#1e293b',
                         borderRadius: '14px 14px 2px 14px',
-                        lineHeight: 1.45,
-                        fontSize: '0.85rem',
+                        padding: '10px 14px',
+                        lineHeight: 1.5,
+                        fontSize: '0.86rem',
                         overflowWrap: 'break-word',
                         wordBreak: 'break-word',
                       }}
@@ -402,11 +416,11 @@ export default function FloatingAIChat({ user }) {
 
               // Assistant message (Green bubble with sender name above & avatar on the left, matching screenshot)
               return (
-                <div key={m.id} className="d-flex flex-column align-items-start mb-1">
+                <div key={m.id} className="d-flex flex-column align-items-start mb-1 w-100">
                   {/* Sender Name */}
                   <div
-                    className="text-secondary fw-normal mb-1 ps-5"
-                    style={{ fontSize: '0.74rem', color: '#475569' }}
+                    className="text-secondary fw-medium mb-1"
+                    style={{ fontSize: '0.74rem', color: '#64748B', marginLeft: '40px' }}
                   >
                     Trợ lý Tuyển dụng AI
                   </div>
@@ -414,7 +428,7 @@ export default function FloatingAIChat({ user }) {
                   <div className="d-flex align-items-start gap-2 w-100">
                     {/* Model AI Avatar */}
                     <div
-                      className="rounded-circle overflow-hidden flex-shrink-0 shadow-2xs"
+                      className="rounded-circle overflow-hidden flex-shrink-0 shadow-2xs mt-0.5"
                       style={{
                         width: '32px',
                         height: '32px',
@@ -431,20 +445,23 @@ export default function FloatingAIChat({ user }) {
 
                     {/* Green Message Bubble */}
                     <div
-                      className="text-white p-2.5 shadow-2xs"
+                      className="text-white shadow-2xs"
                       style={{
-                        maxWidth: '84%',
+                        maxWidth: '85%',
                         backgroundColor: '#009e4f',
-                        borderRadius: '2px 14px 14px 14px',
-                        lineHeight: 1.45,
-                        fontSize: '0.85rem',
+                        borderRadius: '4px 16px 16px 16px',
+                        padding: '11px 14px',
+                        lineHeight: 1.55,
+                        fontSize: '0.865rem',
+                        overflowWrap: 'break-word',
+                        wordBreak: 'break-word',
                       }}
                     >
                       {formatMessageText(m.content, true)}
 
                       {/* Source attribution pills */}
                       {Array.isArray(m.sources) && m.sources.length > 0 && (
-                        <div className="mt-2 pt-1.5 border-top border-white border-opacity-25 d-flex flex-wrap gap-1">
+                        <div className="mt-2.5 pt-2 border-top border-white border-opacity-25 d-flex flex-wrap gap-1.5">
                           {m.sources.map((s, idx) => (
                             <SourcePill key={idx} source={s} onNavigate={() => setIsOpen(false)} />
                           ))}
@@ -467,12 +484,14 @@ export default function FloatingAIChat({ user }) {
                   style={{
                     backgroundColor: '#ffffff',
                     color: '#009e4f',
-                    border: '1px solid #009e4f',
+                    border: '1.5px solid #009e4f',
                     borderRadius: '8px',
-                    padding: '5px 12px',
-                    fontSize: '0.8rem',
+                    padding: '6px 14px',
+                    fontSize: '0.81rem',
                     fontWeight: 500,
-                    maxWidth: '85%',
+                    maxWidth: '90%',
+                    overflowWrap: 'break-word',
+                    wordBreak: 'break-word',
                     transition: 'all 0.15s ease',
                   }}
                   onMouseEnter={(e) => {

@@ -322,7 +322,8 @@ def answer_question(question: str, user: dict | None = None, history: list[dict]
         f"CÂU HỎI:\n{q}\n\n"
         f"LOẠI TRUY XUẤT:\n{intent}\n\n"
         f"CONTEXT TỪ HỆ THỐNG:\n\n{context_text}\n\n"
-        f"Hãy trả lời câu hỏi trên CHỈ dựa vào CONTEXT từ hệ thống. "
+        f"Hãy trả lời câu hỏi trên một cách tự nhiên, thân thiện, rõ ràng và mạch lạc, CHỈ dựa vào CONTEXT từ hệ thống. "
+        f"Đi thẳng vào câu trả lời, không dùng các câu mở đầu rập khuôn như 'Dựa trên dữ liệu hiện có...'. "
         f"Tuyệt đối không bịa đặt hoặc sử dụng thông tin bên ngoài."
     )
 
