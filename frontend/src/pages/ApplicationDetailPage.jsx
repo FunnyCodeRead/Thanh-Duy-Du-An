@@ -349,9 +349,9 @@ export default function ApplicationDetailPage() {
                 <div className="col-sm-4 text-muted fw-semibold">Kỹ năng:</div>
                 <div className="col-sm-8">
                   {candidate.skills ? (
-                    <div className="d-flex flex-wrap gap-1">
+                    <div className="d-flex flex-wrap gap-1.5">
                       {candidate.skills.split(',').map((sk, idx) => (
-                        <span key={idx} className="badge bg-light text-secondary border small fw-normal">
+                        <span key={idx} className="skill-pill">
                           {sk.trim()}
                         </span>
                       ))}

@@ -191,14 +191,14 @@ export default function JobsPage() {
                       </td>
                       <td>
                         {job.skills ? (
-                          <div className="d-flex flex-wrap gap-1">
+                          <div className="d-flex flex-wrap gap-1.5" style={{ maxWidth: '240px' }}>
                             {job.skills
                               .split(',')
                               .slice(0, 3)
                               .map((sk, idx) => (
                                 <span
                                   key={idx}
-                                  className="badge bg-light text-secondary border small fw-normal"
+                                  className="skill-pill"
                                 >
                                   {sk.trim()}
                                 </span>

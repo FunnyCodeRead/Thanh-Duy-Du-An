@@ -614,11 +614,105 @@ body {
   white-space: nowrap !important;
 }
 
-.btn-outline-danger:hover {
+/* Table Action / Pill Badges: Skill, Source, and CV Pills */
+.skill-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 0.3rem 0.75rem !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  line-height: 1.35 !important;
+  border-radius: 6px !important;
+  background-color: #f0f7ff !important;
+  color: #0369a1 !important;
+  border: 1px solid #bae6fd !important;
+  white-space: nowrap !important;
+  letter-spacing: 0.01em;
+  transition: all 0.15s ease-in-out !important;
+}
+
+.skill-pill:hover {
+  background-color: #e0f2fe !important;
+  border-color: #7dd3fc !important;
+  color: #0284c7 !important;
+  transform: translateY(-1px);
+}
+
+/* Distinct Colorful Source Badges */
+.source-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.45rem !important;
+  padding: 0.35rem 0.85rem !important;
+  border-radius: 9999px !important;
+  font-size: 0.815rem !important;
+  font-weight: 600 !important;
+  line-height: 1.3 !important;
+  white-space: nowrap !important;
+  border: 1px solid transparent !important;
+  letter-spacing: 0.01em;
+}
+
+.source-badge-linkedin {
+  background-color: #eff6ff !important;
+  color: #0a66c2 !important;
+  border-color: #bfdbfe !important;
+}
+
+.source-badge-facebook {
+  background-color: #eef2ff !important;
+  color: #1877f2 !important;
+  border-color: #c7d2fe !important;
+}
+
+.source-badge-website {
+  background-color: #ecfdf5 !important;
+  color: #059669 !important;
+  border-color: #a7f3d0 !important;
+}
+
+.source-badge-jobsite {
+  background-color: #fffbeb !important;
+  color: #d97706 !important;
+  border-color: #fde68a !important;
+}
+
+.source-badge-referral {
+  background-color: #faf5ff !important;
+  color: #7c3aed !important;
+  border-color: #ddd6fe !important;
+}
+
+.source-badge-default {
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* CV Pill Button */
+.btn-cv-pill {
+  background-color: #fef2f2 !important;
+  color: #dc2626 !important;
+  border: 1.5px solid #fecaca !important;
+  font-weight: 600 !important;
+  font-size: 0.825rem !important;
+  padding: 0.38rem 0.85rem !important;
+  border-radius: 6px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.4rem !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+  line-height: 1.3 !important;
+  transition: all 0.15s ease-in-out !important;
+}
+
+.btn-cv-pill:hover {
   background-color: #dc2626 !important;
-  border-color: #dc2626 !important;
   color: #ffffff !important;
+  border-color: #b91c1c !important;
   box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25) !important;
+  transform: translateY(-1px);
 }
 
 /* Forms & Inputs */

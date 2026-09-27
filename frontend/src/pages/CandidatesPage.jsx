@@ -6,12 +6,12 @@ import EmptyState from '../components/EmptyState'
 import { candidateApi, cvUrl } from '../services/api'
 
 const SOURCES = [
-  { value: 'LINKEDIN', label: 'LinkedIn', icon: 'bi-linkedin' },
-  { value: 'FACEBOOK', label: 'Facebook', icon: 'bi-facebook' },
-  { value: 'WEBSITE', label: 'Website công ty', icon: 'bi-globe2' },
-  { value: 'JOB_SITE', label: 'Trang tuyển dụng', icon: 'bi-briefcase' },
-  { value: 'REFERRAL', label: 'Giới thiệu', icon: 'bi-people' },
-  { value: 'OTHER', label: 'Khác', icon: 'bi-three-dots' },
+  { value: 'LINKEDIN', label: 'LinkedIn', icon: 'bi-linkedin', colorClass: 'source-badge-linkedin' },
+  { value: 'FACEBOOK', label: 'Facebook', icon: 'bi-facebook', colorClass: 'source-badge-facebook' },
+  { value: 'WEBSITE', label: 'Website công ty', icon: 'bi-globe2', colorClass: 'source-badge-website' },
+  { value: 'JOB_SITE', label: 'Trang tuyển dụng', icon: 'bi-briefcase-fill', colorClass: 'source-badge-jobsite' },
+  { value: 'REFERRAL', label: 'Giới thiệu', icon: 'bi-people-fill', colorClass: 'source-badge-referral' },
+  { value: 'OTHER', label: 'Khác', icon: 'bi-three-dots', colorClass: 'source-badge-default' },
 ]
 
 export default function CandidatesPage() {
@@ -189,53 +189,91 @@ export default function CandidatesPage() {
                       .toUpperCase()
 
                     const sourceItem = SOURCES.find((s) => s.value === c.source) || {
-                      label: c.source,
-                      icon: 'bi-tag',
+                      label: c.source || 'Chưa rõ',
+                      icon: 'bi-tag-fill',
+                      colorClass: 'source-badge-default',
                     }
 
                     return (
                       <tr key={c.id}>
                         <td>
-                          <div className="d-flex align-items-center gap-2.5">
-                            <div className="table-avatar-initials">{initials}</div>
+                          <div className="d-flex align-items-center gap-3">
+                            <div className="table-avatar-initials flex-shrink-0" style={{ width: '38px', height: '38px', fontSize: '0.88rem' }}>
+                              {initials}
+                            </div>
                             <div>
                               <Link
                                 to={`/candidates/${c.id}`}
-                                className="fw-bold text-dark text-decoration-none"
-                                style={{ transition: 'color 0.15s ease' }}
+                                className="fw-bold text-dark text-decoration-none d-block mb-1"
+                                style={{ fontSize: '0.94rem', transition: 'color 0.15s ease' }}
                                 onMouseEnter={(e) => (e.target.style.color = 'var(--primary)')}
                                 onMouseLeave={(e) => (e.target.style.color = 'var(--text-primary)')}
                               >
                                 {c.full_name}
                               </Link>
-                              <div className="text-muted small" style={{ fontSize: '0.75rem' }}>
-                                #{c.id}
-                              </div>
+                              <span
+                                className="badge rounded-pill fw-semibold"
+                                style={{
+                                  backgroundColor: '#EFF6FF',
+                                  color: '#2563EB',
+                                  border: '1px solid #BFDBFE',
+                                  fontSize: '0.72rem',
+                                  padding: '0.18rem 0.55rem',
+                                }}
+                              >
+                                ID #{c.id}
+                              </span>
                             </div>
                           </div>
                         </td>
                         <td>
-                          <div>
-                            <span className="small text-dark d-block">
-                              <i className="bi bi-envelope me-1.5 text-muted" />
-                              {c.email || '—'}
-                            </span>
-                            {c.phone && (
-                              <span className="small text-muted">
-                                <i className="bi bi-telephone me-1.5 text-muted" />
-                                {c.phone}
+                          <div className="d-flex flex-column gap-2 py-0.5">
+                            <div className="d-flex align-items-center gap-2">
+                              <span
+                                className="d-inline-flex align-items-center justify-content-center rounded-circle flex-shrink-0"
+                                style={{
+                                  width: '24px',
+                                  height: '24px',
+                                  backgroundColor: '#EFF6FF',
+                                  color: '#2563EB',
+                                  fontSize: '0.75rem',
+                                }}
+                              >
+                                <i className="bi bi-envelope-fill" />
                               </span>
+                              <span className="small fw-semibold text-dark text-truncate" style={{ maxWidth: '210px' }} title={c.email}>
+                                {c.email || '—'}
+                              </span>
+                            </div>
+                            {c.phone && (
+                              <div className="d-flex align-items-center gap-2">
+                                <span
+                                  className="d-inline-flex align-items-center justify-content-center rounded-circle flex-shrink-0"
+                                  style={{
+                                    width: '24px',
+                                    height: '24px',
+                                    backgroundColor: '#ECFDF5',
+                                    color: '#059669',
+                                    fontSize: '0.75rem',
+                                  }}
+                                >
+                                  <i className="bi bi-telephone-fill" />
+                                </span>
+                                <span className="small text-secondary fw-medium">
+                                  {c.phone}
+                                </span>
+                              </div>
                             )}
                           </div>
                         </td>
                         <td>
                           {c.skills ? (
-                            <div className="d-flex flex-wrap gap-1" style={{ maxWidth: '240px' }}>
+                            <div className="d-flex flex-wrap gap-1.5" style={{ maxWidth: '260px' }}>
                               {c.skills
                                 .split(',')
                                 .slice(0, 3)
                                 .map((sk, idx) => (
-                                  <span key={idx} className="badge bg-light text-secondary border small fw-normal">
+                                  <span key={idx} className="skill-pill">
                                     {sk.trim()}
                                   </span>
                                 ))}
@@ -245,9 +283,9 @@ export default function CandidatesPage() {
                           )}
                         </td>
                         <td>
-                          <span className="soft-badge soft-badge-secondary">
+                          <span className={`source-badge ${sourceItem.colorClass}`}>
                             <i className={`bi ${sourceItem.icon}`} />
-                            {sourceItem.label}
+                            <span>{sourceItem.label}</span>
                           </span>
                         </td>
                         <td>
@@ -256,11 +294,10 @@ export default function CandidatesPage() {
                               href={cvUrl(c.cv_file)}
                               target="_blank"
                               rel="noreferrer"
-                              className="btn btn-sm btn-outline-danger py-1 px-2.5 small d-inline-flex align-items-center gap-1.5"
-                              style={{ borderRadius: 'var(--radius-md)', fontSize: '0.8rem' }}
+                              className="btn-cv-pill"
                               title="Tải / Xem file CV"
                             >
-                              <i className="bi bi-file-earmark-pdf-fill text-danger" />
+                              <i className="bi bi-file-earmark-pdf-fill" />
                               <span>Xem CV</span>
                             </a>
                           ) : (
@@ -268,32 +305,34 @@ export default function CandidatesPage() {
                           )}
                         </td>
                         <td className="text-end text-nowrap">
-                          <Link
-                            to={`/candidates/${c.id}`}
-                            className="btn btn-table-action me-1 text-decoration-none"
-                          >
-                            <i className="bi bi-eye" />
-                            <span>Xem chi tiết</span>
-                          </Link>
-                          {canEdit && (
-                            <>
-                              <Link
-                                to={`/candidates/${c.id}/edit`}
-                                className="btn btn-table-edit me-1 text-decoration-none"
-                                title="Chỉnh sửa hồ sơ ứng viên"
-                              >
-                                <i className="bi bi-pencil" />
-                              </Link>
-                              <button
-                                type="button"
-                                className="btn btn-table-delete"
-                                onClick={() => setDeleteTarget(c)}
-                                title="Xóa ứng viên"
-                              >
-                                <i className="bi bi-trash3" />
-                              </button>
-                            </>
-                          )}
+                          <div className="d-inline-flex align-items-center gap-1.5">
+                            <Link
+                              to={`/candidates/${c.id}`}
+                              className="btn btn-table-action text-decoration-none"
+                            >
+                              <i className="bi bi-eye" />
+                              <span>Xem chi tiết</span>
+                            </Link>
+                            {canEdit && (
+                              <>
+                                <Link
+                                  to={`/candidates/${c.id}/edit`}
+                                  className="btn btn-table-edit text-decoration-none"
+                                  title="Chỉnh sửa hồ sơ ứng viên"
+                                >
+                                  <i className="bi bi-pencil" />
+                                </Link>
+                                <button
+                                  type="button"
+                                  className="btn btn-table-delete"
+                                  onClick={() => setDeleteTarget(c)}
+                                  title="Xóa ứng viên"
+                                >
+                                  <i className="bi bi-trash3" />
+                                </button>
+                              </>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     )
