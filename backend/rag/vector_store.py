@@ -126,9 +126,9 @@ def search_vectors(
     if query_vector.ndim == 1:
         query_vector = np.expand_dims(query_vector, axis=0)
 
-    # Search top N candidates in FAISS (search more if filter is active)
+    # Search top N candidates in FAISS (search all docs if filter is active)
     total_docs = len(documents)
-    search_k = min(total_docs, max(top_k * 4, 20)) if (filter_candidate_ids or filter_entity_types) else min(total_docs, top_k)
+    search_k = total_docs if (filter_candidate_ids or filter_entity_types) else min(total_docs, top_k)
 
     scores, indices = index.search(query_vector, search_k)
     results = []

@@ -86,7 +86,7 @@ function formatMessageText(text, isGreenBubble = false) {
 }
 
 function SourcePill({ source, onNavigate }) {
-  const { entity_type, entity_id, display_name } = source
+  const { entity_type, entity_id, display_name } = source || {}
   let targetPath = null
   let icon = 'bi-file-earmark'
 
@@ -102,6 +102,31 @@ function SourcePill({ source, onNavigate }) {
   } else if (entity_type === 'interview' && entity_id > 0) {
     targetPath = `/interviews/${entity_id}`
     icon = 'bi-calendar-event-fill'
+  } else if (entity_type === 'evaluation') {
+    icon = 'bi-clipboard-check-fill'
+    if (source?.application_id) {
+      targetPath = `/applications/${source.application_id}`
+    } else if (source?.candidate_id) {
+      targetPath = `/candidates/${source.candidate_id}`
+    }
+  }
+
+  const pillStyle = {
+    backgroundColor: 'rgba(255, 255, 255, 0.22)',
+    color: '#ffffff',
+    border: '1px solid rgba(255, 255, 255, 0.4)',
+    fontSize: '0.74rem',
+    borderRadius: '9999px',
+    padding: '3px 10px',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '5px',
+    textDecoration: 'none',
+    lineHeight: 1.35,
+    whiteSpace: 'normal',
+    wordBreak: 'break-word',
+    maxWidth: '100%',
+    transition: 'all 0.15s ease',
   }
 
   if (targetPath) {
@@ -109,27 +134,28 @@ function SourcePill({ source, onNavigate }) {
       <Link
         to={targetPath}
         onClick={onNavigate}
-        className="badge bg-white bg-opacity-25 text-white border border-white border-opacity-40 text-decoration-none px-2.5 py-1 rounded-pill d-inline-flex align-items-center gap-1.5 fw-normal"
-        style={{
-          fontSize: '0.72rem',
-          transition: 'all 0.15s ease',
-          whiteSpace: 'normal',
-          textAlign: 'left',
-          wordBreak: 'break-word',
-          maxWidth: '100%',
+        className="chat-source-pill"
+        style={pillStyle}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.35)'
+          e.currentTarget.style.color = '#ffffff'
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.22)'
+          e.currentTarget.style.color = '#ffffff'
         }}
       >
         <i className={`bi ${icon} flex-shrink-0`} />
         <span>{display_name}</span>
-        <i className="bi bi-arrow-up-right flex-shrink-0" style={{ fontSize: '0.55rem' }} />
+        <i className="bi bi-arrow-up-right flex-shrink-0" style={{ fontSize: '0.6rem', opacity: 0.85 }} />
       </Link>
     )
   }
 
   return (
     <span
-      className="badge bg-white bg-opacity-20 text-white border border-white border-opacity-25 px-2.5 py-1 rounded-pill d-inline-flex align-items-center gap-1.5 fw-normal"
-      style={{ fontSize: '0.72rem', whiteSpace: 'normal', textAlign: 'left', wordBreak: 'break-word', maxWidth: '100%' }}
+      className="chat-source-pill"
+      style={pillStyle}
     >
       <i className={`bi ${icon} flex-shrink-0`} />
       <span>{display_name}</span>

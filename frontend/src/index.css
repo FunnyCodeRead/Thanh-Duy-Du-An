@@ -1121,6 +1121,21 @@ body {
   background: transparent;
 }
 
+/* Chat Source Citation Pills (Glassmorphism on brand blue bubbles) */
+.chat-source-pill {
+  background-color: rgba(255, 255, 255, 0.22) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  text-decoration: none !important;
+  transition: all 0.15s ease;
+}
+
+.chat-source-pill:hover {
+  background-color: rgba(255, 255, 255, 0.35) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.65) !important;
+}
+
 /* Responsive Overrides */
 @media (max-width: 991.98px) {
   .app-body {
