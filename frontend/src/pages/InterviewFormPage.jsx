@@ -218,385 +218,366 @@ export default function InterviewFormPage() {
 
       {/* Main 2-Column Grid */}
       <div className="row g-4">
-        {/* Left Column: Input Form */}
+        {/* Left Column: Comprehensive Single Unified Form Card */}
         <div className="col-12 col-lg-8">
-          <form onSubmit={handleSubmit}>
-            {/* Card 1: Ứng viên & Hồ sơ ứng tuyển */}
-            <div className="card-modern mb-4">
-              <div className="card-modern-header">
-                <div className="d-flex align-items-center gap-2">
-                  <span
-                    className="d-inline-flex align-items-center justify-content-center rounded-2"
-                    style={{ width: '28px', height: '28px', backgroundColor: '#EFF6FF', color: '#2563EB' }}
-                  >
-                    <i className="bi bi-person-badge-fill" />
-                  </span>
-                  <span className="fw-bold">Ứng viên & Hồ sơ ứng tuyển</span>
-                </div>
-                <span className="text-danger small fw-semibold">* Bắt buộc</span>
+          <div className="card-modern shadow-xs">
+            <div className="card-modern-header">
+              <div className="d-flex align-items-center gap-2">
+                <span
+                  className="d-inline-flex align-items-center justify-content-center rounded-2"
+                  style={{ width: '28px', height: '28px', backgroundColor: '#EFF6FF', color: '#2563EB' }}
+                >
+                  <i className="bi bi-calendar-plus-fill" />
+                </span>
+                <span className="fw-bold">Thông tin chi tiết buổi phỏng vấn</span>
               </div>
+              <span className="text-danger small fw-semibold">* Trường bắt buộc</span>
+            </div>
 
-              <div className="card-modern-body">
-                {selectedApp && !showAppPicker ? (
-                  <div className="candidate-prefill-card">
-                    <div className="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3">
-                      <div className="d-flex align-items-center gap-3">
-                        <div
-                          className="table-avatar-initials flex-shrink-0"
-                          style={{
-                            width: '48px',
-                            height: '48px',
-                            fontSize: '1.1rem',
-                            background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
-                            color: '#ffffff',
-                            boxShadow: '0 2px 6px rgba(37, 99, 235, 0.25)',
-                          }}
-                        >
-                          {candidateInitials}
-                        </div>
-                        <div>
-                          <div className="d-flex align-items-center gap-2 flex-wrap mb-1">
-                            <span className="fw-bold text-dark fs-6">
-                              {selectedApp.candidate_name || 'Ứng viên'}
-                            </span>
-                            <span className="badge rounded-pill bg-white text-primary border border-primary-subtle fw-semibold px-2 py-0.5" style={{ fontSize: '0.72rem' }}>
-                              Hồ sơ #{selectedApp.id}
-                            </span>
-                            <StatusBadge status={selectedApp.status} />
+            <div className="card-modern-body p-4">
+              <form onSubmit={handleSubmit}>
+                {/* Section 1: Ứng viên & Hồ sơ */}
+                <div className="mb-4">
+                  <div className="d-flex align-items-center gap-2 mb-2.5">
+                    <i className="bi bi-person-badge text-primary" />
+                    <h6 className="fw-bold mb-0 text-dark">Ứng viên & Hồ sơ ứng tuyển</h6>
+                  </div>
+
+                  {selectedApp && !showAppPicker ? (
+                    <div className="candidate-prefill-card">
+                      <div className="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3">
+                        <div className="d-flex align-items-center gap-3">
+                          <div
+                            className="table-avatar-initials flex-shrink-0"
+                            style={{
+                              width: '50px',
+                              height: '50px',
+                              fontSize: '1.15rem',
+                              background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+                              color: '#ffffff',
+                              boxShadow: '0 3px 8px rgba(37, 99, 235, 0.25)',
+                            }}
+                          >
+                            {candidateInitials}
                           </div>
-                          <div className="text-secondary small d-flex align-items-center gap-2 flex-wrap">
-                            <span>
-                              <i className="bi bi-briefcase me-1 text-primary" />
-                              {selectedApp.job_title || 'Chưa rõ vị trí'}
-                            </span>
-                            {selectedApp.candidate_email && (
-                              <span>&bull; <i className="bi bi-envelope me-1" />{selectedApp.candidate_email}</span>
-                            )}
-                            {selectedApp.candidate_phone && (
-                              <span>&bull; <i className="bi bi-telephone me-1" />{selectedApp.candidate_phone}</span>
-                            )}
+                          <div>
+                            <div className="d-flex align-items-center gap-2 flex-wrap mb-1">
+                              <span className="fw-bold text-dark fs-6">
+                                {selectedApp.candidate_name || 'Ứng viên'}
+                              </span>
+                              <span className="badge rounded-pill bg-white text-primary border border-primary-subtle fw-semibold px-2 py-0.5" style={{ fontSize: '0.72rem' }}>
+                                Hồ sơ #{selectedApp.id}
+                              </span>
+                              <StatusBadge status={selectedApp.status} />
+                            </div>
+                            <div className="text-secondary small d-flex align-items-center gap-2 flex-wrap">
+                              <span>
+                                <i className="bi bi-briefcase me-1 text-primary" />
+                                {selectedApp.job_title || 'Chưa rõ vị trí'}
+                              </span>
+                              {selectedApp.candidate_email && (
+                                <span>&bull; <i className="bi bi-envelope me-1" />{selectedApp.candidate_email}</span>
+                              )}
+                              {selectedApp.candidate_phone && (
+                                <span>&bull; <i className="bi bi-telephone me-1" />{selectedApp.candidate_phone}</span>
+                              )}
+                            </div>
                           </div>
                         </div>
+
+                        {!isEdit && (
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 flex-shrink-0 text-decoration-none"
+                            onClick={() => setShowAppPicker(true)}
+                          >
+                            <i className="bi bi-arrow-repeat me-1" />
+                            <span>Đổi hồ sơ</span>
+                          </button>
+                        )}
                       </div>
-
-                      {!isEdit && (
+                    </div>
+                  ) : (
+                    <div>
+                      <select
+                        className="form-select"
+                        value={form.application_id}
+                        onChange={(e) => {
+                          setForm({ ...form, application_id: e.target.value })
+                          setShowAppPicker(false)
+                        }}
+                        disabled={isEdit}
+                        required
+                      >
+                        <option value="">-- Chọn hồ sơ ứng tuyển từ danh sách --</option>
+                        {applications.map((app) => (
+                          <option key={app.id} value={app.id}>
+                            #{app.id} - {app.candidate_name} ({app.job_title}) [{formatApplicationStatus(app.status)}]
+                          </option>
+                        ))}
+                      </select>
+                      {selectedApp && (
                         <button
                           type="button"
-                          className="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 flex-shrink-0 text-decoration-none"
-                          onClick={() => setShowAppPicker(true)}
+                          className="btn btn-sm btn-link text-muted p-0 mt-1.5 text-decoration-none small"
+                          onClick={() => setShowAppPicker(false)}
                         >
-                          <i className="bi bi-arrow-repeat me-1" />
-                          <span>Đổi hồ sơ</span>
+                          Quay lại thẻ ứng viên đã chọn
                         </button>
                       )}
                     </div>
-                  </div>
-                ) : (
-                  <div>
-                    <label className="form-label small fw-semibold text-secondary">
-                      Chọn hồ sơ ứng tuyển từ danh sách <span className="text-danger">*</span>
-                    </label>
-                    <select
-                      className="form-select"
-                      value={form.application_id}
-                      onChange={(e) => {
-                        setForm({ ...form, application_id: e.target.value })
-                        setShowAppPicker(false)
-                      }}
-                      disabled={isEdit}
-                      required
-                    >
-                      <option value="">-- Chọn hồ sơ ứng tuyển --</option>
-                      {applications.map((app) => (
-                        <option key={app.id} value={app.id}>
-                          #{app.id} - {app.candidate_name} ({app.job_title}) [{formatApplicationStatus(app.status)}]
-                        </option>
-                      ))}
-                    </select>
-                    {selectedApp && (
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-link text-muted p-0 mt-2 text-decoration-none small"
-                        onClick={() => setShowAppPicker(false)}
-                      >
-                        Quay lại thẻ ứng viên đã chọn
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Card 2: Thời gian & Phân công người phỏng vấn */}
-            <div className="card-modern mb-4">
-              <div className="card-modern-header">
-                <div className="d-flex align-items-center gap-2">
-                  <span
-                    className="d-inline-flex align-items-center justify-content-center rounded-2"
-                    style={{ width: '28px', height: '28px', backgroundColor: '#FEF3C7', color: '#D97706' }}
-                  >
-                    <i className="bi bi-calendar2-check-fill" />
-                  </span>
-                  <span className="fw-bold">Thời gian & Phân công phỏng vấn</span>
+                  )}
                 </div>
-              </div>
 
-              <div className="card-modern-body">
-                <div className="row g-3">
-                  {/* Người phỏng vấn phụ trách */}
-                  <div className="col-12 col-md-6">
-                    <label className="form-label small fw-semibold text-secondary">
-                      Người phỏng vấn phụ trách <span className="text-danger">*</span>
-                    </label>
-                    <select
-                      className="form-select"
-                      value={form.interviewer_id}
-                      onChange={(e) => setForm({ ...form, interviewer_id: e.target.value })}
-                      required
-                    >
-                      <option value="">-- Phân công người phỏng vấn --</option>
-                      {interviewers.map((u) => (
-                        <option key={u.id} value={u.id}>
-                          {u.full_name} ({u.email}) - {formatRole(u.role)}
-                        </option>
-                      ))}
-                    </select>
-                    {selectedInterviewer && (
-                      <div className="d-flex align-items-center gap-2 mt-1.5 small text-muted">
-                        <i className="bi bi-shield-check text-success" />
-                        <span>Vai trò: <strong className="text-dark">{formatRole(selectedInterviewer.role)}</strong></span>
+                <hr className="my-4 text-secondary-subtle" />
+
+                {/* Section 2: Người phỏng vấn & Thời gian */}
+                <div className="mb-4">
+                  <div className="d-flex align-items-center gap-2 mb-2.5">
+                    <i className="bi bi-calendar2-check text-warning" />
+                    <h6 className="fw-bold mb-0 text-dark">Thời gian & Phân công người phỏng vấn</h6>
+                  </div>
+
+                  <div className="row g-3">
+                    <div className="col-12 col-md-6">
+                      <label className="form-label small fw-semibold text-secondary">
+                        Người phỏng vấn phụ trách <span className="text-danger">*</span>
+                      </label>
+                      <select
+                        className="form-select"
+                        value={form.interviewer_id}
+                        onChange={(e) => setForm({ ...form, interviewer_id: e.target.value })}
+                        required
+                      >
+                        <option value="">-- Phân công người phỏng vấn --</option>
+                        {interviewers.map((u) => (
+                          <option key={u.id} value={u.id}>
+                            {u.full_name} ({u.email}) - {formatRole(u.role)}
+                          </option>
+                        ))}
+                      </select>
+                      {selectedInterviewer && (
+                        <div className="d-flex align-items-center gap-2 mt-1.5 small text-muted">
+                          <i className="bi bi-shield-check text-success" />
+                          <span>Vai trò: <strong className="text-dark">{formatRole(selectedInterviewer.role)}</strong></span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="col-12 col-md-6">
+                      <label className="form-label small fw-semibold text-secondary">
+                        Thời gian phỏng vấn <span className="text-danger">*</span>
+                      </label>
+                      <input
+                        type="datetime-local"
+                        className="form-control"
+                        value={form.interview_date}
+                        onChange={(e) => setForm({ ...form, interview_date: e.target.value })}
+                        required
+                      />
+                    </div>
+
+                    {/* Quick Datetime Preset Chips */}
+                    <div className="col-12 pt-1">
+                      <div className="text-muted small mb-1.5">
+                        <i className="bi bi-lightning-charge me-1 text-warning" />
+                        Gợi ý chọn nhanh thời gian:
                       </div>
-                    )}
+                      <div className="d-flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          className="preset-chip"
+                          onClick={() => setForm({ ...form, interview_date: getPresetDate(0, 14, 0) })}
+                        >
+                          <i className="bi bi-clock" />
+                          Hôm nay 14:00
+                        </button>
+                        <button
+                          type="button"
+                          className="preset-chip"
+                          onClick={() => setForm({ ...form, interview_date: getPresetDate(1, 9, 0) })}
+                        >
+                          <i className="bi bi-sun" />
+                          Ngày mai 09:00
+                        </button>
+                        <button
+                          type="button"
+                          className="preset-chip"
+                          onClick={() => setForm({ ...form, interview_date: getPresetDate(1, 14, 0) })}
+                        >
+                          <i className="bi bi-clock-history" />
+                          Ngày mai 14:00
+                        </button>
+                        <button
+                          type="button"
+                          className="preset-chip"
+                          onClick={() => setForm({ ...form, interview_date: getPresetDate(2, 10, 0) })}
+                        >
+                          <i className="bi bi-calendar-plus" />
+                          Ngày kia 10:00
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <hr className="my-4 text-secondary-subtle" />
+
+                {/* Section 3: Địa điểm & Hình thức họp */}
+                <div className="mb-4">
+                  <div className="d-flex align-items-center gap-2 mb-2.5">
+                    <i className="bi bi-geo-alt text-success" />
+                    <h6 className="fw-bold mb-0 text-dark">Địa điểm & Hình thức phỏng vấn</h6>
                   </div>
 
-                  {/* Thời gian phỏng vấn */}
-                  <div className="col-12 col-md-6">
+                  <div className="mb-2">
                     <label className="form-label small fw-semibold text-secondary">
-                      Thời gian phỏng vấn <span className="text-danger">*</span>
+                      Địa điểm hoặc Link phòng họp online (Google Meet, Zoom, MS Teams...)
                     </label>
-                    <input
-                      type="datetime-local"
-                      className="form-control"
-                      value={form.interview_date}
-                      onChange={(e) => setForm({ ...form, interview_date: e.target.value })}
-                      required
-                    />
+                    <div className="input-group">
+                      <span className="input-group-text bg-light text-muted">
+                        <i className="bi bi-link-45deg fs-6" />
+                      </span>
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Ví dụ: https://meet.google.com/xyz-abcd-efg hoặc Phòng họp 302, Tòa nhà A"
+                        value={form.location}
+                        onChange={(e) => setForm({ ...form, location: e.target.value })}
+                      />
+                    </div>
                   </div>
 
-                  {/* Quick Datetime Preset Chips */}
-                  <div className="col-12 pt-1">
+                  {/* Quick Location Presets */}
+                  <div className="mt-2.5">
                     <div className="text-muted small mb-1.5">
-                      <i className="bi bi-lightning-charge me-1 text-warning" />
-                      Gợi ý chọn nhanh thời gian:
+                      <i className="bi bi-pin-map me-1 text-success" />
+                      Chọn nhanh mẫu hình thức / phòng họp:
                     </div>
                     <div className="d-flex flex-wrap gap-2">
                       <button
                         type="button"
                         className="preset-chip"
-                        onClick={() => setForm({ ...form, interview_date: getPresetDate(0, 14, 0) })}
+                        onClick={() => setForm({ ...form, location: 'https://meet.google.com/ (Tạo link Google Meet)' })}
                       >
-                        <i className="bi bi-clock" />
-                        Hôm nay 14:00
+                        <i className="bi bi-camera-video text-primary" />
+                        Google Meet
                       </button>
                       <button
                         type="button"
                         className="preset-chip"
-                        onClick={() => setForm({ ...form, interview_date: getPresetDate(1, 9, 0) })}
+                        onClick={() => setForm({ ...form, location: 'https://zoom.us/j/ (Tạo link Zoom Meeting)' })}
                       >
-                        <i className="bi bi-sun" />
-                        Ngày mai 09:00
+                        <i className="bi bi-camera-video-fill text-info" />
+                        Zoom Meeting
                       </button>
                       <button
                         type="button"
                         className="preset-chip"
-                        onClick={() => setForm({ ...form, interview_date: getPresetDate(1, 14, 0) })}
+                        onClick={() => setForm({ ...form, location: 'Phòng họp 101 - Trụ sở chính (Tầng 1)' })}
                       >
-                        <i className="bi bi-clock-history" />
-                        Ngày mai 14:00
+                        <i className="bi bi-building text-secondary" />
+                        Phòng họp 101 (Tòa nhà A)
                       </button>
                       <button
                         type="button"
                         className="preset-chip"
-                        onClick={() => setForm({ ...form, interview_date: getPresetDate(2, 10, 0) })}
+                        onClick={() => setForm({ ...form, location: 'Phòng họp 202 - Khu vực phỏng vấn (Tầng 2)' })}
                       >
-                        <i className="bi bi-calendar-plus" />
-                        Ngày kia 10:00
+                        <i className="bi bi-door-open text-secondary" />
+                        Phòng họp 202 (Tầng 2)
                       </button>
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
 
-            {/* Card 3: Địa điểm & Hình thức phỏng vấn */}
-            <div className="card-modern mb-4">
-              <div className="card-modern-header">
-                <div className="d-flex align-items-center gap-2">
-                  <span
-                    className="d-inline-flex align-items-center justify-content-center rounded-2"
-                    style={{ width: '28px', height: '28px', backgroundColor: '#ECFDF5', color: '#059669' }}
-                  >
-                    <i className="bi bi-geo-alt-fill" />
-                  </span>
-                  <span className="fw-bold">Địa điểm & Hình thức phỏng vấn</span>
-                </div>
-              </div>
+                <hr className="my-4 text-secondary-subtle" />
 
-              <div className="card-modern-body">
-                <div className="mb-2">
-                  <label className="form-label small fw-semibold text-secondary">
-                    Địa điểm hoặc Link phòng họp online (Google Meet, Zoom, MS Teams...)
-                  </label>
-                  <div className="input-group">
-                    <span className="input-group-text bg-light text-muted">
-                      <i className="bi bi-link-45deg fs-6" />
-                    </span>
-                    <input
-                      type="text"
+                {/* Section 4: Ghi chú nội bộ */}
+                <div className="mb-4">
+                  <div className="d-flex align-items-center gap-2 mb-2.5">
+                    <i className="bi bi-journal-text text-purple" />
+                    <h6 className="fw-bold mb-0 text-dark">Ghi chú & Trọng tâm đánh giá</h6>
+                  </div>
+
+                  <div className="mb-2">
+                    <label className="form-label small fw-semibold text-secondary">
+                      Ghi chú nội bộ cho buổi phỏng vấn
+                    </label>
+                    <textarea
                       className="form-control"
-                      placeholder="Ví dụ: https://meet.google.com/xyz-abcd-efg hoặc Phòng họp 302, Tòa nhà A"
-                      value={form.location}
-                      onChange={(e) => setForm({ ...form, location: e.target.value })}
+                      rows="3"
+                      placeholder="Ghi chú nội bộ cho hội đồng phỏng vấn: Trọng tâm đánh giá, bài test kỹ năng, tài liệu tham khảo..."
+                      value={form.note}
+                      onChange={(e) => setForm({ ...form, note: e.target.value })}
+                      style={{ height: 'auto', lineHeight: '1.6' }}
                     />
                   </div>
-                </div>
 
-                {/* Quick Location Presets */}
-                <div className="mt-2.5">
-                  <div className="text-muted small mb-1.5">
-                    <i className="bi bi-pin-map me-1 text-success" />
-                    Chọn nhanh mẫu địa điểm / hình thức:
-                  </div>
-                  <div className="d-flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      className="preset-chip"
-                      onClick={() => setForm({ ...form, location: 'https://meet.google.com/ (Tạo link Google Meet)' })}
-                    >
-                      <i className="bi bi-camera-video text-primary" />
-                      Google Meet
-                    </button>
-                    <button
-                      type="button"
-                      className="preset-chip"
-                      onClick={() => setForm({ ...form, location: 'https://zoom.us/j/ (Tạo link Zoom Meeting)' })}
-                    >
-                      <i className="bi bi-camera-video-fill text-info" />
-                      Zoom Meeting
-                    </button>
-                    <button
-                      type="button"
-                      className="preset-chip"
-                      onClick={() => setForm({ ...form, location: 'Phòng họp 101 - Trụ sở chính (Tầng 1)' })}
-                    >
-                      <i className="bi bi-building text-secondary" />
-                      Phòng họp 101 (Tòa nhà A)
-                    </button>
-                    <button
-                      type="button"
-                      className="preset-chip"
-                      onClick={() => setForm({ ...form, location: 'Phòng họp 202 - Khu vực phỏng vấn (Tầng 2)' })}
-                    >
-                      <i className="bi bi-door-open text-secondary" />
-                      Phòng họp 202 (Tầng 2)
-                    </button>
+                  {/* Quick Note Presets */}
+                  <div className="mt-2.5">
+                    <div className="text-muted small mb-1.5">Mẫu ghi chú nhanh:</div>
+                    <div className="d-flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        className="preset-chip"
+                        onClick={() =>
+                          setForm({
+                            ...form,
+                            note: 'Phỏng vấn chuyên môn kỹ thuật: Đánh giá kiến thức nền tảng, kinh nghiệm thực chiến và giải quyết bài toán thực tế.',
+                          })
+                        }
+                      >
+                        + Chuyên môn kỹ thuật
+                      </button>
+                      <button
+                        type="button"
+                        className="preset-chip"
+                        onClick={() =>
+                          setForm({
+                            ...form,
+                            note: 'Phỏng vấn văn hóa & Kỹ năng mềm: Đánh giá mức độ phù hợp văn hóa doanh nghiệp, khả năng giao tiếp và làm việc nhóm.',
+                          })
+                        }
+                      >
+                        + Văn hóa & Kỹ năng mềm
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
 
-            {/* Card 4: Ghi chú & Trọng tâm buổi phỏng vấn */}
-            <div className="card-modern mb-4">
-              <div className="card-modern-header">
-                <div className="d-flex align-items-center gap-2">
-                  <span
-                    className="d-inline-flex align-items-center justify-content-center rounded-2"
-                    style={{ width: '28px', height: '28px', backgroundColor: '#EDE9FE', color: '#7C3AED' }}
+                {/* Bottom Action Bar */}
+                <div className="d-flex align-items-center justify-content-between pt-3 border-top mt-4">
+                  <Link to={backLink} className="btn btn-secondary-modern">
+                    Hủy bỏ
+                  </Link>
+                  <button
+                    type="submit"
+                    className="btn btn-primary-modern px-4 py-2"
+                    disabled={submitting}
                   >
-                    <i className="bi bi-journal-text" />
-                  </span>
-                  <span className="fw-bold">Ghi chú & Trọng tâm đánh giá</span>
+                    {submitting ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm me-1.5" role="status" />
+                        Đang lưu lịch...
+                      </>
+                    ) : (
+                      <>
+                        <i className="bi bi-calendar2-check-fill me-1.5" />
+                        <span>{isEdit ? 'Cập nhật lịch phỏng vấn' : 'Xác nhận & Lưu lịch phỏng vấn'}</span>
+                      </>
+                    )}
+                  </button>
                 </div>
-              </div>
-
-              <div className="card-modern-body">
-                <div className="mb-2">
-                  <label className="form-label small fw-semibold text-secondary">
-                    Ghi chú nội bộ cho buổi phỏng vấn
-                  </label>
-                  <textarea
-                    className="form-control"
-                    rows="3"
-                    placeholder="Ghi chú nội bộ cho hội đồng phỏng vấn: Trọng tâm đánh giá, bài test kỹ năng, tài liệu tham khảo..."
-                    value={form.note}
-                    onChange={(e) => setForm({ ...form, note: e.target.value })}
-                    style={{ height: 'auto', lineHeight: '1.6' }}
-                  />
-                </div>
-
-                {/* Quick Note Presets */}
-                <div className="mt-2.5">
-                  <div className="text-muted small mb-1.5">Mẫu ghi chú nhanh:</div>
-                  <div className="d-flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      className="preset-chip"
-                      onClick={() =>
-                        setForm({
-                          ...form,
-                          note: 'Phỏng vấn chuyên môn kỹ thuật: Đánh giá kiến thức nền tảng, kinh nghiệm thực chiến và giải quyết bài toán thực tế.',
-                        })
-                      }
-                    >
-                      + Chuyên môn kỹ thuật
-                    </button>
-                    <button
-                      type="button"
-                      className="preset-chip"
-                      onClick={() =>
-                        setForm({
-                          ...form,
-                          note: 'Phỏng vấn văn hóa & Kỹ năng mềm: Đánh giá mức độ phù hợp văn hóa doanh nghiệp, khả năng giao tiếp và làm việc nhóm.',
-                        })
-                      }
-                    >
-                      + Văn hóa & Kỹ năng mềm
-                    </button>
-                  </div>
-                </div>
-              </div>
+              </form>
             </div>
-
-            {/* Action Bar */}
-            <div className="d-flex align-items-center justify-content-between p-3 rounded-3 bg-white border shadow-xs">
-              <Link to={backLink} className="btn btn-secondary-modern">
-                Hủy bỏ
-              </Link>
-              <button
-                type="submit"
-                className="btn btn-primary-modern px-4 py-2"
-                disabled={submitting}
-              >
-                {submitting ? (
-                  <>
-                    <span className="spinner-border spinner-border-sm me-1.5" role="status" />
-                    Đang lưu lịch...
-                  </>
-                ) : (
-                  <>
-                    <i className="bi bi-calendar2-check-fill me-1.5" />
-                    <span>{isEdit ? 'Cập nhật lịch phỏng vấn' : 'Xác nhận & Lưu lịch phỏng vấn'}</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </form>
+          </div>
         </div>
 
-        {/* Right Column: Live Schedule Preview & Next Steps */}
+        {/* Right Column: Unified Single Sidebar Card (NO overlapping!) */}
         <div className="col-12 col-lg-4">
-          {/* Card: Live Schedule Preview */}
-          <div className="interview-preview-card mb-4">
+          <div className="interview-preview-card">
+            {/* Header banner */}
             <div className="interview-preview-header">
               <div className="d-flex justify-content-between align-items-center mb-1">
                 <span className="badge rounded-pill bg-white text-primary fw-bold px-2.5 py-1" style={{ fontSize: '0.72rem' }}>
@@ -633,7 +614,7 @@ export default function InterviewFormPage() {
               </div>
 
               {/* Summary Details List */}
-              <div className="d-flex flex-column gap-2.5 small pt-1">
+              <div className="d-flex flex-column gap-2.5 small">
                 {/* Candidate */}
                 <div className="d-flex justify-content-between align-items-start border-bottom pb-2">
                   <span className="text-secondary">Ứng viên:</span>
@@ -668,84 +649,77 @@ export default function InterviewFormPage() {
                 </div>
 
                 {/* Location */}
-                <div className="d-flex justify-content-between align-items-start">
+                <div className="d-flex justify-content-between align-items-start pb-2">
                   <span className="text-secondary">Địa điểm / Link:</span>
                   <span className="text-dark text-end text-break" style={{ maxWidth: '170px' }}>
                     {form.location || 'Chưa nhập địa điểm'}
                   </span>
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Card: Next Steps Workflow */}
-          <div className="card-modern mb-4">
-            <div className="card-modern-header">
-              <div className="d-flex align-items-center gap-2">
-                <i className="bi bi-diagram-3-fill text-primary" />
-                <span className="fw-bold">Quy trình sau khi lên lịch</span>
-              </div>
-            </div>
-            <div className="card-modern-body">
-              <div className="d-flex flex-column gap-3 small">
-                <div className="d-flex align-items-start gap-2.5">
-                  <span
-                    className="d-inline-flex align-items-center justify-content-center rounded-circle flex-shrink-0 fw-bold"
-                    style={{ width: '22px', height: '22px', backgroundColor: '#EFF6FF', color: '#2563EB', fontSize: '0.75rem' }}
-                  >
-                    1
-                  </span>
-                  <div>
-                    <strong className="text-dark d-block">Lưu lịch vào hệ thống</strong>
-                    <span className="text-muted">Hồ sơ ứng tuyển tự động chuyển sang giai đoạn Phỏng vấn.</span>
-                  </div>
+              <hr className="my-3 text-secondary-subtle" />
+
+              {/* Section: Quy trình sau khi lên lịch */}
+              <div className="mb-3">
+                <div className="fw-bold text-dark small mb-2 d-flex align-items-center gap-1.5">
+                  <i className="bi bi-diagram-3-fill text-primary" />
+                  <span>Quy trình sau khi lên lịch</span>
                 </div>
-
-                <div className="d-flex align-items-start gap-2.5">
-                  <span
-                    className="d-inline-flex align-items-center justify-content-center rounded-circle flex-shrink-0 fw-bold"
-                    style={{ width: '22px', height: '22px', backgroundColor: '#EFF6FF', color: '#2563EB', fontSize: '0.75rem' }}
-                  >
-                    2
-                  </span>
-                  <div>
-                    <strong className="text-dark d-block">Gửi email mời phỏng vấn</strong>
-                    <span className="text-muted">Dùng trợ lý Gemini AI để soạn sẵn thư mời với đầy đủ link và ngày giờ.</span>
+                <div className="d-flex flex-column gap-2 small">
+                  <div className="d-flex align-items-start gap-2">
+                    <span
+                      className="d-inline-flex align-items-center justify-content-center rounded-circle flex-shrink-0 fw-bold"
+                      style={{ width: '20px', height: '20px', backgroundColor: '#EFF6FF', color: '#2563EB', fontSize: '0.72rem' }}
+                    >
+                      1
+                    </span>
+                    <span className="text-secondary">
+                      Hồ sơ tự động chuyển sang trạng thái <strong>Phỏng vấn</strong>.
+                    </span>
                   </div>
-                </div>
-
-                <div className="d-flex align-items-start gap-2.5">
-                  <span
-                    className="d-inline-flex align-items-center justify-content-center rounded-circle flex-shrink-0 fw-bold"
-                    style={{ width: '22px', height: '22px', backgroundColor: '#EFF6FF', color: '#2563EB', fontSize: '0.75rem' }}
-                  >
-                    3
-                  </span>
-                  <div>
-                    <strong className="text-dark d-block">Ghi nhận đánh giá năng lực</strong>
-                    <span className="text-muted">Chấm điểm chuyên môn, kỹ năng giao tiếp sau khi phỏng vấn xong.</span>
+                  <div className="d-flex align-items-start gap-2">
+                    <span
+                      className="d-inline-flex align-items-center justify-content-center rounded-circle flex-shrink-0 fw-bold"
+                      style={{ width: '20px', height: '20px', backgroundColor: '#EFF6FF', color: '#2563EB', fontSize: '0.72rem' }}
+                    >
+                      2
+                    </span>
+                    <span className="text-secondary">
+                      Soạn và gửi email mời phỏng vấn bằng trợ lý Gemini AI.
+                    </span>
+                  </div>
+                  <div className="d-flex align-items-start gap-2">
+                    <span
+                      className="d-inline-flex align-items-center justify-content-center rounded-circle flex-shrink-0 fw-bold"
+                      style={{ width: '20px', height: '20px', backgroundColor: '#EFF6FF', color: '#2563EB', fontSize: '0.72rem' }}
+                    >
+                      3
+                    </span>
+                    <span className="text-secondary">
+                      Chấm điểm và ghi nhận đánh giá năng lực sau buổi phỏng vấn.
+                    </span>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Card: AI Assistant Tip */}
-          <div className="candidate-ai-card p-3.5">
-            <div className="d-flex align-items-center gap-2 mb-2">
-              <span
-                className="d-inline-flex align-items-center justify-content-center rounded-2"
-                style={{ width: '28px', height: '28px', backgroundColor: '#EDE9FE', color: '#7C3AED' }}
+              <hr className="my-3 text-secondary-subtle" />
+
+              {/* Section: Mẹo chuẩn bị phỏng vấn */}
+              <div
+                className="p-3 rounded-3"
+                style={{ backgroundColor: '#F5F3FF', border: '1px solid #EDE9FE' }}
               >
-                <i className="bi bi-stars" />
-              </span>
-              <span className="fw-bold text-dark" style={{ color: '#5B21B6' }}>
-                Mẹo chuẩn bị phỏng vấn
-              </span>
+                <div className="d-flex align-items-center gap-1.5 mb-1">
+                  <i className="bi bi-stars text-purple" />
+                  <span className="fw-bold small" style={{ color: '#6D28D9' }}>
+                    Mẹo từ Trợ lý AI
+                  </span>
+                </div>
+                <p className="small text-secondary mb-0" style={{ lineHeight: 1.5, fontSize: '0.825rem' }}>
+                  Sau khi lưu lịch, bạn có thể tạo 5 câu hỏi phỏng vấn trọng tâm theo CV ứng viên bằng AI tại trang chi tiết hồ sơ.
+                </p>
+              </div>
             </div>
-            <p className="text-secondary small mb-0" style={{ lineHeight: 1.55 }}>
-              Bạn có thể sử dụng chức năng <strong>Gợi ý câu hỏi phỏng vấn</strong> của Trợ lý AI tại trang chi tiết hồ sơ để chuẩn bị 5 câu hỏi trọng tâm nhất theo đúng CV ứng viên.
-            </p>
           </div>
         </div>
       </div>

@@ -1093,8 +1093,6 @@ body {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
   overflow: hidden;
-  position: sticky;
-  top: 1.5rem;
 }
 
 .interview-preview-header {
