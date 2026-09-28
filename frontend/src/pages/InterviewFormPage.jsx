@@ -574,150 +574,139 @@ export default function InterviewFormPage() {
           </div>
         </div>
 
-        {/* Right Column: Unified Single Sidebar Card (NO overlapping!) */}
+        {/* Right Column: Unified Clean Summary Card */}
         <div className="col-12 col-lg-4">
-          <div className="interview-preview-card">
-            {/* Header banner */}
-            <div className="interview-preview-header">
-              <div className="d-flex justify-content-between align-items-center mb-1">
-                <span className="badge rounded-pill bg-white text-primary fw-bold px-2.5 py-1" style={{ fontSize: '0.72rem' }}>
-                  XEM TRƯỚC LỊCH
+          <div className="card-modern shadow-xs mb-4">
+            <div className="card-modern-header">
+              <div className="d-flex align-items-center gap-2">
+                <span
+                  className="d-inline-flex align-items-center justify-content-center rounded-2"
+                  style={{ width: '28px', height: '28px', backgroundColor: '#EFF6FF', color: '#2563EB' }}
+                >
+                  <i className="bi bi-calendar2-check-fill" />
                 </span>
-                <span className="badge rounded-pill bg-success text-white fw-semibold px-2 py-0.5" style={{ fontSize: '0.72rem' }}>
-                  Đã lên lịch
-                </span>
+                <span className="fw-bold">Tóm tắt lịch phỏng vấn</span>
               </div>
-              <h6 className="fw-bold mb-0 text-white" style={{ letterSpacing: '-0.01em' }}>
-                Phiếu Lịch hẹn Phỏng vấn
-              </h6>
+              <span
+                className="badge rounded-pill fw-semibold px-2.5 py-1"
+                style={{ backgroundColor: '#EFF6FF', color: '#2563EB', border: '1px solid #BFDBFE', fontSize: '0.72rem' }}
+              >
+                Bản nháp
+              </span>
             </div>
 
-            <div className="p-3.5">
-              {/* Date & Time display */}
-              <div className="interview-date-display mb-3">
-                <div className="interview-calendar-badge">
-                  <div className="interview-calendar-month">
-                    {datePreview?.month || 'THỜI GIAN'}
-                  </div>
-                  <div className="interview-calendar-day">
-                    {datePreview?.day || '—'}
-                  </div>
+            <div className="card-modern-body p-3.5">
+              {/* Date & Time Highlight Box */}
+              <div
+                className="p-3 rounded-3 mb-3"
+                style={{ backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0' }}
+              >
+                <div className="d-flex align-items-center gap-1.5 text-primary small fw-semibold mb-1">
+                  <i className="bi bi-clock-fill" />
+                  <span>Thời gian dự kiến:</span>
                 </div>
-                <div>
-                  <div className="fw-bold text-dark" style={{ fontSize: '0.94rem' }}>
-                    {datePreview ? datePreview.fullDateStr : 'Chưa chọn thời gian'}
+                {datePreview ? (
+                  <div className="fw-bold text-dark fs-6" style={{ letterSpacing: '-0.01em' }}>
+                    {datePreview.fullDateStr}
                   </div>
-                  <div className="text-muted small">
-                    {datePreview ? 'Thời gian phỏng vấn dự kiến' : 'Vui lòng chọn ngày và giờ'}
+                ) : (
+                  <div className="text-muted small fst-italic">
+                    Chưa chọn ngày và giờ (vui lòng chọn ở biểu mẫu)
                   </div>
-                </div>
+                )}
               </div>
 
-              {/* Summary Details List */}
-              <div className="d-flex flex-column gap-2.5 small">
-                {/* Candidate */}
-                <div className="d-flex justify-content-between align-items-start border-bottom pb-2">
-                  <span className="text-secondary">Ứng viên:</span>
-                  <span className="fw-bold text-dark text-end">
-                    {selectedApp?.candidate_name || 'Chưa chọn'}
-                  </span>
+              {/* Candidate Info Tile */}
+              <div className="p-2.5 rounded-3 mb-2.5 bg-white border">
+                <div className="text-muted small fw-medium mb-1 d-flex align-items-center gap-1.5">
+                  <i className="bi bi-person-fill text-primary" />
+                  <span>Ứng viên phỏng vấn:</span>
                 </div>
-
-                {/* Job Position */}
-                <div className="d-flex justify-content-between align-items-start border-bottom pb-2">
-                  <span className="text-secondary">Vị trí:</span>
-                  <span className="fw-semibold text-primary text-end">
-                    {selectedApp?.job_title || 'Chưa chọn'}
-                  </span>
+                <div className="fw-bold text-dark" style={{ fontSize: '0.94rem' }}>
+                  {selectedApp?.candidate_name || 'Chưa chọn ứng viên'}
                 </div>
+                {selectedApp && (
+                  <div className="text-secondary small mt-0.5">
+                    Vị trí: <strong className="text-primary">{selectedApp.job_title}</strong>
+                  </div>
+                )}
+              </div>
 
-                {/* Interviewer */}
-                <div className="d-flex justify-content-between align-items-start border-bottom pb-2">
-                  <span className="text-secondary">Phụ trách:</span>
-                  <span className="fw-semibold text-dark text-end">
-                    {selectedInterviewer ? (
-                      <>
-                        {selectedInterviewer.full_name}
-                        <span className="d-block text-muted" style={{ fontSize: '0.75rem' }}>
-                          {formatRole(selectedInterviewer.role)}
-                        </span>
-                      </>
+              {/* Interviewer Tile */}
+              <div className="p-2.5 rounded-3 mb-2.5 bg-white border">
+                <div className="text-muted small fw-medium mb-1 d-flex align-items-center gap-1.5">
+                  <i className="bi bi-person-check-fill text-success" />
+                  <span>Người phỏng vấn phụ trách:</span>
+                </div>
+                <div className="fw-semibold text-dark" style={{ fontSize: '0.92rem' }}>
+                  {selectedInterviewer ? selectedInterviewer.full_name : 'Chưa phân công'}
+                </div>
+                {selectedInterviewer && (
+                  <div className="mt-1">
+                    <span
+                      className="badge rounded-pill bg-light text-secondary border fw-medium px-2 py-0.5"
+                      style={{ fontSize: '0.72rem' }}
+                    >
+                      {formatRole(selectedInterviewer.role)}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Location Tile */}
+              <div className="p-2.5 rounded-3 mb-3 bg-white border">
+                <div className="text-muted small fw-medium mb-1 d-flex align-items-center gap-1.5">
+                  <i className="bi bi-geo-alt-fill text-danger" />
+                  <span>Địa điểm / Link họp:</span>
+                </div>
+                <div className="text-dark small text-break fw-medium" style={{ lineHeight: 1.5 }}>
+                  {form.location ? (
+                    form.location.startsWith('http') ? (
+                      <a href={form.location} target="_blank" rel="noreferrer" className="text-primary text-decoration-none">
+                        <i className="bi bi-box-arrow-up-right me-1" />
+                        {form.location}
+                      </a>
                     ) : (
-                      'Chưa phân công'
-                    )}
-                  </span>
-                </div>
-
-                {/* Location */}
-                <div className="d-flex justify-content-between align-items-start pb-2">
-                  <span className="text-secondary">Địa điểm / Link:</span>
-                  <span className="text-dark text-end text-break" style={{ maxWidth: '170px' }}>
-                    {form.location || 'Chưa nhập địa điểm'}
-                  </span>
+                      form.location
+                    )
+                  ) : (
+                    <span className="text-muted fst-italic">Chưa nhập địa điểm hoặc link</span>
+                  )}
                 </div>
               </div>
 
-              <hr className="my-3 text-secondary-subtle" />
-
-              {/* Section: Quy trình sau khi lên lịch */}
-              <div className="mb-3">
+              {/* Next Steps Workflow */}
+              <div className="pt-2 border-top">
                 <div className="fw-bold text-dark small mb-2 d-flex align-items-center gap-1.5">
                   <i className="bi bi-diagram-3-fill text-primary" />
-                  <span>Quy trình sau khi lên lịch</span>
+                  <span>Quy trình sau khi lưu lịch:</span>
                 </div>
                 <div className="d-flex flex-column gap-2 small">
-                  <div className="d-flex align-items-start gap-2">
-                    <span
-                      className="d-inline-flex align-items-center justify-content-center rounded-circle flex-shrink-0 fw-bold"
-                      style={{ width: '20px', height: '20px', backgroundColor: '#EFF6FF', color: '#2563EB', fontSize: '0.72rem' }}
-                    >
-                      1
-                    </span>
-                    <span className="text-secondary">
-                      Hồ sơ tự động chuyển sang trạng thái <strong>Phỏng vấn</strong>.
-                    </span>
+                  <div className="d-flex align-items-start gap-2 text-secondary">
+                    <i className="bi bi-check-circle-fill text-primary mt-0.5 flex-shrink-0" style={{ fontSize: '0.85rem' }} />
+                    <span>Hồ sơ tự động chuyển sang trạng thái <strong>Phỏng vấn</strong>.</span>
                   </div>
-                  <div className="d-flex align-items-start gap-2">
-                    <span
-                      className="d-inline-flex align-items-center justify-content-center rounded-circle flex-shrink-0 fw-bold"
-                      style={{ width: '20px', height: '20px', backgroundColor: '#EFF6FF', color: '#2563EB', fontSize: '0.72rem' }}
-                    >
-                      2
-                    </span>
-                    <span className="text-secondary">
-                      Soạn và gửi email mời phỏng vấn bằng trợ lý Gemini AI.
-                    </span>
+                  <div className="d-flex align-items-start gap-2 text-secondary">
+                    <i className="bi bi-check-circle-fill text-primary mt-0.5 flex-shrink-0" style={{ fontSize: '0.85rem' }} />
+                    <span>Dùng AI soạn email mời có sẵn link và ngày giờ.</span>
                   </div>
-                  <div className="d-flex align-items-start gap-2">
-                    <span
-                      className="d-inline-flex align-items-center justify-content-center rounded-circle flex-shrink-0 fw-bold"
-                      style={{ width: '20px', height: '20px', backgroundColor: '#EFF6FF', color: '#2563EB', fontSize: '0.72rem' }}
-                    >
-                      3
-                    </span>
-                    <span className="text-secondary">
-                      Chấm điểm và ghi nhận đánh giá năng lực sau buổi phỏng vấn.
-                    </span>
+                  <div className="d-flex align-items-start gap-2 text-secondary">
+                    <i className="bi bi-check-circle-fill text-primary mt-0.5 flex-shrink-0" style={{ fontSize: '0.85rem' }} />
+                    <span>Ghi nhận đánh giá & chấm điểm sau buổi phỏng vấn.</span>
                   </div>
                 </div>
               </div>
 
-              <hr className="my-3 text-secondary-subtle" />
-
-              {/* Section: Mẹo chuẩn bị phỏng vấn */}
+              {/* AI Assistant Tip Callout */}
               <div
-                className="p-3 rounded-3"
-                style={{ backgroundColor: '#F5F3FF', border: '1px solid #EDE9FE' }}
+                className="p-2.5 rounded-3 mt-3 d-flex align-items-start gap-2"
+                style={{ backgroundColor: '#FAF5FF', border: '1px solid #EDE9FE' }}
               >
-                <div className="d-flex align-items-center gap-1.5 mb-1">
-                  <i className="bi bi-stars text-purple" />
-                  <span className="fw-bold small" style={{ color: '#6D28D9' }}>
-                    Mẹo từ Trợ lý AI
-                  </span>
+                <i className="bi bi-stars mt-0.5 flex-shrink-0" style={{ color: '#7C3AED' }} />
+                <div className="small text-secondary" style={{ lineHeight: 1.5, fontSize: '0.8rem' }}>
+                  <strong className="d-block text-dark" style={{ color: '#5B21B6' }}>Mẹo chuẩn bị phỏng vấn</strong>
+                  Sau khi lưu, bạn có thể tạo trước 5 câu hỏi trọng tâm theo CV bằng AI tại chi tiết hồ sơ.
                 </div>
-                <p className="small text-secondary mb-0" style={{ lineHeight: 1.5, fontSize: '0.825rem' }}>
-                  Sau khi lưu lịch, bạn có thể tạo 5 câu hỏi phỏng vấn trọng tâm theo CV ứng viên bằng AI tại trang chi tiết hồ sơ.
-                </p>
               </div>
             </div>
           </div>
