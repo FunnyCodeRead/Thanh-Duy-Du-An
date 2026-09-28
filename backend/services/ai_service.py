@@ -127,7 +127,7 @@ def generate_email(application_id: int, email_type: str) -> dict:
         if "[RESULT]" in full_template:
             result_section = full_template.split("[RESULT]")[1].strip()
 
-        status_text = "ĐẠT (PASSED)" if status == "PASSED" else "KHÔNG ĐẠT (REJECTED)"
+        status_text = "Trúng tuyển" if status == "PASSED" else "Từ chối"
         prompt = result_section.format(
             candidate_name=candidate.get("full_name", "Ứng viên"),
             job_title=job.get("title", ""),

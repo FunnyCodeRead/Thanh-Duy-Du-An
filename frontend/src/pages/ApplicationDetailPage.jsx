@@ -79,6 +79,11 @@ export default function ApplicationDetailPage() {
         const current = appRes.data?.status
         const availableNext = nextStatusMap[current] || []
         setSelectedStatus(availableNext[0] || '')
+        if (['PASSED', 'REJECTED'].includes(current)) {
+          setEmailType('RESULT')
+        } else {
+          setEmailType('INTERVIEW_INVITATION')
+        }
         setInterviews(intRes.data || [])
         const results = aiRes.data || []
         setAiResults(results)
@@ -143,7 +148,7 @@ export default function ApplicationDetailPage() {
 
   async function handleGenerateEmail() {
     if (emailType === 'RESULT' && !['PASSED', 'REJECTED'].includes(currentStatus)) {
-      setAiError('Chỉ có thể tạo email kết quả khi hồ sơ ở trạng thái Trúng tuyển (PASSED) hoặc Từ chối (REJECTED). Với hồ sơ đang xử lý, bạn có thể chọn "Mời phỏng vấn".')
+      setAiError('Chỉ có thể tạo email kết quả khi hồ sơ ở trạng thái Trúng tuyển hoặc Từ chối. Với hồ sơ đang xử lý, bạn có thể chọn "Mời phỏng vấn".')
       return
     }
     setAiLoading('EMAIL')
@@ -154,7 +159,9 @@ export default function ApplicationDetailPage() {
       const listRes = await aiApi.listResults(id)
       setAiResults(listRes.data || [])
     } catch (err) {
-      setAiError(err.message || 'Không thể sử dụng trợ lý AI lúc này.')
+      const raw = err.message || 'Không thể sử dụng trợ lý AI lúc này.'
+      const clean = raw.replace(/PASSED/g, 'Trúng tuyển').replace(/REJECTED/g, 'Từ chối')
+      setAiError(clean)
     } finally {
       setAiLoading('')
     }
@@ -539,10 +546,14 @@ export default function ApplicationDetailPage() {
                     disabled={Boolean(aiLoading)}
                     style={{ borderRadius: 'var(--radius-md)', fontSize: '0.8rem' }}
                   >
-                    <option value="INTERVIEW_INVITATION">Mời phỏng vấn</option>
-                    <option value="RESULT">
-                      Thông báo kết quả {!['PASSED', 'REJECTED'].includes(currentStatus) ? '(cần kết quả)' : ''}
-                    </option>
+                    {['PASSED', 'REJECTED'].includes(currentStatus) ? (
+                      <>
+                        <option value="RESULT">Thông báo kết quả tuyển dụng</option>
+                        <option value="INTERVIEW_INVITATION">Mời phỏng vấn</option>
+                      </>
+                    ) : (
+                      <option value="INTERVIEW_INVITATION">Mời phỏng vấn</option>
+                    )}
                   </select>
                   <button
                     type="button"
