@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, useOutletContext } from 'react-router-dom'
+import { Link, useOutletContext, useSearchParams } from 'react-router-dom'
 import { chatApi } from '../services/api'
 
 const QUICK_QUESTIONS = [
@@ -287,6 +287,16 @@ export default function AIChatPage() {
       setLoading(false)
     }
   }
+
+  const [searchParams, setSearchParams] = useSearchParams()
+  const queryParam = searchParams.get('query')
+
+  useEffect(() => {
+    if (queryParam) {
+      setInput(queryParam)
+      setSearchParams({}, { replace: true })
+    }
+  }, [queryParam, setSearchParams])
 
   async function handleReindex() {
     if (reindexing) return
