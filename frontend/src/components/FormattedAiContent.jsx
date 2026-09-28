@@ -1,9 +1,37 @@
 import { useState } from 'react'
 import { formatAiType } from '../utils/formatters'
 
+/**
+ * Preprocess raw text from AI to normalize headings and list items
+ * so they are properly formatted into structured blocks even if Gemini
+ * did not output double newlines.
+ */
+function normalizeAiMarkdown(text) {
+  if (!text) return ''
+  let cleaned = text
+
+  // Normalize newlines
+  cleaned = cleaned.replace(/\r\n/g, '\n')
+
+  // Insert double newlines before bold numbered headings e.g. **1. Tiêu đề** or 1. **Tiêu đề**
+  cleaned = cleaned.replace(/([^\n])\s*(\*\*\d+\.\s+[^*]+?\*\*)/g, '$1\n\n$2')
+  cleaned = cleaned.replace(/([^\n])\s*(\d+\.\s+\*\*[^*]+?\*\*)/g, '$1\n\n$2')
+
+  // Insert newline before bullet items like * Bullet or - Bullet
+  cleaned = cleaned.replace(/([^\n])\s+([*•-]\s+[A-ZÀ-Ỹa-z0-9])/g, '$1\n$2')
+
+  // Insert double newlines before markdown headings ###
+  cleaned = cleaned.replace(/([^\n])\s*(#{1,6}\s+)/g, '$1\n\n$2')
+
+  return cleaned
+}
+
+/**
+ * Parse inline formatting: **bold**, `code/tag`, *italic*
+ * and remove any leftover raw asterisks.
+ */
 function parseInlineMarkup(text) {
   if (!text) return null
-  // Split by bold (**bold**) and backtick (`code`)
   const parts = []
   let remaining = text
   let key = 0
@@ -32,13 +60,16 @@ function parseInlineMarkup(text) {
     }
 
     if (!nextMatch) {
-      parts.push(<span key={key++}>{remaining}</span>)
+      // Clean any stray asterisks or backticks in the remaining plain text
+      const cleanRemaining = remaining.replace(/[*`]/g, '')
+      parts.push(<span key={key++}>{cleanRemaining}</span>)
       break
     }
 
     const idx = nextMatch.index
     if (idx > 0) {
-      parts.push(<span key={key++}>{remaining.slice(0, idx)}</span>)
+      const cleanBefore = remaining.slice(0, idx).replace(/[*`]/g, '')
+      parts.push(<span key={key++}>{cleanBefore}</span>)
     }
 
     if (matchType === 'bold') {
@@ -49,9 +80,13 @@ function parseInlineMarkup(text) {
       )
     } else if (matchType === 'code') {
       parts.push(
-        <code key={key++} className="ai-inline-code">
+        <span
+          key={key++}
+          className="badge bg-light text-primary border fw-semibold px-2 py-0.5 mx-1"
+          style={{ fontSize: '0.82rem' }}
+        >
           {nextMatch[1]}
-        </code>
+        </span>
       )
     }
 
@@ -62,7 +97,8 @@ function parseInlineMarkup(text) {
 }
 
 function renderInterviewQuestions(content) {
-  const lines = content.split('\n')
+  const normalized = normalizeAiMarkdown(content)
+  const lines = normalized.split('\n')
   const blocks = []
   let introLines = []
   let currentCategory = null
@@ -109,16 +145,14 @@ function renderInterviewQuestions(content) {
         num: qNum,
         topic: topic,
         body: qBody,
-        rawText: `${qNum}. ${topic ? `(${topic}) ` : ''}${qBody}`,
+        rawText: `${qNum}. ${topic ? `(${topic}) ` : ''}${qBody.replace(/[*#]/g, '')}`,
       })
       continue
     }
 
-    // Otherwise, if no category yet, treat as intro
     if (!currentCategory && currentQuestions.length === 0) {
       introLines.push(line)
     } else {
-      // General paragraph within category or question continuation
       if (currentQuestions.length > 0) {
         currentQuestions[currentQuestions.length - 1].body += ' ' + line
       } else {
@@ -161,7 +195,10 @@ function renderInterviewQuestions(content) {
               <div key={qIdx} className="ai-question-card p-3 rounded-3 bg-white border">
                 <div className="d-flex justify-content-between align-items-center mb-1.5 flex-wrap gap-2">
                   <div className="d-flex align-items-center gap-2">
-                    <span className="badge bg-indigo-subtle text-indigo rounded-pill px-2.5 py-1 small fw-bold" style={{ backgroundColor: '#e0e7ff', color: '#4338ca' }}>
+                    <span
+                      className="badge rounded-pill px-2.5 py-1 small fw-bold"
+                      style={{ backgroundColor: '#e0e7ff', color: '#4338ca' }}
+                    >
                       Câu {String(q.num).padStart(2, '0')}
                     </span>
                     {q.topic && (
@@ -211,7 +248,7 @@ function renderEmailContent(content) {
     }
   }
 
-  const cleanBody = bodyLines.join('\n').trim()
+  const cleanBody = bodyLines.join('\n').trim().replace(/[*#]/g, '')
 
   return (
     <div className="ai-email-layout">
@@ -283,17 +320,18 @@ function renderEmailContent(content) {
 }
 
 function renderGenericOrSummary(content) {
-  const lines = content.split('\n')
+  const normalized = normalizeAiMarkdown(content)
+  const lines = normalized.split('\n')
   const elements = []
   let currentList = []
 
   function flushList() {
     if (currentList.length > 0) {
       elements.push(
-        <ul key={`ul-${elements.length}`} className="list-unstyled d-flex flex-column gap-2 mb-3">
+        <ul key={`ul-${elements.length}`} className="list-unstyled d-flex flex-column gap-2 mb-3 ps-1">
           {currentList.map((item, idx) => (
-            <li key={idx} className="d-flex align-items-start gap-2 text-dark small" style={{ lineHeight: 1.6 }}>
-              <i className="bi bi-check2-circle text-primary mt-1 flex-shrink-0"></i>
+            <li key={idx} className="d-flex align-items-start gap-2 text-dark" style={{ fontSize: '0.9rem', lineHeight: 1.65 }}>
+              <i className="bi bi-check-circle-fill text-primary mt-1 flex-shrink-0" style={{ fontSize: '0.85rem' }}></i>
               <div style={{ overflowWrap: 'break-word', wordBreak: 'break-word' }}>
                 {parseInlineMarkup(item)}
               </div>
@@ -313,14 +351,14 @@ function renderGenericOrSummary(content) {
       continue
     }
 
-    // Headings: ### Title or ## Title
+    // 1. Markdown Headings: ### Title or ## Title
     const headingMatch = line.match(/^#{1,4}\s+(.+)$/)
     if (headingMatch) {
       flushList()
       elements.push(
-        <div key={`h-${i}`} className="mt-3 mb-2 pb-1 border-bottom border-light-subtle d-flex align-items-center gap-2">
-          <i className="bi bi-stars text-primary"></i>
-          <h6 className="fw-bold mb-0 text-dark" style={{ fontSize: '0.95rem' }}>
+        <div key={`h-${i}`} className="mt-3.5 mb-2 pb-1.5 border-bottom d-flex align-items-center gap-2">
+          <i className="bi bi-stars text-primary fs-6"></i>
+          <h6 className="fw-bold mb-0 text-dark" style={{ fontSize: '0.96rem' }}>
             {headingMatch[1].replace(/[*#]/g, '').trim()}
           </h6>
         </div>
@@ -328,20 +366,46 @@ function renderGenericOrSummary(content) {
       continue
     }
 
-    // Bullet items: * item, - item
+    // 2. Bold section titles: **1. Tóm tắt kinh nghiệm chính** or 1. **Tóm tắt...**
+    const boldSectionMatch = line.match(/^(\*\*(?:(\d+)\.\s*)?([^*]+?)\*\*|\d+\.\s+\*\*([^*]+?)\*\*):?$/)
+    if (boldSectionMatch) {
+      flushList()
+      const num = boldSectionMatch[2]
+      const title = (boldSectionMatch[3] || boldSectionMatch[4] || '').trim()
+      elements.push(
+        <div key={`section-${i}`} className="mt-3.5 mb-2 pb-1.5 border-bottom d-flex align-items-center gap-2">
+          {num ? (
+            <span
+              className="badge rounded-pill fw-bold"
+              style={{ backgroundColor: '#EFF6FF', color: '#2563EB', border: '1px solid #BFDBFE', fontSize: '0.78rem' }}
+            >
+              {String(num).padStart(2, '0')}
+            </span>
+          ) : (
+            <i className="bi bi-bookmark-fill text-primary small"></i>
+          )}
+          <h6 className="fw-bold mb-0 text-dark" style={{ fontSize: '0.96rem' }}>
+            {title}
+          </h6>
+        </div>
+      )
+      continue
+    }
+
+    // 3. Bullet items: * item, - item, • item
     const bulletMatch = line.match(/^[-*•]\s+(.+)$/)
     if (bulletMatch) {
       currentList.push(bulletMatch[1])
       continue
     }
 
-    // Numbered items
+    // 4. Numbered items
     const numMatch = line.match(/^(\d+)\.\s+(.+)$/)
     if (numMatch) {
       flushList()
       elements.push(
-        <div key={`num-${i}`} className="d-flex align-items-start gap-2 mb-2 p-2.5 rounded bg-light border-0 text-dark small">
-          <span className="badge bg-secondary-subtle text-secondary rounded-pill fw-bold">
+        <div key={`num-${i}`} className="d-flex align-items-start gap-2 mb-2 p-2.5 rounded-3 bg-light border-0 text-dark" style={{ fontSize: '0.9rem' }}>
+          <span className="badge bg-primary-subtle text-primary rounded-pill fw-bold" style={{ fontSize: '0.78rem' }}>
             {numMatch[1]}
           </span>
           <div className="flex-grow-1" style={{ overflowWrap: 'break-word', wordBreak: 'break-word' }}>
@@ -352,10 +416,14 @@ function renderGenericOrSummary(content) {
       continue
     }
 
-    // Regular paragraph
+    // 5. Regular paragraph
     flushList()
     elements.push(
-      <p key={`p-${i}`} className="text-secondary small mb-2" style={{ lineHeight: 1.65, overflowWrap: 'break-word', wordBreak: 'break-word' }}>
+      <p
+        key={`p-${i}`}
+        className="text-secondary mb-2.5"
+        style={{ fontSize: '0.9rem', lineHeight: 1.7, overflowWrap: 'break-word', wordBreak: 'break-word' }}
+      >
         {parseInlineMarkup(line)}
       </p>
     )
@@ -367,14 +435,18 @@ function renderGenericOrSummary(content) {
 }
 
 export default function FormattedAiContent({ content, type }) {
-  const [showRaw, setShowRaw] = useState(false)
   const [copiedAll, setCopiedAll] = useState(false)
 
   if (!content) return null
 
   function handleCopyAll() {
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(content)
+      // Copy clean text without markdown symbols
+      const cleanContent = content
+        .replace(/\*\*(.*?)\*\*/g, '$1')
+        .replace(/^#{1,6}\s+/gm, '')
+        .replace(/`([^`]+)`/g, '$1')
+      navigator.clipboard.writeText(cleanContent)
       setCopiedAll(true)
       setTimeout(() => setCopiedAll(false), 2000)
     }
@@ -388,42 +460,23 @@ export default function FormattedAiContent({ content, type }) {
           <span className="badge bg-primary-subtle text-primary border border-primary-subtle px-2.5 py-1 rounded-pill small fw-semibold">
             {formatAiType(type)}
           </span>
-          <span className="text-muted small">
-            {showRaw ? 'Chế độ văn bản thô' : 'Chế độ hiển thị trực quan'}
-          </span>
         </div>
 
         <div className="d-flex align-items-center gap-2">
           <button
             type="button"
-            className="btn btn-sm btn-outline-secondary rounded-pill px-2.5 py-0.5 small d-inline-flex align-items-center gap-1"
-            onClick={() => setShowRaw(!showRaw)}
-            title="Chuyển đổi giữa định dạng thẻ và văn bản thô"
-          >
-            <i className={`bi ${showRaw ? 'bi-layout-text-window' : 'bi-code-slash'}`}></i>
-            <span style={{ fontSize: '0.75rem' }}>{showRaw ? 'Xem dạng thẻ' : 'Xem dạng thô'}</span>
-          </button>
-
-          <button
-            type="button"
-            className="btn btn-sm btn-outline-primary rounded-pill px-2.5 py-0.5 small d-inline-flex align-items-center gap-1"
+            className="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 small d-inline-flex align-items-center gap-1.5"
             onClick={handleCopyAll}
+            title="Sao chép nội dung đã định dạng"
           >
             <i className={`bi ${copiedAll ? 'bi-check-lg text-success' : 'bi-clipboard'}`}></i>
-            <span style={{ fontSize: '0.75rem' }}>{copiedAll ? 'Đã sao chép!' : 'Sao chép toàn bộ'}</span>
+            <span style={{ fontSize: '0.78rem' }}>{copiedAll ? 'Đã sao chép!' : 'Sao chép toàn bộ'}</span>
           </button>
         </div>
       </div>
 
-      {/* Content Rendering */}
-      {showRaw ? (
-        <div
-          className="p-3 rounded-3 bg-light border small text-dark"
-          style={{ whiteSpace: 'pre-wrap', lineHeight: 1.6, overflowWrap: 'break-word', wordBreak: 'break-word' }}
-        >
-          {content}
-        </div>
-      ) : type === 'INTERVIEW_QUESTION' ? (
+      {/* Render structured content based on AI action type */}
+      {type === 'INTERVIEW_QUESTION' ? (
         renderInterviewQuestions(content)
       ) : type === 'EMAIL' ? (
         renderEmailContent(content)

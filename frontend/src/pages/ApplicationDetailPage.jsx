@@ -34,6 +34,20 @@ const STEP_DEFINITIONS = [
   { key: 'RESULT', label: 'Kết quả', icon: 'bi-trophy-fill' },
 ]
 
+function stripMarkdown(text) {
+  if (!text) return ''
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '$1') // remove **bold**
+    .replace(/\*(.*?)\*/g, '$1')     // remove *italic*
+    .replace(/^#{1,6}\s+/gm, '')     // remove headings ###
+    .replace(/^[-*•]\s+/gm, '• ')    // turn bullet markers into clean bullet •
+    .replace(/\s+[*•-]\s+/g, ' • ')  // normalize inline bullets
+    .replace(/`([^`]+)`/g, '$1')     // remove inline code
+    .replace(/[*_#]/g, '')           // remove any lingering syntax symbols
+    .replace(/\s+/g, ' ')            // collapse excessive whitespace
+    .trim()
+}
+
 export default function ApplicationDetailPage() {
   const { user } = useOutletContext()
   const { id } = useParams()
@@ -66,8 +80,9 @@ export default function ApplicationDetailPage() {
         const availableNext = nextStatusMap[current] || []
         setSelectedStatus(availableNext[0] || '')
         setInterviews(intRes.data || [])
-        setEvaluations(evalRes.data || [])
-        setAiResults(aiRes.data || [])
+        const results = aiRes.data || []
+        setAiResults(results)
+        setAiCurrentResult((prev) => prev || (results.length > 0 ? results[0] : null))
       })
       .catch((err) => {
         setState({ loading: false, data: null, error: err.message })
@@ -127,6 +142,10 @@ export default function ApplicationDetailPage() {
   }
 
   async function handleGenerateEmail() {
+    if (emailType === 'RESULT' && !['PASSED', 'REJECTED'].includes(currentStatus)) {
+      setAiError('Chỉ có thể tạo email kết quả khi hồ sơ ở trạng thái Trúng tuyển (PASSED) hoặc Từ chối (REJECTED). Với hồ sơ đang xử lý, bạn có thể chọn "Mời phỏng vấn".')
+      return
+    }
     setAiLoading('EMAIL')
     setAiError('')
     try {
@@ -142,7 +161,9 @@ export default function ApplicationDetailPage() {
   }
 
   function handleCopy(content) {
-    navigator.clipboard.writeText(content).then(() => {
+    if (!content) return
+    const cleanContent = stripMarkdown(content)
+    navigator.clipboard.writeText(cleanContent).then(() => {
       setActionMessage({ text: 'Đã sao chép nội dung vào khay nhớ tạm.', type: 'success' })
       setTimeout(() => setActionMessage({ text: '', type: '' }), 3000)
     })
@@ -519,7 +540,9 @@ export default function ApplicationDetailPage() {
                     style={{ borderRadius: 'var(--radius-md)', fontSize: '0.8rem' }}
                   >
                     <option value="INTERVIEW_INVITATION">Mời phỏng vấn</option>
-                    <option value="RESULT">Thông báo kết quả</option>
+                    <option value="RESULT">
+                      Thông báo kết quả {!['PASSED', 'REJECTED'].includes(currentStatus) ? '(cần kết quả)' : ''}
+                    </option>
                   </select>
                   <button
                     type="button"
@@ -560,7 +583,7 @@ export default function ApplicationDetailPage() {
 
           {/* Live Result Display Box */}
           {aiCurrentResult && (
-            <div className="card-modern shadow-sm border-0 mb-3" style={{ borderLeft: '4px solid var(--primary)' }}>
+            <div id="ai-current-result-box" className="card-modern shadow-sm border-0 mb-3" style={{ borderLeft: '4px solid var(--primary)' }}>
               <div className="card-modern-header py-2.5 bg-white d-flex justify-content-between align-items-center">
                 <div className="d-flex align-items-center gap-2">
                   <i className="bi bi-stars text-primary fs-5" />
@@ -609,7 +632,12 @@ export default function ApplicationDetailPage() {
                         <button
                           type="button"
                           className="btn btn-table-action"
-                          onClick={() => setAiCurrentResult(item)}
+                          onClick={() => {
+                            setAiCurrentResult(item)
+                            setTimeout(() => {
+                              document.getElementById('ai-current-result-box')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+                            }, 50)
+                          }}
                         >
                           <i className="bi bi-eye" />
                           <span>Xem chi tiết</span>
@@ -639,7 +667,7 @@ export default function ApplicationDetailPage() {
                         wordBreak: 'break-word',
                       }}
                     >
-                      {item.content}
+                      {stripMarkdown(item.content)}
                     </div>
                   </div>
                 ))}
