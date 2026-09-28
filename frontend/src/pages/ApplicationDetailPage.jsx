@@ -470,7 +470,7 @@ export default function ApplicationDetailPage() {
         <div className="card-modern-header">
           <div className="d-flex align-items-center gap-2">
             <i className="bi bi-stars text-primary" />
-            <span>Trợ lý AI Tuyển dụng (AI Copilot)</span>
+            <span>Trợ lý AI Tuyển dụng Thông minh</span>
           </div>
           <span className="ai-sparkle-pill">
             <i className="bi bi-cpu" />

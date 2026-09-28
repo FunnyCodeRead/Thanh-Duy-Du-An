@@ -4,7 +4,7 @@ import { authApi } from '../services/api'
 
 export default function LoginPage() {
   const navigate = useNavigate()
-  const [form, setForm] = useState({ email: 'hr@example.com', password: '123456' })
+  const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -66,7 +66,7 @@ export default function LoginPage() {
                   className="badge rounded-pill fw-semibold px-2 py-0.5"
                   style={{ backgroundColor: 'rgba(99, 102, 241, 0.25)', color: '#a5b4fc', fontSize: '0.72rem', border: '1px solid rgba(165, 180, 252, 0.3)' }}
                 >
-                  Copilot v2.0
+                  Phiên bản 2026
                 </span>
               </div>
               <div className="text-secondary small" style={{ color: '#94a3b8' }}>
@@ -86,7 +86,7 @@ export default function LoginPage() {
           </div>
 
           <h1 className="display-6 fw-bold mb-3 text-white" style={{ letterSpacing: '-0.025em', lineHeight: 1.25 }}>
-            Tuyển dụng đột phá với Trợ lý AI Copilot
+            Tuyển dụng đột phá với Trợ lý AI Thông minh
           </h1>
           <p className="text-light mb-4.5" style={{ color: '#cbd5e1', fontSize: '1.05rem', lineHeight: 1.6 }}>
             Nền tảng tự động hóa quản lý tuyển dụng khép kín: Tự động trích xuất CV, đối khớp kỹ năng, gợi ý câu hỏi phỏng vấn và hỗ trợ ra quyết định tuyển dụng tức thì.
@@ -186,7 +186,7 @@ export default function LoginPage() {
               <i className="bi bi-robot" />
             </div>
             <h3 className="fw-bold text-dark mb-0">AI Recruitment</h3>
-            <p className="text-muted small">Hệ thống Quản lý Tuyển dụng & Trợ lý Copilot</p>
+            <p className="text-muted small">Hệ thống Quản lý Tuyển dụng Thông minh</p>
           </div>
 
           {/* Form Header */}
@@ -215,15 +215,22 @@ export default function LoginPage() {
 
           {/* Login Form */}
           <form onSubmit={submit}>
+            {/* Email Field */}
             <div className="mb-3">
               <label className="form-label small fw-semibold text-secondary mb-1.5" htmlFor="email">
                 Địa chỉ Email <span className="text-danger">*</span>
               </label>
-              <div className="input-icon-group">
-                <i className="bi bi-envelope text-muted" />
+              <div className="position-relative">
+                <span
+                  className="position-absolute start-0 top-50 translate-middle-y text-muted ps-3 d-flex align-items-center"
+                  style={{ zIndex: 4, pointerEvents: 'none' }}
+                >
+                  <i className="bi bi-envelope" style={{ fontSize: '1rem' }} />
+                </span>
                 <input
                   id="email"
                   className="form-control py-2.5"
+                  style={{ paddingLeft: '2.6rem', borderRadius: '10px' }}
                   type="email"
                   placeholder="name@example.com"
                   value={form.email}
@@ -234,20 +241,22 @@ export default function LoginPage() {
               </div>
             </div>
 
+            {/* Password Field */}
             <div className="mb-3">
-              <div className="d-flex align-items-center justify-content-between mb-1.5">
-                <label className="form-label small fw-semibold text-secondary mb-0" htmlFor="password">
-                  Mật khẩu <span className="text-danger">*</span>
-                </label>
-                <span className="text-muted small" style={{ fontSize: '0.78rem' }}>
-                  Mặc định: <strong className="text-dark">123456</strong>
+              <label className="form-label small fw-semibold text-secondary mb-1.5" htmlFor="password">
+                Mật khẩu <span className="text-danger">*</span>
+              </label>
+              <div className="position-relative">
+                <span
+                  className="position-absolute start-0 top-50 translate-middle-y text-muted ps-3 d-flex align-items-center"
+                  style={{ zIndex: 4, pointerEvents: 'none' }}
+                >
+                  <i className="bi bi-shield-lock" style={{ fontSize: '1rem' }} />
                 </span>
-              </div>
-              <div className="input-icon-group position-relative">
-                <i className="bi bi-shield-lock text-muted" />
                 <input
                   id="password"
-                  className="form-control py-2.5 pe-5"
+                  className="form-control py-2.5"
+                  style={{ paddingLeft: '2.6rem', paddingRight: '2.85rem', borderRadius: '10px' }}
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Nhập mật khẩu..."
                   value={form.password}
@@ -256,13 +265,13 @@ export default function LoginPage() {
                 />
                 <button
                   type="button"
-                  className="btn btn-link position-absolute end-0 top-50 translate-middle-y text-muted text-decoration-none px-3"
+                  className="btn btn-link position-absolute end-0 top-50 translate-middle-y text-muted text-decoration-none pe-3 ps-2 d-flex align-items-center justify-content-center"
                   onClick={() => setShowPassword(!showPassword)}
-                  style={{ border: 'none', background: 'transparent' }}
+                  style={{ border: 'none', background: 'transparent', height: '100%', zIndex: 5 }}
                   tabIndex={-1}
                   aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                 >
-                  <i className={`bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'} fs-6`} />
+                  <i className={`bi ${showPassword ? 'bi-eye-slash-fill' : 'bi-eye-fill'} text-secondary`} style={{ fontSize: '1.05rem' }} />
                 </button>
               </div>
             </div>
@@ -335,7 +344,7 @@ export default function LoginPage() {
                     </span>
                   </div>
                   <div className="text-muted" style={{ fontSize: '0.75rem' }}>
-                    Quản lý hồ sơ, lên lịch phỏng vấn & AI Copilot
+                    Quản lý hồ sơ, lên lịch phỏng vấn & sàng lọc
                   </div>
                 </div>
               </button>
