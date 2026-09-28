@@ -594,24 +594,40 @@ export default function ApplicationDetailPage() {
 
           {/* Live Result Display Box */}
           {aiCurrentResult && (
-            <div id="ai-current-result-box" className="card-modern shadow-sm border-0 mb-3" style={{ borderLeft: '4px solid var(--primary)' }}>
-              <div className="card-modern-header py-2.5 bg-white d-flex justify-content-between align-items-center">
-                <div className="d-flex align-items-center gap-2">
-                  <i className="bi bi-stars text-primary fs-5" />
-                  <span className="fw-bold text-dark">
-                    Kết quả phân tích: <span className="text-primary">{formatAiType(aiCurrentResult.type)}</span>
+            <div id="ai-current-result-box" className="ai-summary-outer-box mb-4">
+              <div className="card-modern-header py-3 px-3.5 bg-white border-bottom d-flex justify-content-between align-items-center">
+                <div className="d-flex align-items-center gap-2.5">
+                  <span
+                    className="d-inline-flex align-items-center justify-content-center rounded-3 shadow-xs"
+                    style={{ width: '36px', height: '36px', backgroundColor: '#EFF6FF', color: '#2563EB', fontSize: '1.15rem' }}
+                  >
+                    <i className="bi bi-stars" />
                   </span>
+                  <div>
+                    <div className="d-flex align-items-center gap-2">
+                      <span className="fw-bold text-dark fs-6">
+                        Kết quả phân tích: <span className="text-primary">{formatAiType(aiCurrentResult.type)}</span>
+                      </span>
+                      <span className="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle px-2 py-0.5" style={{ fontSize: '0.72rem' }}>
+                        Gemini 2.5
+                      </span>
+                    </div>
+                    <div className="text-muted small">
+                      Dữ liệu đối chiếu hồ sơ ứng viên và vị trí tuyển dụng
+                    </div>
+                  </div>
                 </div>
                 <button
                   type="button"
-                  className="btn btn-sm btn-link text-muted p-1 text-decoration-none"
+                  className="btn btn-sm btn-outline-secondary rounded-pill px-2.5 py-1 text-decoration-none d-inline-flex align-items-center gap-1"
                   onClick={() => setAiCurrentResult(null)}
                   title="Đóng kết quả này"
                 >
                   <i className="bi bi-x-lg" />
+                  <span>Đóng</span>
                 </button>
               </div>
-              <div className="card-modern-body pt-3 pb-3">
+              <div className="p-3.5 p-md-4">
                 <FormattedAiContent content={aiCurrentResult.content} type={aiCurrentResult.type} />
               </div>
             </div>

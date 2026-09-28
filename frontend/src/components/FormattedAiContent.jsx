@@ -133,7 +133,6 @@ function renderInterviewQuestions(content) {
       const qNum = questionMatch[1]
       let qBody = questionMatch[2]
 
-      // Extract topic tag like **(Topic):** or (Topic): or [Topic]:
       let topic = null
       const topicMatch = qBody.match(/^(\*\*(?:\((.*?)\)|\[(.*?)\]|(.*?))\*\*:?|\((.*?)\):?|\[(.*?)\]:?)\s*(.*)$/)
       if (topicMatch) {
@@ -166,8 +165,8 @@ function renderInterviewQuestions(content) {
   return (
     <div className="ai-interview-layout">
       {introLines.length > 0 && (
-        <div className="ai-intro-banner mb-3 p-3 rounded-3 bg-light border d-flex align-items-start gap-2.5">
-          <i className="bi bi-chat-quote-fill text-primary fs-5 mt-0.5"></i>
+        <div className="ai-summary-intro-banner mb-3.5 d-flex align-items-start gap-2.5">
+          <i className="bi bi-chat-quote-fill text-primary fs-5 mt-0.5 flex-shrink-0"></i>
           <div className="text-secondary small" style={{ lineHeight: 1.6 }}>
             {introLines.map((l, i) => (
               <p key={i} className="mb-1 last:mb-0">
@@ -218,7 +217,7 @@ function renderInterviewQuestions(content) {
                     title="Sao chép riêng câu hỏi này"
                   >
                     <i className="bi bi-clipboard"></i>
-                    <span style={{ fontSize: '0.75rem' }}>Sao chép câu hỏi</span>
+                    <span style={{ fontSize: '0.75rem' }}>Sao chép</span>
                   </button>
                 </div>
                 <div className="text-dark" style={{ fontSize: '0.925rem', lineHeight: 1.65, overflowWrap: 'break-word', wordBreak: 'break-word' }}>
@@ -319,119 +318,224 @@ function renderEmailContent(content) {
   )
 }
 
-function renderGenericOrSummary(content) {
+function renderCvSummary(content) {
   const normalized = normalizeAiMarkdown(content)
   const lines = normalized.split('\n')
-  const elements = []
-  let currentList = []
 
-  function flushList() {
-    if (currentList.length > 0) {
-      elements.push(
-        <ul key={`ul-${elements.length}`} className="list-unstyled d-flex flex-column gap-2 mb-3 ps-1">
-          {currentList.map((item, idx) => (
-            <li key={idx} className="d-flex align-items-start gap-2 text-dark" style={{ fontSize: '0.9rem', lineHeight: 1.65 }}>
-              <i className="bi bi-check-circle-fill text-primary mt-1 flex-shrink-0" style={{ fontSize: '0.85rem' }}></i>
-              <div style={{ overflowWrap: 'break-word', wordBreak: 'break-word' }}>
-                {parseInlineMarkup(item)}
-              </div>
-            </li>
-          ))}
-        </ul>
-      )
-      currentList = []
+  const introLines = []
+  const sections = []
+  let currentSec = null
+
+  function flushSec() {
+    if (currentSec) {
+      sections.push({ ...currentSec })
+      currentSec = null
     }
   }
 
-  for (let i = 0; i < lines.length; i++) {
-    const rawLine = lines[i]
+  for (let rawLine of lines) {
     const line = rawLine.trim()
-    if (!line) {
-      flushList()
+    if (!line) continue
+
+    // Detect section header:
+    // **1. Tóm tắt kinh nghiệm chính** or 1. **Tóm tắt...** or 1. Tóm tắt kinh nghiệm chính or ### 1. ...
+    const boldSecMatch = line.match(/^(\*\*(?:(\d+)\.\s*)?([^*]+?)\*\*|\d+\.\s+\*\*([^*]+?)\*\*):?$/)
+    const numSecMatch = !boldSecMatch && line.match(/^(\d+)\.\s+(Tóm tắt|Kỹ năng|Bằng chứng|Những nội dung|Nội dung|Đánh giá|Kinh nghiệm|Điểm mạnh|Điểm yếu|Khuyến nghị|Phù hợp|Phỏng vấn).*$/i)
+    const headingMatch = !boldSecMatch && !numSecMatch && line.match(/^#{1,4}\s+(.+)$/)
+
+    if (boldSecMatch || numSecMatch || headingMatch) {
+      flushSec()
+      let num = ''
+      let title = ''
+
+      if (boldSecMatch) {
+        num = boldSecMatch[2] || ''
+        title = (boldSecMatch[3] || boldSecMatch[4] || '').trim()
+      } else if (numSecMatch) {
+        num = numSecMatch[1]
+        title = line.replace(/^\d+\.\s+/, '').trim()
+      } else if (headingMatch) {
+        title = headingMatch[1].replace(/[*#]/g, '').trim()
+        const hNum = title.match(/^(\d+)\.\s*(.*)$/)
+        if (hNum) {
+          num = hNum[1]
+          title = hNum[2].trim()
+        }
+      }
+
+      currentSec = {
+        num: num ? String(num).padStart(2, '0') : String(sections.length + 1).padStart(2, '0'),
+        title: title,
+        items: [],
+      }
       continue
     }
 
-    // 1. Markdown Headings: ### Title or ## Title
-    const headingMatch = line.match(/^#{1,4}\s+(.+)$/)
-    if (headingMatch) {
-      flushList()
-      elements.push(
-        <div key={`h-${i}`} className="mt-3.5 mb-2 pb-1.5 border-bottom d-flex align-items-center gap-2">
-          <i className="bi bi-stars text-primary fs-6"></i>
-          <h6 className="fw-bold mb-0 text-dark" style={{ fontSize: '0.96rem' }}>
-            {headingMatch[1].replace(/[*#]/g, '').trim()}
-          </h6>
-        </div>
-      )
-      continue
+    if (currentSec) {
+      const bulletMatch = line.match(/^[-*•]\s+(.+)$/)
+      if (bulletMatch) {
+        currentSec.items.push(bulletMatch[1].trim())
+      } else {
+        currentSec.items.push(line)
+      }
+    } else {
+      introLines.push(line)
     }
+  }
 
-    // 2. Bold section titles: **1. Tóm tắt kinh nghiệm chính** or 1. **Tóm tắt...**
-    const boldSectionMatch = line.match(/^(\*\*(?:(\d+)\.\s*)?([^*]+?)\*\*|\d+\.\s+\*\*([^*]+?)\*\*):?$/)
-    if (boldSectionMatch) {
-      flushList()
-      const num = boldSectionMatch[2]
-      const title = (boldSectionMatch[3] || boldSectionMatch[4] || '').trim()
-      elements.push(
-        <div key={`section-${i}`} className="mt-3.5 mb-2 pb-1.5 border-bottom d-flex align-items-center gap-2">
-          {num ? (
-            <span
-              className="badge rounded-pill fw-bold"
-              style={{ backgroundColor: '#EFF6FF', color: '#2563EB', border: '1px solid #BFDBFE', fontSize: '0.78rem' }}
-            >
-              {String(num).padStart(2, '0')}
-            </span>
-          ) : (
-            <i className="bi bi-bookmark-fill text-primary small"></i>
-          )}
-          <h6 className="fw-bold mb-0 text-dark" style={{ fontSize: '0.96rem' }}>
-            {title}
-          </h6>
-        </div>
-      )
-      continue
+  flushSec()
+
+  function getSectionTheme(sec, idx) {
+    const titleLower = (sec.title || '').toLowerCase()
+    if (sec.num === '01' || titleLower.includes('kinh nghiệm') || titleLower.includes('tóm tắt')) {
+      return {
+        cardClass: 'ai-section-card ai-section-card-experience',
+        icon: 'bi-briefcase-fill text-primary',
+        badgeBg: '#2563EB',
+        bulletIcon: 'bi-check2-circle text-primary',
+      }
     }
-
-    // 3. Bullet items: * item, - item, • item
-    const bulletMatch = line.match(/^[-*•]\s+(.+)$/)
-    if (bulletMatch) {
-      currentList.push(bulletMatch[1])
-      continue
+    if (sec.num === '02' || titleLower.includes('kỹ năng') || titleLower.includes('chuyên môn')) {
+      return {
+        cardClass: 'ai-section-card ai-section-card-skills',
+        icon: 'bi-lightning-charge-fill text-warning',
+        badgeBg: '#D97706',
+        bulletIcon: 'bi-lightning-fill text-warning',
+      }
     }
-
-    // 4. Numbered items
-    const numMatch = line.match(/^(\d+)\.\s+(.+)$/)
-    if (numMatch) {
-      flushList()
-      elements.push(
-        <div key={`num-${i}`} className="d-flex align-items-start gap-2 mb-2 p-2.5 rounded-3 bg-light border-0 text-dark" style={{ fontSize: '0.9rem' }}>
-          <span className="badge bg-primary-subtle text-primary rounded-pill fw-bold" style={{ fontSize: '0.78rem' }}>
-            {numMatch[1]}
-          </span>
-          <div className="flex-grow-1" style={{ overflowWrap: 'break-word', wordBreak: 'break-word' }}>
-            {parseInlineMarkup(numMatch[2])}
-          </div>
-        </div>
-      )
-      continue
+    if (sec.num === '03' || titleLower.includes('bằng chứng') || titleLower.includes('phù hợp')) {
+      return {
+        cardClass: 'ai-section-card ai-section-card-evidence',
+        icon: 'bi-shield-check text-success',
+        badgeBg: '#059669',
+        bulletIcon: 'bi-check-circle-fill text-success',
+      }
     }
+    if (sec.num === '04' || titleLower.includes('hỏi thêm') || titleLower.includes('phỏng vấn')) {
+      return {
+        cardClass: 'ai-section-card ai-section-card-questions',
+        icon: 'bi-patch-question-fill text-purple',
+        badgeBg: '#7C3AED',
+        bulletIcon: 'bi-question-circle-fill text-purple',
+        isQuestions: true,
+      }
+    }
+    const colors = ['#2563EB', '#D97706', '#059669', '#7C3AED']
+    const classes = ['ai-section-card-experience', 'ai-section-card-skills', 'ai-section-card-evidence', 'ai-section-card-questions']
+    return {
+      cardClass: `ai-section-card ${classes[idx % classes.length]}`,
+      icon: 'bi-stars text-primary',
+      badgeBg: colors[idx % colors.length],
+      bulletIcon: 'bi-check-circle-fill text-primary',
+    }
+  }
 
-    // 5. Regular paragraph
-    flushList()
-    elements.push(
-      <p
-        key={`p-${i}`}
-        className="text-secondary mb-2.5"
-        style={{ fontSize: '0.9rem', lineHeight: 1.7, overflowWrap: 'break-word', wordBreak: 'break-word' }}
-      >
-        {parseInlineMarkup(line)}
-      </p>
+  if (sections.length === 0) {
+    return (
+      <div className="ai-summary-layout">
+        {lines.map((l, i) => (
+          <p key={i} className="text-dark mb-2" style={{ lineHeight: 1.65 }}>
+            {parseInlineMarkup(l)}
+          </p>
+        ))}
+      </div>
     )
   }
 
-  flushList()
+  return (
+    <div className="ai-summary-layout">
+      {/* Intro Banner */}
+      {introLines.length > 0 && (
+        <div className="ai-summary-intro-banner mb-3.5 d-flex align-items-start gap-2.5">
+          <i className="bi bi-chat-square-quote-fill fs-5 mt-0.5 text-primary flex-shrink-0"></i>
+          <div>
+            {introLines.map((l, i) => (
+              <div key={i} className={i > 0 ? 'mt-1' : ''}>
+                {parseInlineMarkup(l)}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
-  return <div className="ai-summary-layout">{elements}</div>
+      {/* Prominent Section Cards */}
+      <div className="d-flex flex-column">
+        {sections.map((sec, sIdx) => {
+          const theme = getSectionTheme(sec, sIdx)
+          return (
+            <div key={sIdx} className={theme.cardClass}>
+              <div className="ai-section-card-header">
+                <div className="d-flex align-items-center gap-2.5">
+                  <span
+                    className="badge rounded-pill fw-bold text-white shadow-xs px-2.5 py-1"
+                    style={{ backgroundColor: theme.badgeBg, fontSize: '0.8rem', letterSpacing: '0.02em' }}
+                  >
+                    {sec.num}
+                  </span>
+                  <h6 className="fw-bold mb-0 text-dark" style={{ fontSize: '0.98rem' }}>
+                    {sec.title}
+                  </h6>
+                </div>
+                <i className={`${theme.icon} fs-5`}></i>
+              </div>
+
+              <div className="ai-section-card-body">
+                {sec.items.map((item, itIdx) => {
+                  const itemLower = item.toLowerCase()
+                  const isWarning =
+                    itemLower.startsWith('lưu ý:') ||
+                    itemLower.startsWith('chú ý:') ||
+                    itemLower.startsWith('thiếu:') ||
+                    itemLower.startsWith('cảnh báo:')
+                  const isQuestion = theme.isQuestions
+
+                  let rowClass = 'ai-item-row'
+                  if (isWarning) rowClass += ' ai-item-warning'
+                  else if (isQuestion) rowClass += ' ai-item-question'
+
+                  return (
+                    <div key={itIdx} className={rowClass}>
+                      {isWarning ? (
+                        <i className="bi bi-exclamation-triangle-fill text-warning mt-0.5 flex-shrink-0 fs-6"></i>
+                      ) : isQuestion ? (
+                        <span
+                          className="d-inline-flex align-items-center justify-content-center rounded-circle flex-shrink-0 fw-bold mt-0.5"
+                          style={{ width: '22px', height: '22px', backgroundColor: '#EDE9FE', color: '#7C3AED', fontSize: '0.72rem' }}
+                        >
+                          Q{itIdx + 1}
+                        </span>
+                      ) : (
+                        <i className={`${theme.bulletIcon} mt-0.5 flex-shrink-0 fs-6`}></i>
+                      )}
+
+                      <div className="flex-grow-1" style={{ overflowWrap: 'break-word', wordBreak: 'break-word' }}>
+                        {parseInlineMarkup(item)}
+                      </div>
+
+                      {isQuestion && (
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-link text-muted p-0 text-decoration-none flex-shrink-0 ms-1"
+                          onClick={() => {
+                            if (navigator.clipboard) {
+                              navigator.clipboard.writeText(item.replace(/[*#]/g, ''))
+                            }
+                          }}
+                          title="Sao chép câu hỏi này"
+                        >
+                          <i className="bi bi-clipboard"></i>
+                        </button>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
 }
 
 export default function FormattedAiContent({ content, type }) {
@@ -441,7 +545,6 @@ export default function FormattedAiContent({ content, type }) {
 
   function handleCopyAll() {
     if (navigator.clipboard) {
-      // Copy clean text without markdown symbols
       const cleanContent = content
         .replace(/\*\*(.*?)\*\*/g, '$1')
         .replace(/^#{1,6}\s+/gm, '')
@@ -481,7 +584,7 @@ export default function FormattedAiContent({ content, type }) {
       ) : type === 'EMAIL' ? (
         renderEmailContent(content)
       ) : (
-        renderGenericOrSummary(content)
+        renderCvSummary(content)
       )}
     </div>
   )

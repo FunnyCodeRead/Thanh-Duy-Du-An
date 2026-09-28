@@ -932,6 +932,118 @@ body {
   color: var(--text-primary);
 }
 
+/* Modern AI Summary Prominent Cards */
+.ai-summary-outer-box {
+  background: #ffffff;
+  border: 1.5px solid #bfdbfe;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.08), 0 4px 10px -2px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+}
+
+.ai-summary-intro-banner {
+  background: linear-gradient(135deg, #eff6ff 0%, #f0fdfa 100%);
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  padding: 0.95rem 1.15rem;
+  color: #1e3a8a;
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+.ai-section-card {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+  margin-bottom: 1.25rem;
+  transition: all 0.15s ease-in-out;
+}
+
+.ai-section-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+}
+
+.ai-section-card-experience {
+  border: 1.5px solid #bfdbfe;
+}
+.ai-section-card-experience .ai-section-card-header {
+  background: linear-gradient(90deg, #eff6ff 0%, #ffffff 100%);
+  border-bottom: 1px solid #dbeafe;
+}
+
+.ai-section-card-skills {
+  border: 1.5px solid #fed7aa;
+}
+.ai-section-card-skills .ai-section-card-header {
+  background: linear-gradient(90deg, #fffbeb 0%, #ffffff 100%);
+  border-bottom: 1px solid #fef3c7;
+}
+
+.ai-section-card-evidence {
+  border: 1.5px solid #a7f3d0;
+}
+.ai-section-card-evidence .ai-section-card-header {
+  background: linear-gradient(90deg, #ecfdf5 0%, #ffffff 100%);
+  border-bottom: 1px solid #d1fae5;
+}
+
+.ai-section-card-questions {
+  border: 1.5px solid #ddd6fe;
+}
+.ai-section-card-questions .ai-section-card-header {
+  background: linear-gradient(90deg, #f5f3ff 0%, #ffffff 100%);
+  border-bottom: 1px solid #ede9fe;
+}
+
+.ai-section-card-header {
+  padding: 0.85rem 1.15rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ai-section-card-body {
+  padding: 1rem 1.15rem;
+  background-color: #ffffff;
+}
+
+.ai-item-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem 0.95rem;
+  border-radius: 8px;
+  background-color: #f8fafc;
+  border: 1px solid #f1f5f9;
+  font-size: 0.915rem;
+  line-height: 1.6;
+  color: #1e293b;
+  margin-bottom: 0.6rem;
+  transition: all 0.15s ease;
+}
+
+.ai-item-row:last-child {
+  margin-bottom: 0;
+}
+
+.ai-item-row:hover {
+  background-color: #f1f5f9;
+  border-color: #e2e8f0;
+}
+
+.ai-item-warning {
+  background-color: #fffbeb !important;
+  border-color: #fde68a !important;
+  color: #92400e !important;
+}
+
+.ai-item-question {
+  background-color: #faf5ff !important;
+  border-color: #f3e8ff !important;
+  color: #4c1d95 !important;
+}
+
 /* Workflow Stepper */
 .workflow-stepper {
   display: flex;
