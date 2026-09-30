@@ -1,0 +1,23 @@
+# UML – Đối chiếu báo cáo, yêu cầu vẽ lại và mã nguồn
+
+Nguyên tắc: khi báo cáo/yêu cầu khác với mã nguồn hiện tại, sơ đồ UML mô tả **hành vi đã cài đặt**. Không đổi business logic để sơ đồ dễ vẽ.
+
+| # | Sơ đồ | Báo cáo / yêu cầu nói | Code nói | Cách thể hiện đã chọn | Lý do |
+|---|---|---|---|---|---|
+| 1 | UC013 Sequence | Lifeline `DecisionGuard` riêng với `check_decision_request()`; `ChatRoutes` gọi trực tiếp `ScopeGuard` | `chat_routes.ask_chat` → `rag_service.answer_question` → `scope_guard.check_scope` → `intent_router.route_intent`; Decision Guard là `DECISION_PATTERNS` bên trong `route_intent` (trả `intent = DECISION_REFUSAL`) | `ChatController → RAGService → ScopeGuard`, `RAGService → IntentRouter` kèm self-message "Decision Guard: DECISION_PATTERNS"; không có lifeline DecisionGuard | Không có module/lớp DecisionGuard trong `backend/rag/` |
+| 2 | UC014 Sequence, class 32 | `RAGService` điều phối tái tạo chỉ mục | `chat_routes.reindex_chat` → `scripts/rebuild_rag_index.rebuild_index()` | Thêm lớp «service» `IndexRebuilder` và lifeline `rebuilder : IndexRebuilder` | `rag_service.py` không có hàm reindex |
+| 3 | UC002 Sequence | `controller → db: has_applications(job_id)` rồi `delete_job()` | `db.delete_job(job_id)` tự đếm `applications` và trả `False` nếu có liên kết; route trả 409 | Một message `delete_job(job_id)` với self-message `COUNT applications WHERE job_id`, sau đó `alt [False]/[True]` | Không có hàm `has_applications` |
+| 4 | UC003 Sequence | Lifeline `cvStorage` và `cvExtractor` riêng | `save_cv_file()` và `extract_cv_text()` là hàm trong `routes/candidate_routes.py`; file lưu ở `backend/uploads` | Self-message trên `CandidateController`; lifeline `cvStorage` là artifact «file storage» | Không có lớp extractor riêng |
+| 5 | UC012 Sequence, class 32 | `DashboardRoutes` | Handler `dashboard()` nằm trong `backend/app.py` | Lớp «controller» `FlaskApp` (health, dashboard) | Không có blueprint dashboard |
+| 6 | UC012 Activity | Decision `[Đủ dữ liệu kết thúc?]` | `get_dashboard_counts()` luôn trả `hiring_time.available = false` (không có nhánh tính) | Action "Đánh dấu time-to-hire chưa đủ" + Note giải thích; không vẽ decision | Decision chỉ có một nhánh khả thi sẽ mô tả sai hành vi |
+| 7 | UC005 Activity/Sequence | Đọc hồ sơ trước, kiểm tra quyền sau | Decorator `api_role_required("ADMIN","HR")` chạy trước khi đọc hồ sơ | Kiểm tra quyền (403) trước, sau đó 404, 400, cập nhật | Theo thứ tự thực thi |
+| 8 | UC001 Sequence | Đăng xuất từ `LoginPage` | Nút Đăng xuất nằm ở `components/Navbar.jsx` | Lifeline `navbar : Navbar` cho luồng logout | Theo frontend |
+| 9 | UC007 | Kiểm tra hồ sơ rồi điểm | `add_evaluation` kiểm tra đủ trường → 3 điểm 1..5 (400) → hồ sơ tồn tại (404) → lưu | Thứ tự: điểm → hồ sơ → lưu | Theo code |
+| 10 | UC008/UC009 | "[Context đầy đủ?]" | `ValueError` khi không có hồ sơ (404) hoặc `cv_text` rỗng (400); `GeminiServiceError` → 500 | Activity: decision "Thiếu hồ sơ hoặc CV"; Sequence: `alt` cho ValueError / GeminiServiceError | Theo code |
+| 11 | UC010 | – | `INTERVIEW_INVITATION` không yêu cầu `cv_text`, đọc `get_interviews_by_application`; `RESULT` yêu cầu PASSED/REJECTED | `opt [INTERVIEW_INVITATION]` và `alt [RESULT và status ∉ {PASSED, REJECTED}]` | Theo `ai_service.generate_email` |
+| 12 | UC011 | – | Nội dung kết quả đã có trong danh sách trả về; nút Xem mở nội dung phía client | Message "nhấn Xem" chỉ tới `detailPage`, không gọi API | Không có endpoint chi tiết từng kết quả |
+| 13 | UC013 | Nhánh STRUCTURED/SEMANTIC/HYBRID | Có thêm nhánh `INDEX_MISSING` và "không có ngữ cảnh" (`NO_CONTEXT_RESPONSE`); HYBRID chỉ lọc SQL khi phát hiện `filter_status` | Activity có 2 nhánh lỗi này; Sequence dùng `opt [HYBRID và có filter_status]` | Theo `rag_service.answer_question` |
+| 14 | Class 31 | Operation dạng `+getJobs(...)` | Là hàm module trong `database/db.py`, không phải method của đối tượng | Operation **static** (gạch chân), giữ tên snake_case gốc; tham số của hàm create/update gom thành `data: <Entity>` | Tên thật + đúng cú pháp UML; giữ sơ đồ đọc được |
+| 15 | Hình 31 | "Kiến trúc tổng thể" dạng khối | – | Thay bằng UML Component Diagram | Theo yêu cầu vẽ lại |
+| 16 | Lifeline / class stereotype | Lifeline dùng «control»; class dùng «controller» | – | Lifeline: «actor», «boundary», «control», «service», «database», «external»; class: «controller», «service», «database», «external», «library» | Đúng theo mục AE và BA của yêu cầu |
+| 17 | Retriever | – | `retrieve()` tự nhận diện tên ứng viên trong câu hỏi (`detect_candidate_entity`) để lọc | Có trong lớp `Retriever`; không vẽ riêng trong sequence | Chi tiết nội bộ, không đổi luồng thông điệp |
