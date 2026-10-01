@@ -10,3 +10,8 @@ dist/
 backend/rag/index/*.faiss
 backend/rag/index/*.json
 
+
+# Du lieu that de chuyen may (khong dua len git)
+data_transfer/
+backup.sql
+*.sql.bak

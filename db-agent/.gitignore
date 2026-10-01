@@ -1,0 +1,3 @@
+# Secrets for the AI Business Platform DB Agent: never commit.
+agent.env.local
+*.local

@@ -91,6 +91,10 @@ mysql -u root -p < sql\schema.sql
 mysql -u root -p ai_recruitment < sql\sample_data.sql
 ```
 
+Hoặc chỉ một lệnh (cần có `backend\.env` và đã `pip install -r backend\requirements.txt`): nhấp đúp `setup_db.bat`, hoặc chạy `python scripts\setup_db.py`. Script chạy `sql\schema.sql`, `sql\sample_data.sql` rồi tạo tài khoản demo; chạy lại nhiều lần vẫn an toàn. Dùng `python scripts\setup_db.py --reset` để xoá và tạo lại database từ đầu (có hỏi xác nhận).
+
+**Chuyển nguyên dữ liệu sang máy khác** (database, file CV đã upload, chỉ mục chatbot): ở máy cũ chạy `export_data.bat` → tạo `data_transfer\ai_recruitment_data_<ngày>_<giờ>.zip`; chép file này sang máy mới (USB/Drive, **không đưa lên git**), đặt vào `data_transfer\` hoặc kéo thả lên `import_data.bat`. Lệnh nạp sẽ thay thế dữ liệu hiện có trên máy mới (có hỏi xác nhận).
+
 ### Bước 2: Cài đặt và Chạy Backend (Flask)
 ```powershell
 cd backend

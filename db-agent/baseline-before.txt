@@ -1,0 +1,8 @@
+ai_recruitment.users	3979137943
+ai_recruitment.jobs	274107326
+ai_recruitment.candidates	1502518906
+ai_recruitment.applications	3513184782
+ai_recruitment.interviews	1482823889
+ai_recruitment.evaluations	3529875877
+ai_recruitment.ai_results	2072292149
+rows	3	4	13	9	3	2	25

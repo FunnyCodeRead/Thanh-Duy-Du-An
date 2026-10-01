@@ -1,0 +1,41 @@
+{
+  "platformUrl": "http://localhost:3003",
+  "database": { "driver": "mysql", "urlEnv": "ABP_AGENT_DATABASE_URL" },
+  "tokenEnv": "ABP_AGENT_TOKEN",
+  "pollWaitMs": 10000,
+  "templates": {
+    "recruitment.open_positions": {
+      "description": "Danh sách vị trí đang tuyển (OPEN) kèm số lượng cần tuyển và số hồ sơ đã nộp",
+      "sql": "SELECT j.id AS job_id, j.title AS title, j.department AS department, j.quantity AS openings, COUNT(a.id) AS applicant_count, DATE_FORMAT(j.created_at, '%Y-%m-%d') AS opened_on FROM jobs j LEFT JOIN applications a ON a.job_id = j.id WHERE j.status = 'OPEN' GROUP BY j.id, j.title, j.department, j.quantity, j.created_at ORDER BY j.created_at DESC",
+      "maxRows": 50
+    },
+    "recruitment.position_detail": {
+      "description": "Chi tiết một vị trí tuyển dụng theo từ khóa trong tên vị trí: mô tả, yêu cầu, kỹ năng, trạng thái",
+      "sql": "SELECT j.id AS job_id, j.title AS title, j.department AS department, j.status AS job_status, j.quantity AS openings, j.description AS description, j.requirements AS requirements, j.skills AS skills FROM jobs j WHERE j.title LIKE CONCAT('%', :keyword, '%') ORDER BY j.status DESC, j.created_at DESC",
+      "params": { "keyword": { "type": "string", "maxLength": 100 } },
+      "maxRows": 5
+    },
+    "recruitment.candidate_lookup": {
+      "description": "Tìm ứng viên theo một phần họ tên; trả về vị trí ứng tuyển và trạng thái hồ sơ (không trả CV)",
+      "sql": "SELECT c.id AS candidate_id, c.full_name AS full_name, c.phone AS phone, c.email AS email, j.title AS position, a.status AS application_status, DATE_FORMAT(a.applied_at, '%Y-%m-%d') AS applied_on FROM candidates c LEFT JOIN applications a ON a.candidate_id = c.id LEFT JOIN jobs j ON j.id = a.job_id WHERE c.full_name LIKE CONCAT('%', :name, '%') ORDER BY c.full_name, a.applied_at DESC",
+      "params": { "name": { "type": "string", "maxLength": 100 } },
+      "maxRows": 10
+    },
+    "recruitment.application_status": {
+      "description": "Lịch sử ứng tuyển của một ứng viên theo mã ứng viên: vị trí, trạng thái, lịch phỏng vấn",
+      "sql": "SELECT a.id AS application_id, j.title AS position, a.status AS application_status, DATE_FORMAT(a.applied_at, '%Y-%m-%d') AS applied_on, DATE_FORMAT(i.interview_date, '%Y-%m-%d %H:%i') AS interview_time, i.status AS interview_status FROM applications a JOIN jobs j ON j.id = a.job_id LEFT JOIN interviews i ON i.application_id = a.id WHERE a.candidate_id = :candidateId ORDER BY a.applied_at DESC",
+      "params": { "candidateId": { "type": "integer" } },
+      "maxRows": 10
+    },
+    "recruitment.interview_schedule": {
+      "description": "Lịch phỏng vấn sắp tới (SCHEDULED): thời gian, địa điểm, ứng viên, vị trí, người phỏng vấn",
+      "sql": "SELECT i.id AS interview_id, DATE_FORMAT(i.interview_date, '%Y-%m-%d %H:%i') AS interview_time, i.location AS location, c.full_name AS candidate_name, j.title AS position, u.full_name AS interviewer FROM interviews i JOIN applications a ON a.id = i.application_id JOIN candidates c ON c.id = a.candidate_id JOIN jobs j ON j.id = a.job_id JOIN users u ON u.id = i.interviewer_id WHERE i.status = 'SCHEDULED' ORDER BY i.interview_date",
+      "maxRows": 20
+    },
+    "recruitment.dashboard_summary": {
+      "description": "Thống kê nhanh: số vị trí đang mở, tổng ứng viên, số hồ sơ theo từng trạng thái, số lịch phỏng vấn đã hẹn",
+      "sql": "SELECT (SELECT COUNT(*) FROM jobs WHERE status = 'OPEN') AS open_positions, (SELECT COUNT(*) FROM candidates) AS total_candidates, (SELECT COUNT(*) FROM applications) AS total_applications, (SELECT COUNT(*) FROM applications WHERE status = 'NEW') AS status_new, (SELECT COUNT(*) FROM applications WHERE status = 'SCREENING') AS status_screening, (SELECT COUNT(*) FROM applications WHERE status = 'INTERVIEW') AS status_interview, (SELECT COUNT(*) FROM applications WHERE status = 'PASSED') AS status_passed, (SELECT COUNT(*) FROM applications WHERE status = 'REJECTED') AS status_rejected, (SELECT COUNT(*) FROM interviews WHERE status = 'SCHEDULED') AS interviews_scheduled",
+      "maxRows": 1
+    }
+  }
+}
